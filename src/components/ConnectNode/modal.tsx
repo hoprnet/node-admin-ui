@@ -292,12 +292,6 @@ function ConnectNodeModal(props: ConnectNodeModalProps) {
           }),
         );
         dispatch(
-          nodeActionsAsync.getChannelsCorruptedThunk({
-            apiEndpoint,
-            apiToken: apiToken ? apiToken : '',
-          }),
-        );
-        dispatch(
           nodeActionsAsync.getConfigurationThunk({
             apiToken,
             apiEndpoint,

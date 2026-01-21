@@ -199,7 +199,8 @@ function TicketsPage() {
             <tr>
               <th>
                 <Tooltip
-                  title={`Minimum allowed winning probability of the ticket as defined in the ${info?.network} network`}
+                //  title={`Minimum allowed winning probability of the ticket as defined in the ${info?.network} network`}
+                  title={`Minimum allowed winning probability of the ticket as defined in the current network`}
                   notWide
                 >
                   <span>Minimum ticket winning probability</span>

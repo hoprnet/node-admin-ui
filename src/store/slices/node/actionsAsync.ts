@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import {
   type BasePayloadType,
   type CloseChannelPayloadType,
+  type CloseChannelResponseType,
   type CreateTokenPayloadType,
   type DeleteTokenPayloadType,
   type GetChannelPayloadType,
@@ -461,11 +462,7 @@ const withdrawThunk = createAsyncThunk<string | undefined, WithdrawPayloadType, 
 );
 
 const closeChannelThunk = createAsyncThunk<
-  | {
-      channelStatus: string;
-      receipt?: string | undefined;
-    }
-  | undefined,
+  CloseChannelResponseType,
   CloseChannelPayloadType,
   { state: RootState }
 >(
@@ -499,7 +496,7 @@ const closeChannelThunk = createAsyncThunk<
 );
 
 const openChannelThunk = createAsyncThunk<
-  OpenChannelResponseType | undefined,
+  OpenChannelResponseType,
   OpenChannelPayloadType,
   { state: RootState }
 >('node/openChannel', async (payload, { rejectWithValue }) => {
@@ -515,7 +512,7 @@ const openChannelThunk = createAsyncThunk<
 });
 
 const fundChannelThunk = createAsyncThunk<
-  FundChannelsResponseType | undefined,
+  FundChannelsResponseType,
   FundChannelsPayloadType,
   { state: RootState }
 >('node/fundChannel', async (payload, { rejectWithValue }) => {

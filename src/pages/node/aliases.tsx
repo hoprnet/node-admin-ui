@@ -60,10 +60,10 @@ function AliasesPage() {
 
   const parsedTableData = Object.keys(aliases ?? {}).map((nodeAddress, index) => {
     const alias = aliases[nodeAddress];
-    const lastSeenNumeric = nodeAddress && peersObject[nodeAddress]?.lastSeen;
-    const lastSeen =
-      (lastSeenNumeric as number) > 0
-        ? new Date(lastSeenNumeric)
+    const lastUpdateNumeric = nodeAddress ? peersObject[nodeAddress]?.lastUpdate : 0;
+    const lastUpdate =
+      lastUpdateNumeric > 0
+        ? new Date(lastUpdateNumeric)
             .toLocaleString('en-US', {
               year: 'numeric',
               month: '2-digit',
@@ -80,7 +80,7 @@ function AliasesPage() {
       key: index.toString(),
       alias,
       node: <PeersInfo nodeAddress={nodeAddress} />,
-      lastSeen: <span style={{ whiteSpace: 'break-spaces' }}>{myNodeAddress === nodeAddress ? '-' : lastSeen}</span>,
+      lastUpdate: <span style={{ whiteSpace: 'break-spaces' }}>{myNodeAddress === nodeAddress ? '-' : lastUpdate}</span>,
       nodeAddress: nodeAddress,
       actions: (
         <>
@@ -132,8 +132,8 @@ function AliasesPage() {
       maxWidth: '350px',
     },
     {
-      key: 'lastSeen',
-      name: 'Last Seen',
+      key: 'lastUpdate',
+      name: 'Last update',
       maxWidth: '20px',
     },
     {

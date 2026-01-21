@@ -27,7 +27,6 @@ import { OpenSessionModal } from '../../components/Modal/node/OpenSessionModal';
 
 // Mui
 import GetAppIcon from '@mui/icons-material/GetApp';
-import { truncateEthereumAddress } from '../../utils/blockchain';
 
 function ChannelsPage() {
   const dispatch = useAppDispatch();

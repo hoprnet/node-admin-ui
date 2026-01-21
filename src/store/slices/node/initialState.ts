@@ -9,6 +9,7 @@ import type {
   GetConfigurationResponseType,
   GetMinimumNetworkProbabilityResponseType,
   GetSessionsResponseType,
+  PeerConnectedType
 } from '@hoprnet/hopr-sdk';
 
 export type Message = {
@@ -160,20 +161,7 @@ type InitialState = {
     data: GetPeersResponseType | null;
     parsed: {
       connected: {
-        //TODO: add ConnectedPeerType to SDK
-        [peerId: string]: {
-          address: string;
-          quality: number;
-          multiaddr: string | null;
-          heartbeats: {
-            sent: number;
-            success: number;
-          };
-          lastSeen: number;
-          lastSeenLatency: number;
-          backoff: number;
-          isNew: boolean;
-        };
+        [peerId: string]: PeerConnectedType;
       };
       connectedSorted: string[];
       announcedSorted: string[];

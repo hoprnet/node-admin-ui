@@ -6,7 +6,7 @@
     "@emotion/react": "^11.11.0",
     "@emotion/styled": "^11.11.0",
     "@fontsource/roboto": "^5.0.0",
-    "@hoprnet/hopr-sdk": "4.0.0-pr.159-20260121124212",
+    "@hoprnet/hopr-sdk": "4.0.0-pr.159-20260121135601",
     "@metamask/jazzicon": "^2.0.0",
     "@mui/icons-material": "^5.11.16",
     "@mui/material": "^5.13.0",
@@ -40,7 +40,6 @@
     "typescript": "^5.1.6",
     "uuid": "^9.0.1",
     "viem": "1.21.4",
-    "wagmi": "1.4.13",
     "web-vitals": "^2.1.0"
   },
   "scripts": {
