@@ -20,12 +20,14 @@ export const loginThunk = createAsyncThunk<
   { state: RootState; rejectValue: { data: string; type: 'API_ERROR' | 'CUSTOM_ERROR' | 'FETCH_ERROR' } }
 >('auth/login', async (payload, { rejectWithValue, dispatch }) => {
   if (payload.force) {
-    return { force: true };
+    return {
+      force: true
+    };
   }
 
   const { apiEndpoint, apiToken } = payload;
 
-  let info, addresses, balances;
+  let info, addresses, balances, nodeStarted;
 
   try {
     const calls = await Promise.allSettled([
@@ -47,7 +49,7 @@ export const loginThunk = createAsyncThunk<
       }),
     ]);
 
-    if (calls[0].status === 'fulfilled') info = calls[0].value as IsNodeStartedResponseType;
+    if (calls[0].status === 'fulfilled') nodeStarted = calls[0].value as IsNodeStartedResponseType;
     if (calls[1].status === 'fulfilled') info = calls[1].value as GetInfoResponseType;
     if (calls[2].status === 'fulfilled') addresses = calls[2].value as GetAddressesResponseType;
     if (calls[3].status === 'fulfilled') balances = calls[3].value as GetBalancesResponseType;
@@ -71,7 +73,7 @@ export const loginThunk = createAsyncThunk<
     if (e instanceof sdkApiError && e.hoprdErrorPayload?.error?.includes('get_peer_multiaddresses')) {
       const nodeAddressIsAvailable = addresses?.native ? `\n\nNode Address: ${addresses.native}` : '';
       return rejectWithValue({
-        data: 'You Node seems to be starting, wait a couple of minutes before accessing it.' + nodeAddressIsAvailable,
+        data: 'Your Node seems to be starting, wait a couple of minutes before accessing it.' + nodeAddressIsAvailable,
         type: 'API_ERROR',
       });
     }

@@ -41,7 +41,6 @@ import {
   type GetMinimumNetworkProbabilityResponseType,
   type OpenSessionPayloadType,
   type CloseSessionPayloadType,
-  type GetChannelsCorruptedResponseType,
 } from '@hoprnet/hopr-sdk';
 import { parseMetrics } from '../../../utils/metrics';
 import { RootState } from '../..';
@@ -61,7 +60,6 @@ const {
   getChannel,
   getChannelTickets,
   getChannels,
-  getChannelsCorrupted,
   getConfiguration,
   getEntryNodes,
   getInfo,
@@ -251,33 +249,6 @@ const getChannelsThunk = createAsyncThunk<GetChannelsResponseType | undefined, B
   {
     condition: (_payload, { getState }) => {
       const isFetching = getState().node.channels.isFetching;
-      if (isFetching) {
-        return false;
-      }
-    },
-  },
-);
-
-const getChannelsCorruptedThunk = createAsyncThunk<
-  GetChannelsCorruptedResponseType | undefined,
-  BasePayloadType,
-  { state: RootState }
->(
-  'node/getChannelsCorrupted',
-  async (payload, { rejectWithValue, dispatch }) => {
-    try {
-      const channelsCorrupted = await getChannelsCorrupted(payload);
-      return channelsCorrupted;
-    } catch (e) {
-      if (e instanceof sdkApiError) {
-        return rejectWithValue(e);
-      }
-      return rejectWithValue({ status: JSON.stringify(e) });
-    }
-  },
-  {
-    condition: (_payload, { getState }) => {
-      const isFetching = getState().node.channels.corrupted.isFetching;
       if (isFetching) {
         return false;
       }
@@ -1072,18 +1043,6 @@ export const createAsyncReducer = (builder: ActionReducerMapBuilder<typeof initi
   builder.addCase(getChannelsThunk.rejected, (state, action) => {
     state.channels.isFetching = false;
   });
-  //getChannelsCorrupted
-  builder.addCase(getChannelsCorruptedThunk.pending, (state) => {
-    state.channels.corrupted.isFetching = true;
-  });
-  builder.addCase(getChannelsCorruptedThunk.fulfilled, (state, action) => {
-    if (action.meta.arg.apiEndpoint !== state.apiEndpoint) return;
-    state.channels.corrupted.data = action.payload?.channelIds || [];
-    state.channels.corrupted.isFetching = false;
-  });
-  builder.addCase(getChannelsCorruptedThunk.rejected, (state, action) => {
-    state.channels.corrupted.isFetching = false;
-  });
   //openChannel
   builder.addCase(openChannelThunk.pending, (state, action) => {
     const peerAddress = action.meta.arg.destination;
@@ -1429,7 +1388,6 @@ export const actionsAsync = {
   getAddressesThunk,
   getBalancesThunk,
   getChannelsThunk,
-  getChannelsCorruptedThunk,
   getConfigurationThunk,
   getPeersThunk,
   getPeerInfoThunk,

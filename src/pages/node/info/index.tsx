@@ -60,17 +60,12 @@ function InfoPage() {
       ? new Date(nodeStartedEpoch * 1000).toJSON().replace('T', ' ').replace('Z', ' UTC')
       : '-';
   const nodeSync = useAppSelector((store) => store.node.metricsParsed.nodeSync);
-  const indexerDataSource = useAppSelector((store) => store.node.metricsParsed.indexerDataSource); // >=3.0.0
-  const blockNumberFromInfo = useAppSelector((store) => store.node.info.data?.indexerBlock); // >=2.2.0
-  const indexerLastLogBlock = useAppSelector((store) => store.node.info.data?.indexerLastLogBlock); // >=2.2.0
-  const indexerLastLogChecksum = useAppSelector((store) => store.node.info.data?.indexerLastLogChecksum); // >=2.2.0
   const ticketPrice = useAppSelector((store) => store.node.ticketPrice.data);
   const minimumNetworkProbability = useAppSelector((store) => store.node.probability.data);
-  const channelsCorrupted = useAppSelector((store) => store.node.channels.corrupted.data.length > 0);
   const [showWholeProvider, set_showWholeProvider] = useState(false);
   const [providerShort, set_providerShort] = useState('');
   const [providerContainsSecret, set_providerContainsSecret] = useState(true);
-  const provider = info?.provider;
+  const provider = info?.providerUrl;
 
   useEffect(() => {
     fetchInfoData();
@@ -120,12 +115,6 @@ function InfoPage() {
     );
     dispatch(
       nodeActionsAsync.getChannelsThunk({
-        apiEndpoint,
-        apiToken: apiToken ? apiToken : '',
-      }),
-    );
-    dispatch(
-      nodeActionsAsync.getChannelsCorruptedThunk({
         apiEndpoint,
         apiToken: apiToken ? apiToken : '',
       }),
@@ -280,7 +269,7 @@ function InfoPage() {
                 <ColorStatus className={`status-${info?.connectivityStatus}`}>{info?.connectivityStatus}</ColorStatus>
               </td>
             </tr>
-            <tr>
+            {/* <tr>
               <th>
                 <Tooltip
                   title="The sync process of your node with the blockchain"
@@ -290,23 +279,12 @@ function InfoPage() {
                 </Tooltip>
               </th>
               <td>{nodeSync && typeof nodeSync === 'number' ? <ProgressBar value={nodeSync} /> : '-'}</td>
-            </tr>
-            <tr>
-              <th>
-                <Tooltip
-                  title="The sync process indexer data source"
-                  notWide
-                >
-                  <span>Indexer data source</span>
-                </Tooltip>
-              </th>
-              <td>{indexerDataSource || '-'}</td>
-            </tr>
+            </tr> */}
             <tr>
               <th style={providerContainsSecret ? { padding: '3px 8px' } : {}}>
                 <div style={{ display: 'flex' }}>
                   <Tooltip
-                    title="The RPC provider address your node uses sync"
+                    title="The blokli provider address your node uses sync"
                     notWide
                   >
                     <span style={{ display: 'flex', alignItems: 'center' }}>Provider address</span>
@@ -347,15 +325,11 @@ function InfoPage() {
                 </div>
               </th>
               <td>
-                {channelsCorrupted ? (
-                  <span style={{ color: 'red', fontWeight: 'bold' }}>
-                    Faulty RPC | {showWholeProvider ? provider : providerShort}
-                  </span>
-                ) : showWholeProvider ? (
+                { showWholeProvider ?
                   provider
-                ) : (
+                 :
                   providerShort
-                )}
+                }
               </td>
             </tr>
             <tr>
@@ -380,7 +354,7 @@ function InfoPage() {
               </th>
               <td>{info?.listeningAddress}</td>
             </tr>
-            <tr>
+            {/* <tr>
               <th>
                 <Tooltip
                   title="The network/environment your node is running in"
@@ -401,8 +375,8 @@ function InfoPage() {
                 </Tooltip>
               </th>
               <td>{info?.chain}</td>
-            </tr>
-            <tr>
+            </tr> */}
+            {/* <tr>
               <th>
                 <Tooltip
                   title="Last block that the node got from the RPC"
@@ -412,7 +386,7 @@ function InfoPage() {
                 </Tooltip>
               </th>
               <td>{blockNumberFromInfo ? blockNumberFromInfo : '-'}</td>
-            </tr>
+            </tr> */}
             {/* <tr>
               <th>
                 <Tooltip

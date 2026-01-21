@@ -55,12 +55,11 @@ function PeersPage() {
       exportToCsv(
         peers.connected.map((peer) => ({
           nodeAddress: peer.address,
-          quality: peer.quality,
+          score: peer.score,
           multiaddr: peer.multiaddr,
-          heartbeats: peer.heartbeats,
-          lastSeen: peer.lastSeen,
-          backoff: peer.backoff,
-          isNew: peer.isNew,
+          lastUpdate: peer.lastUpdate,
+          averageLatency: peer.averageLatency,
+          probeRate: peer.probeRate,
         })),
         'peers.csv',
       );
@@ -85,22 +84,24 @@ function PeersPage() {
       hidden: true,
     },
     {
-      key: 'lastSeen',
-      name: 'Last seen',
+      key: 'lastUpdate',
+      name: 'Last update',
       tooltip: true,
-      maxWidth: '10px',
+      width: '120px',
+      maxWidth: '120px',
     },
     {
-      key: 'quality',
-      name: 'Quality',
-      maxWidth: '10px',
+      key: 'score',
+      name: 'Score',
+      width: '90px',
+      maxWidth: '90px',
     },
     {
       key: 'actions',
       name: 'Actions',
       search: false,
-      width: '190px',
-      maxWidth: '190px',
+      width: '150px',
+      maxWidth: '150px',
     },
   ];
 
@@ -130,9 +131,9 @@ function PeersPage() {
   const peersSorted = [...peersWithAliasesSorted, ...peersWithoutAliasesSorted];
 
   const parsedTableData = peersSorted.map((peer, index) => {
-    const lastSeen =
-      (peer.lastSeen as number) > 0
-        ? new Date(peer.lastSeen)
+    const lastUpdate =
+      peer.lastUpdate > 0
+        ? new Date(peer.lastUpdate)
             .toLocaleString('en-US', {
               year: 'numeric',
               month: '2-digit',
@@ -149,8 +150,8 @@ function PeersPage() {
       node: <PeersInfo nodeAddress={peer.address} />,
       address: getAliasByAddress(peer.address),
       peerAddress: peer.address,
-      quality: <ProgressBar value={peer.quality} />,
-      lastSeen: <span style={{ whiteSpace: 'break-spaces' }}>{lastSeen}</span>,
+      score: <ProgressBar value={peer.score} />,
+      lastUpdate: <span style={{ whiteSpace: 'break-spaces' }}>{lastUpdate}</span>,
       actions: (
         <>
           <PingModal address={peer.address} />
