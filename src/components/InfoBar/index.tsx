@@ -6,7 +6,6 @@ import { useLocation } from 'react-router-dom';
 import Details from './details';
 import FAQ from '../Faq';
 import nodeInfoData from '../Faq/node-faq';
-import stakingInfoData from '../Faq/staking-faq';
 import stakingAlertsData from '../Faq/staking-alerts';
 
 type InfoData = {
@@ -74,16 +73,6 @@ export default function InfoBar(props: Props) {
 
   const pageHasNodeFAQ = () => {
     if (nodeInfoData[currentRoute]) return true;
-    return false;
-  };
-
-  const pageHasStakingFAQ = () => {
-    if (stakingInfoData[`${currentRoute}${currentHash}`]) return true;
-    return false;
-  };
-
-  const pageHasStakingAlerts = () => {
-    if (stakingAlertsData[`${currentRoute}${currentHash}`]) return true;
     return false;
   };
 

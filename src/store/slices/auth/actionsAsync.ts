@@ -17,7 +17,7 @@ const { getInfo, getAddresses, getBalances, isNodeStarted } = api;
 export const loginThunk = createAsyncThunk<
   GetInfoResponseType | { force: boolean } | undefined,
   { apiToken: string; apiEndpoint: string; force?: boolean },
-  { state: RootState; rejectValue: { data: string; type: 'API_ERROR' | 'NOT_ELIGIBLE_ERROR' | 'FETCH_ERROR' } }
+  { state: RootState; rejectValue: { data: string; type: 'API_ERROR' | 'CUSTOM_ERROR' | 'FETCH_ERROR' } }
 >('auth/login', async (payload, { rejectWithValue, dispatch }) => {
   if (payload.force) {
     return { force: true };
@@ -83,7 +83,7 @@ export const loginThunk = createAsyncThunk<
         data:
           'Unable to connect.\n\n' +
           `Your xDai balance seems to low to operate the node.\nPlease top up your node.\nAddress: ${addresses?.native}`,
-        type: 'NOT_ELIGIBLE_ERROR',
+        type: 'CUSTOM_ERROR',
       });
     }
 

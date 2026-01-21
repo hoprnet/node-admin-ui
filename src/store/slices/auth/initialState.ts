@@ -10,7 +10,7 @@ type InitialState = {
     connected: boolean;
     error: {
       data: string | null;
-      type: 'API_ERROR' | 'NOT_ELIGIBLE_ERROR' | 'FETCH_ERROR';
+      type: 'API_ERROR' | 'CUSTOM_ERROR' | 'FETCH_ERROR';
     } | null;
   };
   loginData: {

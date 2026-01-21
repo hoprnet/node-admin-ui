@@ -42,48 +42,6 @@ const nodeFaq: FaqData = {
         'Environments contain a set of releases which are compatible. For example, the monte_rosa environment is what all releases between v1.00 and v1.99.00 run in, and within this environment, all nodes running one of these releases can interact with each other.',
     },
     {
-      id: 3,
-      title: 'How do I make my node eligible?',
-      content: (
-        <span>
-          You must have your node approved to join the network by having an eligible associated staking address and
-          being approved by the HOPR association to join the network, as it is currently permissioned. You can join the
-          network by creating a safe{' '}
-          <a
-            href="https://hub.hoprnet.org"
-            target="_blank"
-            rel="noreferrer"
-          >
-            here
-          </a>
-          .
-          <br />
-          <br />
-          If you've already applied to join the network, please wait for approval. Approvals currently occur on a
-          tri-weekly basis.
-          <br />
-          <br />
-          If your node was approved, but your are still seeing your node is not eligible, please report this on the{' '}
-          <a
-            href="https://t.me/hoprnet"
-            target="_blank"
-            rel="noreferrer"
-          >
-            HOPR Telegram channel
-          </a>{' '}
-          or{' '}
-          <a
-            href="https://discord.gg/dEAWC4G"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Discord server
-          </a>
-          .
-        </span>
-      ),
-    },
-    {
       id: 4,
       title: 'How is node health calculated?',
       content: 'It is calculated using the network`s heartbeat mechanism.',

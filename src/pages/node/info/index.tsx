@@ -258,17 +258,6 @@ function InfoPage() {
             <tr>
               <th>
                 <Tooltip
-                  title="Whether or not your node is eligible to connect to the network"
-                  notWide
-                >
-                  <span>Eligible</span>
-                </Tooltip>
-              </th>
-              <td>{info?.isEligible ? 'Yes' : 'No'}</td>
-            </tr>
-            <tr>
-              <th>
-                <Tooltip
                   title={
                     <ul
                       style={{
@@ -424,7 +413,7 @@ function InfoPage() {
               </th>
               <td>{blockNumberFromInfo ? blockNumberFromInfo : '-'}</td>
             </tr>
-            <tr>
+            {/* <tr>
               <th>
                 <Tooltip
                   title="Last indexed block from the chain which contains HOPR data"
@@ -453,7 +442,7 @@ function InfoPage() {
                 </Tooltip>
               </th>
               <td>{indexerLastLogChecksum ? indexerLastLogChecksum : '-'}</td>
-            </tr>
+            </tr> */}
           </tbody>
         </TableExtended>
 
