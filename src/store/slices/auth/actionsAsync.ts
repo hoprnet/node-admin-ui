@@ -1,11 +1,18 @@
-import { GetInfoResponseType, GetAddressesResponseType, GetBalancesResponseType, api, utils } from '@hoprnet/hopr-sdk';
+import {
+  GetInfoResponseType,
+  GetAddressesResponseType,
+  GetBalancesResponseType,
+  IsNodeStartedResponseType,
+  api,
+  utils
+} from '@hoprnet/hopr-sdk';
 import { ActionReducerMapBuilder, createAsyncThunk } from '@reduxjs/toolkit';
 import { parseEther } from 'viem';
 import { RootState, useAppSelector } from '../..';
 import { nodeActionsAsync } from '../node';
 import { initialState } from './initialState';
 const { sdkApiError } = utils;
-const { getInfo, getAddresses, getBalances } = api;
+const { getInfo, getAddresses, getBalances, isNodeStarted } = api;
 
 export const loginThunk = createAsyncThunk<
   GetInfoResponseType | { force: boolean } | undefined,
@@ -22,6 +29,10 @@ export const loginThunk = createAsyncThunk<
 
   try {
     const calls = await Promise.allSettled([
+      isNodeStarted({
+        apiEndpoint: apiEndpoint,
+        apiToken: apiToken,
+      }),
       getInfo({
         apiEndpoint: apiEndpoint,
         apiToken: apiToken,
@@ -36,23 +47,15 @@ export const loginThunk = createAsyncThunk<
       }),
     ]);
 
-    if (calls[0].status === 'fulfilled') info = calls[0].value as GetInfoResponseType;
-    if (calls[1].status === 'fulfilled') addresses = calls[1].value as GetAddressesResponseType;
-    if (calls[2].status === 'fulfilled') balances = calls[2].value as GetBalancesResponseType;
+    if (calls[0].status === 'fulfilled') info = calls[0].value as IsNodeStartedResponseType;
+    if (calls[1].status === 'fulfilled') info = calls[1].value as GetInfoResponseType;
+    if (calls[2].status === 'fulfilled') addresses = calls[2].value as GetAddressesResponseType;
+    if (calls[3].status === 'fulfilled') balances = calls[3].value as GetBalancesResponseType;
 
     if (calls[0].status === 'rejected') throw new sdkApiError(calls[0].reason);
     if (calls[1].status === 'rejected') throw new sdkApiError(calls[1].reason);
     if (calls[2].status === 'rejected') throw new sdkApiError(calls[2].reason);
-
-    if (!payload.force && !info?.isEligible) {
-      const e = new Error();
-      e.name = 'NOT_ELIGIBLE_ERROR';
-      e.message =
-        'Not eligible on network registry. ' +
-        'Join the waitlist and once approved, you can return to login.' +
-        '\n\nFor now, keep an eye on the waitlist.';
-      throw e;
-    }
+    if (calls[3].status === 'rejected') throw new sdkApiError(calls[3].reason);
 
     return info;
   } catch (e) {
@@ -73,14 +76,6 @@ export const loginThunk = createAsyncThunk<
       });
     }
 
-    // not eligible error thrown above
-    if (e instanceof Error && e.name === 'NOT_ELIGIBLE_ERROR') {
-      return rejectWithValue({
-        data: 'Unable to connect.\n\n' + e.message,
-        type: 'NOT_ELIGIBLE_ERROR',
-      });
-    }
-
     const minimumNodeBalance = parseEther('0.001');
 
     if (balances?.native !== undefined && BigInt(balances.native) < minimumNodeBalance) {
@@ -93,7 +88,7 @@ export const loginThunk = createAsyncThunk<
     }
 
     return rejectWithValue({
-      data: 'Error fetching: ' + JSON.stringify(e),
+      data: 'Unable to connect to the node.\n\nError:\n' + JSON.stringify(e, null, 2),
       type: 'FETCH_ERROR',
     });
   }
