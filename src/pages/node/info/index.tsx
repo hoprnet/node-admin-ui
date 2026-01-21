@@ -324,13 +324,7 @@ function InfoPage() {
                   )}
                 </div>
               </th>
-              <td>
-                { showWholeProvider ?
-                  provider
-                 :
-                  providerShort
-                }
-              </td>
+              <td>{showWholeProvider ? provider : providerShort}</td>
             </tr>
             <tr>
               <th>
@@ -518,7 +512,7 @@ function InfoPage() {
             <tr>
               <th>
                 <Tooltip
-                //  title={`Minimum allowed winning probability of the ticket as defined in the ${info?.network} network`}
+                  //  title={`Minimum allowed winning probability of the ticket as defined in the ${info?.network} network`}
                   title={`Minimum allowed winning probability of the ticket as defined in the network`}
                   notWide
                 >

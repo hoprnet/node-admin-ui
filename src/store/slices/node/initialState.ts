@@ -9,7 +9,7 @@ import type {
   GetConfigurationResponseType,
   GetMinimumNetworkProbabilityResponseType,
   GetSessionsResponseType,
-  PeerConnectedType
+  PeerConnectedType,
 } from '@hoprnet/hopr-sdk';
 
 export type Message = {
@@ -110,7 +110,7 @@ type InitialState = {
       };
     };
     corrupted: {
-      data: String[];
+      data: string[];
       isFetching: boolean;
     };
     isFetching: boolean;

@@ -4,7 +4,7 @@ import {
   GetBalancesResponseType,
   IsNodeStartedResponseType,
   api,
-  utils
+  utils,
 } from '@hoprnet/hopr-sdk';
 import { ActionReducerMapBuilder, createAsyncThunk } from '@reduxjs/toolkit';
 import { parseEther } from 'viem';
@@ -21,7 +21,7 @@ export const loginThunk = createAsyncThunk<
 >('auth/login', async (payload, { rejectWithValue, dispatch }) => {
   if (payload.force) {
     return {
-      force: true
+      force: true,
     };
   }
 

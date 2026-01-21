@@ -80,7 +80,9 @@ function AliasesPage() {
       key: index.toString(),
       alias,
       node: <PeersInfo nodeAddress={nodeAddress} />,
-      lastUpdate: <span style={{ whiteSpace: 'break-spaces' }}>{myNodeAddress === nodeAddress ? '-' : lastUpdate}</span>,
+      lastUpdate: (
+        <span style={{ whiteSpace: 'break-spaces' }}>{myNodeAddress === nodeAddress ? '-' : lastUpdate}</span>
+      ),
       nodeAddress: nodeAddress,
       actions: (
         <>

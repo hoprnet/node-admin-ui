@@ -461,11 +461,7 @@ const withdrawThunk = createAsyncThunk<string | undefined, WithdrawPayloadType, 
   },
 );
 
-const closeChannelThunk = createAsyncThunk<
-  CloseChannelResponseType,
-  CloseChannelPayloadType,
-  { state: RootState }
->(
+const closeChannelThunk = createAsyncThunk<CloseChannelResponseType, CloseChannelPayloadType, { state: RootState }>(
   'node/closeChannel',
   async (payload, { rejectWithValue, dispatch }) => {
     try {
@@ -495,37 +491,35 @@ const closeChannelThunk = createAsyncThunk<
   },
 );
 
-const openChannelThunk = createAsyncThunk<
-  OpenChannelResponseType,
-  OpenChannelPayloadType,
-  { state: RootState }
->('node/openChannel', async (payload, { rejectWithValue }) => {
-  try {
-    const res = await openChannel(payload);
-    return res;
-  } catch (e) {
-    if (e instanceof sdkApiError) {
-      return rejectWithValue(e);
+const openChannelThunk = createAsyncThunk<OpenChannelResponseType, OpenChannelPayloadType, { state: RootState }>(
+  'node/openChannel',
+  async (payload, { rejectWithValue }) => {
+    try {
+      const res = await openChannel(payload);
+      return res;
+    } catch (e) {
+      if (e instanceof sdkApiError) {
+        return rejectWithValue(e);
+      }
+      return rejectWithValue({ status: JSON.stringify(e) });
     }
-    return rejectWithValue({ status: JSON.stringify(e) });
-  }
-});
+  },
+);
 
-const fundChannelThunk = createAsyncThunk<
-  FundChannelsResponseType,
-  FundChannelsPayloadType,
-  { state: RootState }
->('node/fundChannel', async (payload, { rejectWithValue }) => {
-  try {
-    const res = await fundChannel(payload);
-    return res;
-  } catch (e) {
-    if (e instanceof sdkApiError) {
-      return rejectWithValue(e);
+const fundChannelThunk = createAsyncThunk<FundChannelsResponseType, FundChannelsPayloadType, { state: RootState }>(
+  'node/fundChannel',
+  async (payload, { rejectWithValue }) => {
+    try {
+      const res = await fundChannel(payload);
+      return res;
+    } catch (e) {
+      if (e instanceof sdkApiError) {
+        return rejectWithValue(e);
+      }
+      return rejectWithValue({ status: JSON.stringify(e) });
     }
-    return rejectWithValue({ status: JSON.stringify(e) });
-  }
-});
+  },
+);
 
 // will not be used for now, as it doesn't give good errors
 const openMultipleChannelsThunk = createAsyncThunk(
