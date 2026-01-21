@@ -518,7 +518,8 @@ function InfoPage() {
             <tr>
               <th>
                 <Tooltip
-                  title={`Minimum allowed winning probability of the ticket as defined in the ${info?.network} network`}
+                //  title={`Minimum allowed winning probability of the ticket as defined in the ${info?.network} network`}
+                  title={`Minimum allowed winning probability of the ticket as defined in the network`}
                   notWide
                 >
                   <span>Minimum ticket winning probability</span>
@@ -598,7 +599,7 @@ function InfoPage() {
                 )}
               </TdActionIcons>
             </tr>
-            <tr>
+            {/* <tr>
               <th>
                 <Tooltip
                   title="The contract address of the HOPR token"
@@ -629,8 +630,8 @@ function InfoPage() {
                   </>
                 )}
               </TdActionIcons>
-            </tr>
-            <tr>
+            </tr> */}
+            {/* <tr>
               <th>
                 <Tooltip
                   title="The contract address of the Hopr management module"
@@ -661,8 +662,8 @@ function InfoPage() {
                   </>
                 )}
               </TdActionIcons>
-            </tr>
-            <tr>
+            </tr> */}
+            {/* <tr>
               <th>
                 <Tooltip
                   title="The contract address of the hoprChannels smart contract"
@@ -693,7 +694,7 @@ function InfoPage() {
                   </>
                 )}
               </TdActionIcons>
-            </tr>
+            </tr> */}
           </tbody>
         </TableExtended>
 
