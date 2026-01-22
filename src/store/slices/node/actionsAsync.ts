@@ -1,5 +1,5 @@
 import { ActionReducerMapBuilder, AnyAction, ThunkDispatch, createAsyncThunk } from '@reduxjs/toolkit';
-import { initialState } from './initialState';
+import { initialState, ParsedStrategiesType } from './initialState';
 import { v4 as uuidv4 } from 'uuid';
 import {
   type BasePayloadType,
@@ -266,9 +266,9 @@ const getConfigurationThunk = createAsyncThunk<
   async (payload, { rejectWithValue, dispatch }) => {
     try {
       const configuration = await getConfiguration(payload);
-      console.log('getConfigurationThunk', configuration);
       return configuration;
     } catch (e) {
+      console.error('getConfigurationThunk', e);
       if (e instanceof sdkApiError) {
         return rejectWithValue(e);
       }
@@ -1075,9 +1075,24 @@ export const createAsyncReducer = (builder: ActionReducerMapBuilder<typeof initi
   });
   builder.addCase(getConfigurationThunk.fulfilled, (state, action) => {
     if (action.meta.arg.apiEndpoint !== state.apiEndpoint) return;
-    // console.log('getConfigurationThunk', action);
     if (action.payload) {
       state.configuration.data = action.payload;
+
+      let parsedStrategies: ParsedStrategiesType = {};
+
+      action.payload?.strategy?.strategies.forEach((strategyObj: ParsedStrategiesType) => {
+        try {
+          const strategyName = Object.keys(strategyObj)[0];
+          if (typeof strategyName !== 'string') return;
+          let tmp = strategyObj[strategyName];
+          if (!tmp) return;
+          parsedStrategies[strategyName] = tmp;
+        } catch (e) {
+          console.warn('Error parsing strategy', e);
+        }
+      });
+
+      state.configuration.parsedStrategies = parsedStrategies;
     }
     state.configuration.isFetching = false;
   });

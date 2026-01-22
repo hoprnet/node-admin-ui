@@ -52,6 +52,12 @@ export type ChannelsIncomingType = {
 
 export type AddressesType = { native: string | null };
 
+export type ParsedStrategiesType = {
+  [key: string]: {
+    [key: string]: string | number | boolean;
+  };
+};
+
 type WebsocketConnectionStatus = 'connecting' | 'connected' | 'error' | null;
 
 type InitialState = {
@@ -132,6 +138,7 @@ type InitialState = {
   };
   configuration: {
     data: GetConfigurationResponseType | null;
+    parsedStrategies: ParsedStrategiesType;
     isFetching: boolean;
   };
   links: {
@@ -315,6 +322,7 @@ export const initialState: InitialState = {
   },
   configuration: {
     data: null,
+    parsedStrategies: {},
     isFetching: false,
   },
   messages: {

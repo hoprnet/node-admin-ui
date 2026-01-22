@@ -119,7 +119,9 @@ const PlainText = styled.div`
   }
 `;
 
-function Typography({ type, className = '', center, fullWidth, white, children, ...props }) {
+function Typography(props) {
+  const { type, className = '', center, fullWidth, white, children } = props;
+
   if (type === 'h2') {
     return (
       <H2

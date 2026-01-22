@@ -52,7 +52,7 @@ const updateStrategyString = (originalString: string, key: string, value: string
 function SettingsPage() {
   const dispatch = useAppDispatch();
   const prevNotificationSettings = useAppSelector((store) => store.app.configuration.notifications);
-  const strategy = useAppSelector((store) => store.node.configuration.data?.hopr?.strategy);
+  const strategy = useAppSelector((store) => store.node.configuration.data?.strategy);
   const configuration = useAppSelector((store) => store.node.configuration.data);
   const ticketPrice = useAppSelector((store) => store.node.ticketPrice.data);
   const myNodeAddress = useAppSelector((store) => store.node.addresses.data.native);
@@ -84,8 +84,8 @@ function SettingsPage() {
   useEffect(() => {
     if (!strategy || !ticketPrice) return;
 
-    const strategyTMP = { hopr: { strategy: JSON.parse(JSON.stringify(strategy)) } };
-    delete strategyTMP.hopr.strategy['parsedStrategies'];
+    const strategyTMP = { strategy: JSON.parse(JSON.stringify(strategy)) };
+    delete strategyTMP.strategy['parsedStrategies'];
 
     try {
       const configs: StrategyConfig[] = [
@@ -111,12 +111,12 @@ function SettingsPage() {
 
       // * Add ! in front of the strategy name to make yaml copy-paste friendly
       const strategiesSet = [];
-      if (strategyTMP.hopr.strategy.strategies) {
-        for (let i = 0; i < strategyTMP.hopr.strategy.strategies.length; i++) {
-          const strategyName = Object.keys(strategyTMP.hopr.strategy.strategies[i])[0];
+      if (strategyTMP.strategy.strategies) {
+        for (let i = 0; i < strategyTMP.strategy.strategies.length; i++) {
+          const strategyName = Object.keys(strategyTMP.strategy.strategies[i])[0];
           strategiesSet.push(strategyName);
           try {
-            const strategyDetails = strategyTMP.hopr.strategy.strategies[i][strategyName];
+            const strategyDetails = strategyTMP.strategy.strategies[i][strategyName];
             const strategyDetailsKeys = Object.keys(strategyDetails);
             for (const key of strategyDetailsKeys) {
               const strategyValue = strategyDetails[key];
@@ -149,7 +149,7 @@ function SettingsPage() {
   useEffect(() => {
     if (configuration) {
       let tmp = JSON.parse(JSON.stringify(configuration));
-      tmp.hopr['strategy'] && delete tmp.hopr['strategy'];
+      tmp['strategy'] && delete tmp['strategy'];
       tmp = yaml.dump(tmp);
       set_configurationString(tmp);
     }
@@ -169,7 +169,7 @@ function SettingsPage() {
 
   const handleExport = () => {
     if (strategiesString) {
-      exportToFile(strategiesString, `strategies-${myNodeAddress}.yaml`, 'text/yaml');
+      exportToFile(strategiesString, `strategy-${myNodeAddress}.yaml`, 'text/yaml');
     }
   };
 
@@ -277,14 +277,14 @@ function SettingsPage() {
 
             <tr>
               <th>
-                Strategies
+                Strategy
                 <IconButton
                   iconComponent={<GetAppIcon />}
                   tooltipText={
                     <span>
                       EXPORT
                       <br />
-                      strategies
+                      Strategy
                     </span>
                   }
                   onClick={handleExport}
