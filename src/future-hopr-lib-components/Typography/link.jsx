@@ -16,16 +16,16 @@ const Link = styled.a`
   }
 `;
 
-function Typography(props) {
+function Typography({ className = '', href, text, openIcon }) {
   return (
     <Link
-      className={`Typography--link ${props.className}`}
+      className={`Typography--link ${className}`}
       target="_blank"
       rel="noopener noreferrer"
-      href={props.href}
+      href={href}
     >
-      {props.text}
-      {props.openIcon && (
+      {text}
+      {openIcon && (
         <svg
           viewBox="0 0 24 24"
           focusable="false"
@@ -48,5 +48,3 @@ function Typography(props) {
 }
 
 export default Typography;
-
-Typography.defaultProps = { className: '' };

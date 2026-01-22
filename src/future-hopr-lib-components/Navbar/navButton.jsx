@@ -104,5 +104,3 @@ export default function Button(props) {
     </div>
   );
 }
-
-Button.defaultProps = {};

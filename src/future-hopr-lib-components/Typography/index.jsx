@@ -119,49 +119,49 @@ const PlainText = styled.div`
   }
 `;
 
-function Typography(props) {
-  if (props.type === 'h2') {
+function Typography({ type, className = '', center, fullWidth, white, children, ...props }) {
+  if (type === 'h2') {
     return (
       <H2
         {...props}
-        className={`Typography--h2 ${props.className} ${props.center ? 'typography--center' : ''} ${
-          props.fullWidth ? 'typography--fullWidth' : ''
+        className={`Typography--h2 ${className} ${center ? 'typography--center' : ''} ${
+          fullWidth ? 'typography--fullWidth' : ''
         }`}
       >
-        {props.children}
+        {children}
       </H2>
     );
-  } else if (props.type === 'h5') {
+  } else if (type === 'h5') {
     return (
       <H5
         {...props}
-        className={`Typography--h5 ${props.className} ${props.center ? 'typography--center' : ''} ${
-          props.fullWidth ? 'typography--fullWidth' : ''
+        className={`Typography--h5 ${className} ${center ? 'typography--center' : ''} ${
+          fullWidth ? 'typography--fullWidth' : ''
         }`}
       >
-        {props.children}
+        {children}
       </H5>
     );
-  } else if (props.type === 'h6') {
+  } else if (type === 'h6') {
     return (
       <H6
         {...props}
-        className={`Typography--h5 ${props.className}  ${props.center ? 'typography--center' : ''} ${
-          props.white ? 'typography--white' : ''
+        className={`Typography--h5 ${className}  ${center ? 'typography--center' : ''} ${
+          white ? 'typography--white' : ''
         }`}
       >
-        {props.children}
+        {children}
       </H6>
     );
-  } else if (props.type === 'small1') {
+  } else if (type === 'small1') {
     return (
       <Small1
         {...props}
-        className={`Typography--small1 ${props.className} ${props.center ? 'typography--center' : ''} ${
-          props.white ? 'typography--white' : ''
+        className={`Typography--small1 ${className} ${center ? 'typography--center' : ''} ${
+          white ? 'typography--white' : ''
         }`}
       >
-        {props.children}
+        {children}
       </Small1>
     );
   }
@@ -169,13 +169,11 @@ function Typography(props) {
   return (
     <PlainText
       {...props}
-      className={`Typography--PlainText ${props.className} ${props.center ? 'typography--center' : ''}`}
+      className={`Typography--PlainText ${className} ${center ? 'typography--center' : ''}`}
     >
-      {props.children}
+      {children}
     </PlainText>
   );
 }
 
 export default Typography;
-
-Typography.defaultProps = { className: '' };

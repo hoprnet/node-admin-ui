@@ -93,7 +93,21 @@ const NavBar: React.FC<{
   openedNavigationDrawer: boolean;
   onButtonClick?: () => void;
   set_openedNavigationDrawer: (openedNavigationDrawer: boolean) => void;
-}> = (props) => {
+}> = ({
+  className,
+  center,
+  webapp,
+  right,
+  mobile,
+  mainLogo,
+  mainLogoAlt,
+  tallerNavBarOnMobile,
+  itemsNavbarCenter = [],
+  itemsNavbarRight = [],
+  openedNavigationDrawer,
+  onButtonClick,
+  set_openedNavigationDrawer,
+}) => {
   //  const router = useRouter();
   const [activaMenu, setActivaMenu] = useState(false);
   const [isScroll, setIsScroll] = useState(false);
@@ -117,20 +131,20 @@ const NavBar: React.FC<{
     <>
       <AppBar
         className="Hopr-navBar navbar"
-        tallerNavBarOnMobile={props.tallerNavBarOnMobile}
-        webapp={props.webapp}
+        tallerNavBarOnMobile={tallerNavBarOnMobile}
+        webapp={webapp}
       >
-        <Container webapp={props.webapp}>
+        <Container webapp={webapp}>
           <FlexBox>
-            <IconButton onClick={() => props.set_openedNavigationDrawer(!props.openedNavigationDrawer)}>
+            <IconButton onClick={() => set_openedNavigationDrawer(!openedNavigationDrawer)}>
               <MenuIcon />
             </IconButton>
             <Logo className="logo-hopr">
               {/* <a href="/"> */}
               <img
                 className="logo-hopr-navbar"
-                alt={props.mainLogoAlt}
-                src={props.mainLogo}
+                alt={mainLogoAlt}
+                src={mainLogo}
               />
               {/* </a> */}
             </Logo>
@@ -142,20 +156,20 @@ const NavBar: React.FC<{
             <span></span>
           </div>
           <NavBarItems
-            itemsNavbar={props.itemsNavbarCenter}
+            itemsNavbar={itemsNavbarCenter}
             center
-            webapp={props.webapp}
+            webapp={webapp}
           />
           <NavBarItems
-            itemsNavbar={props.itemsNavbarRight}
+            itemsNavbar={itemsNavbarRight}
             right
-            webapp={props.webapp}
+            webapp={webapp}
           />
         </Container>
       </AppBar>
       <div className={`menu mobile ${activaMenu ? ' show-menu' : ''}`}>
         <NavBarItems
-          //     itemsNavbar={[...props.itemsNavbarCenter, ...props.itemsNavbarRight]}
+          //     itemsNavbar={[...itemsNavbarCenter, ...itemsNavbarRight]}
           onButtonClick={() => {
             setActivaMenu(false);
           }}
@@ -164,11 +178,6 @@ const NavBar: React.FC<{
       </div>
     </>
   );
-};
-
-NavBar.defaultProps = {
-  itemsNavbarCenter: [],
-  itemsNavbarRight: [],
 };
 
 export default NavBar;
