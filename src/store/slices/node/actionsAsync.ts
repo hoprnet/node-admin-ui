@@ -1276,39 +1276,40 @@ export const createAsyncReducer = (builder: ActionReducerMapBuilder<typeof initi
         redeemed: {},
         unredeemed: {},
       };
-      if (
-        false && // disable for now as the metric is not available on the test node
-        jsonMetrics?.hopr_tickets_incoming_statistics?.categories &&
-        jsonMetrics?.hopr_tickets_incoming_statistics?.data
-      ) {
-        const categories = jsonMetrics.hopr_tickets_incoming_statistics.categories;
-        const data = jsonMetrics?.hopr_tickets_incoming_statistics?.data;
-        for (let i = 0; i < categories.length; i++) {
-          const channel = categories[i]
-            .match(/channel="0x[a-f0-9]+"/gi)[0]
-            .replace(`channel="`, ``)
-            .replace(`"`, ``);
-          const statistic = categories[i]
-            .match(/statistic="[a-z_]+"/g)[0]
-            .replace(`statistic="`, ``)
-            .replace(`"`, ``);
-          const value = data[i];
+      // disable for now as the metric is not available on the test node
+      // if (
+      //   false &&
+      //   jsonMetrics?.hopr_tickets_incoming_statistics?.categories &&
+      //   jsonMetrics?.hopr_tickets_incoming_statistics?.data
+      // ) {
+      //   const categories = jsonMetrics.hopr_tickets_incoming_statistics.categories;
+      //   const data = jsonMetrics?.hopr_tickets_incoming_statistics?.data;
+      //   for (let i = 0; i < categories.length; i++) {
+      //     const channel = categories[i]
+      //       .match(/channel="0x[a-f0-9]+"/gi)[0]
+      //       .replace(`channel="`, ``)
+      //       .replace(`"`, ``);
+      //     const statistic = categories[i]
+      //       .match(/statistic="[a-z_]+"/g)[0]
+      //       .replace(`statistic="`, ``)
+      //       .replace(`"`, ``);
+      //     const value = data[i];
 
-          if (value) {
-            if (statistic === 'unredeemed') {
-              state.metricsParsed.tickets.incoming.unredeemed[channel] = {
-                value: `${value}`,
-                formatted: formatEther(BigInt(`${value}`)),
-              };
-            } else if (statistic === 'redeemed') {
-              state.metricsParsed.tickets.incoming.redeemed[channel] = {
-                value: `${value}`,
-                formatted: formatEther(BigInt(`${value}`)),
-              };
-            }
-          }
-        }
-      }
+      //     if (value) {
+      //       if (statistic === 'unredeemed') {
+      //         state.metricsParsed.tickets.incoming.unredeemed[channel] = {
+      //           value: `${value}`,
+      //           formatted: formatEther(BigInt(`${value}`)),
+      //         };
+      //       } else if (statistic === 'redeemed') {
+      //         state.metricsParsed.tickets.incoming.redeemed[channel] = {
+      //           value: `${value}`,
+      //           formatted: formatEther(BigInt(`${value}`)),
+      //         };
+      //       }
+      //     }
+      //   }
+      // }
 
       // nodeStartEpoch
       if (jsonMetrics?.hopr_start_time) {
