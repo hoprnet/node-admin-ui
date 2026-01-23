@@ -1078,13 +1078,13 @@ export const createAsyncReducer = (builder: ActionReducerMapBuilder<typeof initi
     if (action.payload) {
       state.configuration.data = action.payload;
 
-      let parsedStrategies: ParsedStrategiesType = {};
+      const parsedStrategies: ParsedStrategiesType = {};
 
       action.payload?.strategy?.strategies.forEach((strategyObj: ParsedStrategiesType) => {
         try {
           const strategyName = Object.keys(strategyObj)[0];
           if (typeof strategyName !== 'string') return;
-          let tmp = strategyObj[strategyName];
+          const tmp = strategyObj[strategyName];
           if (!tmp) return;
           parsedStrategies[strategyName] = tmp;
         } catch (e) {
@@ -1270,7 +1270,6 @@ export const createAsyncReducer = (builder: ActionReducerMapBuilder<typeof initi
       state.metrics.data.raw = action.payload;
       const jsonMetrics = parseMetrics(action.payload);
       state.metrics.data.parsed = jsonMetrics;
-      state.metricsParsed.nodeSync = (jsonMetrics?.hopr_indexer_sync_progress?.data[0] as number) || null;
 
       // count tickets
       state.metricsParsed.tickets.incoming = {
@@ -1278,6 +1277,7 @@ export const createAsyncReducer = (builder: ActionReducerMapBuilder<typeof initi
         unredeemed: {},
       };
       if (
+        false && // disable for now as the metric is not available on the test node
         jsonMetrics?.hopr_tickets_incoming_statistics?.categories &&
         jsonMetrics?.hopr_tickets_incoming_statistics?.data
       ) {
@@ -1307,33 +1307,6 @@ export const createAsyncReducer = (builder: ActionReducerMapBuilder<typeof initi
               };
             }
           }
-        }
-      }
-
-      // get checksum
-      if (jsonMetrics?.hopr_indexer_block_number && jsonMetrics?.hopr_indexer_checksum) {
-        try {
-          const hopr_indexer_block_number = jsonMetrics.hopr_indexer_block_number?.data[0];
-          const hopr_indexer_checksum = jsonMetrics.hopr_indexer_checksum?.data[0];
-          const checksum = hopr_indexer_checksum.toString(16);
-
-          state.metricsParsed.checksum = checksum;
-          state.metricsParsed.blockNumber = hopr_indexer_block_number;
-        } catch (e) {
-          console.error('Error getting blockNumber and checksum');
-        }
-      }
-
-      // indexer data source
-      if (jsonMetrics?.hopr_indexer_data_source) {
-        try {
-          const hoprIndexerDataSourceIndex = jsonMetrics.hopr_indexer_data_source?.data.findIndex(
-            (elem: number) => elem === 1,
-          );
-          const hoprIndexerDataSource = jsonMetrics.hopr_indexer_data_source?.categories[hoprIndexerDataSourceIndex];
-          state.metricsParsed.indexerDataSource = hoprIndexerDataSource.replace('{source="', '').replace('"}', '');
-        } catch (e) {
-          console.error('Error getting node indexer data source');
         }
       }
 
