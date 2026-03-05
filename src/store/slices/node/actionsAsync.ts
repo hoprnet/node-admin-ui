@@ -135,8 +135,8 @@ const getInfoThunk = createAsyncThunk<GetInfoResponseType | undefined, BasePaylo
 
 const getAddressesThunk = createAsyncThunk<
   | {
-      native: string;
-    }
+    native: string;
+  }
   | undefined,
   BasePayloadType & { force?: boolean },
   { state: RootState }
@@ -491,9 +491,9 @@ const withdrawThunk = createAsyncThunk<string | undefined, WithdrawPayloadType, 
 
 const closeChannelThunk = createAsyncThunk<
   | {
-      channelStatus: string;
-      receipt?: string | undefined;
-    }
+    channelStatus: string;
+    receipt?: string | undefined;
+  }
   | undefined,
   CloseChannelPayloadType,
   { state: RootState }
@@ -1312,74 +1312,86 @@ export const createAsyncReducer = (builder: ActionReducerMapBuilder<typeof initi
         redeemed: {},
         unredeemed: {},
       };
-      if (
-        jsonMetrics?.hopr_tickets_incoming_statistics?.categories &&
-        jsonMetrics?.hopr_tickets_incoming_statistics?.data
-      ) {
-        const categories = jsonMetrics.hopr_tickets_incoming_statistics.categories;
-        const data = jsonMetrics?.hopr_tickets_incoming_statistics?.data;
-        for (let i = 0; i < categories.length; i++) {
-          const channel = categories[i]
-            .match(/channel="0x[a-f0-9]+"/gi)[0]
-            .replace(`channel="`, ``)
-            .replace(`"`, ``);
-          const statistic = categories[i]
-            .match(/statistic="[a-z_]+"/g)[0]
-            .replace(`statistic="`, ``)
-            .replace(`"`, ``);
-          const value = data[i];
+      try {
+        if (
+          jsonMetrics?.hopr_tickets_incoming_statistics?.categories &&
+          jsonMetrics?.hopr_tickets_incoming_statistics?.data
+        ) {
+          const categories = jsonMetrics.hopr_tickets_incoming_statistics.categories;
+          const data = jsonMetrics?.hopr_tickets_incoming_statistics?.data;
+          for (let i = 0; i < categories.length; i++) {
+            const channel = categories[i]
+              .match(/channel="0x[a-f0-9]+"/gi)[0]
+              .replace(`channel="`, ``)
+              .replace(`"`, ``);
+            const statistic = categories[i]
+              .match(/statistic="[a-z_]+"/g)[0]
+              .replace(`statistic="`, ``)
+              .replace(`"`, ``);
+            const value = data[i];
 
-          if (value) {
-            if (statistic === 'unredeemed') {
-              state.metricsParsed.tickets.incoming.unredeemed[channel] = {
-                value: `${value}`,
-                formatted: formatEther(BigInt(`${value}`)),
-              };
-            } else if (statistic === 'redeemed') {
-              state.metricsParsed.tickets.incoming.redeemed[channel] = {
-                value: `${value}`,
-                formatted: formatEther(BigInt(`${value}`)),
-              };
+            if (value) {
+              if (statistic === 'unredeemed') {
+                state.metricsParsed.tickets.incoming.unredeemed[channel] = {
+                  value: `${value}`,
+                  formatted: formatEther(BigInt(`${value}`)),
+                };
+              } else if (statistic === 'redeemed') {
+                state.metricsParsed.tickets.incoming.redeemed[channel] = {
+                  value: `${value}`,
+                  formatted: formatEther(BigInt(`${value}`)),
+                };
+              }
             }
           }
         }
+      } catch (e) {
+        console.warn('Error parsing incoming tickets');
       }
 
       // get checksum
-      if (jsonMetrics?.hopr_indexer_block_number && jsonMetrics?.hopr_indexer_checksum) {
-        try {
-          const hopr_indexer_block_number = jsonMetrics.hopr_indexer_block_number?.data[0];
-          const hopr_indexer_checksum = jsonMetrics.hopr_indexer_checksum?.data[0];
-          const checksum = hopr_indexer_checksum.toString(16);
+      try {
+        if (jsonMetrics?.hopr_indexer_block_number && jsonMetrics?.hopr_indexer_checksum) {
+          try {
+            const hopr_indexer_block_number = jsonMetrics.hopr_indexer_block_number?.data[0];
+            const hopr_indexer_checksum = jsonMetrics.hopr_indexer_checksum?.data[0];
+            const checksum = hopr_indexer_checksum.toString(16);
 
-          state.metricsParsed.checksum = checksum;
-          state.metricsParsed.blockNumber = hopr_indexer_block_number;
-        } catch (e) {
-          console.error('Error getting blockNumber and checksum');
+            state.metricsParsed.checksum = checksum;
+            state.metricsParsed.blockNumber = hopr_indexer_block_number;
+          } catch (e) {
+            console.error('Error getting blockNumber and checksum');
+          }
         }
+      } catch (e) {
+        console.warn('Error parsing checksum and block number');
       }
 
       // indexer data source
-      if (jsonMetrics?.hopr_indexer_data_source) {
-        try {
-          const hoprIndexerDataSourceIndex = jsonMetrics.hopr_indexer_data_source?.data.findIndex(
-            (elem: number) => elem === 1,
-          );
-          const hoprIndexerDataSource = jsonMetrics.hopr_indexer_data_source?.categories[hoprIndexerDataSourceIndex];
-          state.metricsParsed.indexerDataSource = hoprIndexerDataSource.replace('{source="', '').replace('"}', '');
-        } catch (e) {
-          console.error('Error getting node indexer data source');
+      try {
+        if (jsonMetrics?.hopr_indexer_data_source) {
+          try {
+            const hoprIndexerDataSourceIndex = jsonMetrics.hopr_indexer_data_source?.data.findIndex(
+              (elem: number) => elem === 1,
+            );
+            const hoprIndexerDataSource = jsonMetrics.hopr_indexer_data_source?.categories[hoprIndexerDataSourceIndex];
+            state.metricsParsed.indexerDataSource = hoprIndexerDataSource.replace('{source="', '').replace('"}', '');
+          } catch (e) {
+            console.error('Error getting node indexer data source');
+          }
         }
+      } catch (e) {
+        console.warn('Error parsing indexer data source');
       }
 
       // nodeStartEpoch
-      if (jsonMetrics?.hopr_start_time) {
-        try {
+      try {
+        if (jsonMetrics?.hopr_start_time) {
           const nodeStartEpoch = jsonMetrics.hopr_start_time?.data[0];
           state.metricsParsed.nodeStartEpoch = nodeStartEpoch;
-        } catch (e) {
-          console.error('Error getting node startup epoch');
         }
+      } catch (e) {
+        console.warn('Error parsing node startup epoch');
       }
     }
     state.metrics.isFetching = false;
