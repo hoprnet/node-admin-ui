@@ -135,8 +135,8 @@ const getInfoThunk = createAsyncThunk<GetInfoResponseType | undefined, BasePaylo
 
 const getAddressesThunk = createAsyncThunk<
   | {
-    native: string;
-  }
+      native: string;
+    }
   | undefined,
   BasePayloadType & { force?: boolean },
   { state: RootState }
@@ -491,9 +491,9 @@ const withdrawThunk = createAsyncThunk<string | undefined, WithdrawPayloadType, 
 
 const closeChannelThunk = createAsyncThunk<
   | {
-    channelStatus: string;
-    receipt?: string | undefined;
-  }
+      channelStatus: string;
+      receipt?: string | undefined;
+    }
   | undefined,
   CloseChannelPayloadType,
   { state: RootState }
