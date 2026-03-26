@@ -52,9 +52,9 @@ jobs:
         with:
           api-key: ${{ secrets.ZULIP_API_KEY }}
           email: ${{ secrets.ZULIP_EMAIL }}
-          organization-url: "https://hopr.zulipchat.com"
-          type: "stream"
-          to: "Products"
-          topic: "main"
+          organization-url: https://hopr.zulipchat.com
+          type: stream
+          to: Products
+          topic: main
           content: |
             The merge pipeline has failed for pull request [#${{ github.event.pull_request.number }}: ${{ github.event.pull_request.title }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})

@@ -6,7 +6,7 @@ on:
         description: Version type after release
         required: true
         type: choice
-        default: "patch"
+        default: patch
         options:
           - rc
           - patch
@@ -59,7 +59,7 @@ jobs:
         with:
           source_branch: ${{ github.ref_name }}
           file: package.json
-          release_type: "${{ inputs.release_type }}"
+          release_type: ${{ inputs.release_type }}
           cachix_auth_token: ${{ secrets.CACHIX_AUTH_TOKEN }}
           zulip_api_key: ${{ secrets.ZULIP_API_KEY }}
           zulip_email: ${{ secrets.ZULIP_EMAIL }}
