@@ -1,103 +1,69 @@
 name: Close release
-
 on:
   workflow_dispatch:
     inputs:
       release_type:
-        description: 'Next version type'
+        description: Version type after release
         required: true
         type: choice
-        default: 'patch'
+        default: patch
         options:
+          - rc
           - patch
           - minor
           - major
-
 concurrency:
   group: release
   cancel-in-progress: false
-
 jobs:
+  build-docker:
+    name: Docker
+    uses: hoprnet/hopr-workflows/.github/workflows/build-docker.yaml@build-docker-v1
+    permissions:
+      contents: read
+      pull-requests: write
+      id-token: write
+    with:
+      source_branch: ${{ github.ref_name }}
+      version_type: release
+      build_matrix: >-
+        [
+          {
+            "runner": "self-hosted-hoprnet-bigger",
+            "architecture": "x86_64-linux",
+            "build_command": "nix run .#docker-x86_64-linux"
+          }
+        ]
+      build_file: package.json
+      docker_image_name: ${{ vars.DOCKER_IMAGE_NAME }}
+      docker_image_format: docker
+      fail_on_scan_vulnerabilities: ${{ vars.FAIL_ON_SCAN_VULNERABILITIES }}
+    secrets:
+      gcp_service_account: ${{ secrets.GCP_SA_GITHUB_RUNNER }}
+      cachix_auth_token: ${{ secrets.CACHIX_AUTH_TOKEN }}
+      docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+      docker_hub_token: ${{ secrets.DOCKER_HUB_TOKEN }}
   release:
     name: Close release
-    runs-on: ubuntu-latest
-
+    needs:
+      - build-docker
+    runs-on: self-hosted-hoprnet-small
+    permissions:
+      contents: write
+    outputs:
+      released_version: ${{ steps.release.outputs.current_version }}
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Release version
+        id: release
+        uses: hoprnet/hopr-workflows/actions/release-version@4e3c270b51ed1817bc0b0f6996dfc8a7b0e757c1 # release-version-v2
         with:
-          ref: main # if you want to use a different branch keep in mind that the bump version step will be affected
-          token: '${{ secrets.GH_RUNNER_TOKEN }}'
-
-      - name: Setup Node.js
-        uses: hoprnet/hopr-workflows/actions/setup-node-js@master
-        with:
-          node-version: 22.x
-
-      - name: Setup GCP
-        id: gcp
-        uses: hoprnet/hopr-workflows/actions/setup-gcp@master
-        with:
-          google-credentials: ${{ secrets.GOOGLE_HOPRASSOCIATION_CREDENTIALS_REGISTRY }}
-          login-artifact-registry: 'true'
-
-      # - name: Set up Docker Buildx
-      #   uses: docker/setup-buildx-action@v3
-      #   with:
-      #     driver: kubernetes
-
-      - name: Building
-        run: yarn build
-
-      - name: Linting
-        run: yarn lint:ci
-
-      - name: Formatting
-        run: yarn format:ci
-
-      - name: Testing
-        run: yarn test
-
-      - name: Setup environment variables
-        id: environment
-        run: |
-          PACKAGE_VERSION="$(jq -r '.version' ./package.json)"
-          echo "release_version=${PACKAGE_VERSION}" >> $GITHUB_OUTPUT
-
-      - name: Create Release
-        uses: softprops/action-gh-release@v2
-        with:
-          name: '${{ vars.DOCKER_IMAGE_NAME }} - v${{ steps.environment.outputs.release_version }}'
-          tag_name: v${{ steps.environment.outputs.release_version }}
-
-      - name: Build and push docker image
-        uses: docker/build-push-action@v6
-        with:
-          push: true
-          tags: ${{ vars.DOCKER_IMAGE_REGISTRY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ steps.environment.outputs.release_version }}
-
-      - name: Bump Version
-        id: bump
-        run: |
-          npm version "${{ inputs.release_type }}" --no-git-tag-version
-          BUMP_VERSION=$(jq -r '.version' package.json)
-          echo "bump_version=${BUMP_VERSION}" >> $GITHUB_OUTPUT
-
-      - uses: EndBug/add-and-commit@v9
-        with:
-          add: 'package.json'
-          new_branch: main
-          message: 'Bump to version ${{ steps.bump.outputs.bump_version }}'
-          pathspec_error_handling: exitImmediately
-
-      - name: Notify new release
-        uses: zulip/github-actions-zulip/send-message@v1
-        with:
-          api-key: ${{ secrets.ZULIP_API_KEY }}
-          email: ${{ secrets.ZULIP_EMAIL }}
-          organization-url: 'https://hopr.zulipchat.com'
-          type: 'stream'
-          to: 'Products'
-          topic: 'admin-ui'
-          content: |
-            I'm thrilled to inform the new **${{ vars.DOCKER_IMAGE_NAME }}** version **${{ steps.environment.outputs.release_version }}** has been released.
+          source_branch: ${{ github.ref_name }}
+          file: package.json
+          release_type: ${{ inputs.release_type }}
+          cachix_auth_token: ${{ secrets.CACHIX_AUTH_TOKEN }}
+          zulip_api_key: ${{ secrets.ZULIP_API_KEY }}
+          zulip_email: ${{ secrets.ZULIP_EMAIL }}
+          zulip_channel: Products
+          zulip_topic: Releases
+          gcp_service_account: ${{ secrets.GCP_SA_GITHUB_RUNNER }}
+          github_token: ${{ secrets.GH_RUNNER_TOKEN }}
