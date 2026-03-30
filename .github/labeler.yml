@@ -1,0 +1,11 @@
+toolchain:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "flake.*"
+          - "*.nix"
+          - .github/**
+dependencies:
+  - changed-files:
+      - any-glob-to-any-file:
+          - yarn.lock
+          - package.json
