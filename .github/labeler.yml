@@ -1,8 +1,8 @@
 toolchain:
   - changed-files:
       - any-glob-to-any-file:
-          - "flake.*"
-          - "*.nix"
+          - 'flake.*'
+          - '*.nix'
           - .github/**
 dependencies:
   - changed-files:

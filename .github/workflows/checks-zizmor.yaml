@@ -3,7 +3,7 @@ name: Zizmor
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
-    paths: [".github/**"]
+    paths: ['.github/**']
   merge_group:
     types: [checks_requested]
 concurrency:
