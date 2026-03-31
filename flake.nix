@@ -31,6 +31,11 @@
         in
         {
           devShells.default = import ./shell.nix { inherit pkgs; };
+          devShells.ci = pkgs.mkShell {
+            nativeBuildInputs = [
+              pkgs.zizmor
+            ];
+          };
 
           # Expose as flake as app
           apps = {
