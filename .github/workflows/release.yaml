@@ -18,7 +18,7 @@ concurrency:
 jobs:
   build-docker:
     name: Docker
-    uses: hoprnet/hopr-workflows/.github/workflows/build-docker.yaml@build-docker-v1
+    uses: hoprnet/hopr-workflows/.github/workflows/build-docker.yaml@build-docker-v2
     permissions:
       contents: read
       pull-requests: write
@@ -29,7 +29,7 @@ jobs:
       build_matrix: >-
         [
           {
-            "runner": "self-hosted-hoprnet-bigger",
+            "runner": "depot-ubuntu-24.04-4",
             "architecture": "x86_64-linux",
             "build_command": "nix run .#docker-x86_64-linux"
           }
@@ -47,7 +47,7 @@ jobs:
     name: Close release
     needs:
       - build-docker
-    runs-on: self-hosted-hoprnet-small
+    runs-on: depot-ubuntu-24.04
     permissions:
       contents: write
     outputs:
@@ -55,7 +55,7 @@ jobs:
     steps:
       - name: Release version
         id: release
-        uses: hoprnet/hopr-workflows/actions/release-version@4e3c270b51ed1817bc0b0f6996dfc8a7b0e757c1 # release-version-v2
+        uses: hoprnet/hopr-workflows/actions/release-version@release-version-v3
         with:
           source_branch: ${{ github.ref_name }}
           file: package.json

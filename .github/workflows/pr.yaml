@@ -18,7 +18,7 @@ jobs:
   validate-pr-title:
     name: Validate title
     if: github.event_name == 'pull_request'
-    runs-on: self-hosted-hoprnet-small
+    runs-on: depot-ubuntu-24.04
     permissions:
       pull-requests: read
     steps:
@@ -44,7 +44,7 @@ jobs:
   label:
     name: Add labels
     if: github.event_name == 'pull_request'
-    runs-on: self-hosted-hoprnet-small
+    runs-on: depot-ubuntu-24.04
     permissions:
       contents: read
       issues: write
@@ -75,7 +75,7 @@ jobs:
 
   build:
     name: Build
-    runs-on: self-hosted-hoprnet-small
+    runs-on: depot-ubuntu-24.04
     permissions:
       contents: read
     strategy:
@@ -88,7 +88,7 @@ jobs:
           persist-credentials: false
 
       - name: Setup Node.js
-        uses: hoprnet/hopr-workflows/actions/setup-node-js@15db9fb5571957317b77567abef997b1554f2fbb # setup-node-js-v1
+        uses: hoprnet/hopr-workflows/actions/setup-node-js@setup-node-js-v1
         with:
           node_version: ${{ matrix.node-version }}
 
@@ -105,7 +105,7 @@ jobs:
         run: yarn test
   build-docker:
     name: Docker
-    uses: hoprnet/hopr-workflows/.github/workflows/build-docker.yaml@43b03a7b5df777770d95c6524f48be34184b26fa # build-docker-v1
+    uses: hoprnet/hopr-workflows/.github/workflows/build-docker.yaml@build-docker-v2
     permissions:
       contents: read
       pull-requests: write
@@ -116,7 +116,7 @@ jobs:
       build_matrix: >-
         [
           {
-            "runner": "self-hosted-hoprnet-bigger",
+            "runner": "depot-ubuntu-24.04-4",
             "architecture": "x86_64-linux",
             "build_command": "nix run .#docker-x86_64-linux"
           }
