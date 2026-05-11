@@ -156,7 +156,7 @@ const LayoutEnhanced = () => {
       }
     };
     useNode();
-  }, [apiEndpoint, apiToken]);
+  }, [apiEndpoint, apiToken, loginData.apiEndpoint, loginData.apiToken]);
 
   return (
     <Layout

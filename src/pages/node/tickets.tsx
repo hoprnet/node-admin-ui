@@ -167,7 +167,7 @@ function TicketsPage() {
               </th>
               <td>{statistics?.rejectedValue ? statistics?.rejectedValue : '-'} wxHOPR</td>
             </tr>
-            <tr>
+            {/* <tr>
               <th>
                 <Tooltip
                   title="The value of all your redeemed tickets. Value is counted from last DB reset."
@@ -177,7 +177,7 @@ function TicketsPage() {
                 </Tooltip>
               </th>
               <td>{statistics?.redeemedValue ? statistics?.redeemedValue : '-'} wxHOPR</td>
-            </tr>
+            </tr> */}
           </tbody>
         </TableExtended>
 

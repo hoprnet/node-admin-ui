@@ -31,7 +31,7 @@ import {
   type GetAnnouncedResponseType,
   RedeemAllTicketsPayloadType,
 } from '@hoprnet/hopr-sdk';
-import { parseMetrics } from '../../../utils/metrics';
+import { parseMetrics, computePacketAverages, PACKET_HISTORY_MAX_MS } from '../../../utils/metrics';
 import { RootState } from '../..';
 import { formatEther, parseEther } from 'viem';
 import { sendNotification } from '../../../hooks/useWatcher/notifications';
@@ -1101,6 +1101,7 @@ export const createAsyncReducer = (builder: ActionReducerMapBuilder<typeof initi
   builder.addCase(getPrometheusMetricsThunk.fulfilled, (state, action) => {
     if (action.meta.arg.apiEndpoint !== state.apiEndpoint) return;
     if (action.payload) {
+      const now = Date.now();
       state.metrics.data.raw = action.payload;
       const jsonMetrics = parseMetrics(action.payload);
       state.metrics.data.parsed = jsonMetrics;
@@ -1128,7 +1129,6 @@ export const createAsyncReducer = (builder: ActionReducerMapBuilder<typeof initi
       //       .replace(`statistic="`, ``)
       //       .replace(`"`, ``);
       //     const value = data[i];
-
       //     if (value) {
       //       if (statistic === 'unredeemed') {
       //         state.metricsParsed.tickets.incoming.unredeemed[channel] = {
@@ -1153,6 +1153,33 @@ export const createAsyncReducer = (builder: ActionReducerMapBuilder<typeof initi
         }
       } catch (e) {
         console.warn('Error parsing node startup epoch');
+      }
+
+      // packets sent and received and forwarded
+      try {
+        if (jsonMetrics?.hopr_packets_count) {
+          const categories: string[] = jsonMetrics.hopr_packets_count.categories ?? [];
+          const data: number[] = jsonMetrics.hopr_packets_count.data ?? [];
+          for (let i = 0; i < categories.length; i++) {
+            const match = categories[i].match(/type="([^"]+)"/);
+            if (!match) continue;
+            const kind = match[1];
+            if (kind !== 'sent' && kind !== 'received' && kind !== 'forwarded') continue;
+            const value = data[i];
+            if (value === undefined || value === null) continue;
+            const slot = state.metricsParsed.packets[kind];
+            const newest = slot.history[slot.history.length - 1];
+            if (newest && newest.timestamp !== null && now - newest.timestamp < 30_000) continue;
+            slot.history.push({ data: value.toString(), timestamp: now });
+            const cutoff = now - PACKET_HISTORY_MAX_MS;
+            while (slot.history.length > 0 && (slot.history[0].timestamp ?? 0) < cutoff) {
+              slot.history.shift();
+            }
+            slot.averages = computePacketAverages(slot.history);
+          }
+        }
+      } catch (e) {
+        console.warn('Error parsing packets count', e);
       }
     }
     state.metrics.isFetching = false;

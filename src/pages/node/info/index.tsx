@@ -29,6 +29,7 @@ import DataObjectIcon from '@mui/icons-material/DataObject';
 
 //Info Components
 import NodeUptime from './node-uptime';
+import Packets from './packets';
 
 const TdActionIcons = styled.td`
   display: flex;
@@ -731,6 +732,8 @@ function InfoPage() {
             <NodeUptime />
           </tbody>
         </TableExtended>
+
+        <Packets />
 
         <TableExtended
           title="Channels"
