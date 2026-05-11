@@ -1,40 +1,60 @@
-name: Merge PR
-
+name: Merge
 on:
   pull_request:
     types:
       - closed
     branches:
       - main
-
+      # - synchronize
 concurrency:
-  group: merge
+  group: merge-${{ github.event.pull_request.base.ref }}
   cancel-in-progress: false
-
+permissions:
+  contents: read
+  pull-requests: write
+  id-token: write
 jobs:
-  merge:
-    name: Merge PR
-    runs-on: ubuntu-latest
+  build-docker:
+    name: Docker
     if: github.event.pull_request.merged == true
-
+    uses: hoprnet/hopr-workflows/.github/workflows/build-docker.yaml@build-docker-v2
+    permissions:
+      contents: read
+      pull-requests: write
+      id-token: write
+    with:
+      source_branch: ${{ github.event.pull_request.base.ref }}
+      version_type: pr
+      build_matrix: >-
+        [
+          {
+            "runner": "depot-ubuntu-24.04-4",
+            "architecture": "x86_64-linux",
+            "build_command": "nix run .#docker-x86_64-linux"
+          }
+        ]
+      build_file: package.json
+      docker_image_name: ${{ vars.DOCKER_IMAGE_NAME }}
+      docker_image_format: docker
+      fail_on_scan_vulnerabilities: ${{ vars.FAIL_ON_SCAN_VULNERABILITIES }}
+    secrets:
+      gcp_service_account: ${{ secrets.GCP_SA_GITHUB_RUNNER }}
+      cachix_auth_token: ${{ secrets.CACHIX_AUTH_TOKEN }}
+  notify:
+    name: Notify failure
+    needs:
+      - build-docker
+    if: ${{ always() && failure() }}
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup GCP
-        id: gcp
-        uses: hoprnet/hopr-workflows/actions/setup-gcp@master
+      - name: Notify failed merge pipeline
+        uses: zulip/github-actions-zulip/send-message@e4c8f27c732ba9bd98ac6be0583096dea82feea5 # v1.0.2
         with:
-          google-credentials: ${{ secrets.GOOGLE_HOPRASSOCIATION_CREDENTIALS_REGISTRY }}
-          login-artifact-registry: 'true'
-
-      # - name: Set up Docker Buildx
-      #   uses: docker/setup-buildx-action@v3
-      #   with:
-      #     driver: kubernetes
-
-      - name: Build and push docker image
-        uses: docker/build-push-action@v6
-        with:
-          push: true
-          tags: ${{ vars.DOCKER_IMAGE_REGISTRY }}/${{ vars.DOCKER_IMAGE_NAME }}:latest
+          api-key: ${{ secrets.ZULIP_API_KEY }}
+          email: ${{ secrets.ZULIP_EMAIL }}
+          organization-url: https://hopr.zulipchat.com
+          type: stream
+          to: Products
+          topic: main
+          content: |
+            The merge pipeline has failed for pull request [#${{ github.event.pull_request.number }}: ${{ github.event.pull_request.title }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})

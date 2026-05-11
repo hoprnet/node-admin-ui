@@ -1133,13 +1133,13 @@ export const createAsyncReducer = (builder: ActionReducerMapBuilder<typeof initi
       // }
 
       // nodeStartEpoch
-      if (jsonMetrics?.hopr_start_time) {
-        try {
+      try {
+        if (jsonMetrics?.hopr_start_time) {
           const nodeStartEpoch = jsonMetrics.hopr_start_time?.data[0];
           state.metricsParsed.nodeStartEpoch = nodeStartEpoch;
-        } catch (e) {
-          console.error('Error getting node startup epoch');
         }
+      } catch (e) {
+        console.warn('Error parsing node startup epoch');
       }
     }
     state.metrics.isFetching = false;
