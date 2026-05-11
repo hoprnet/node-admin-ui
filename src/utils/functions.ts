@@ -1,6 +1,6 @@
 // @ts-expect-error
 import jazzicon from '@metamask/jazzicon';
-import { createHash } from 'crypto';
+import md5 from 'md5';
 
 export function bubbleSortObject(arr: any[], key: string | number) {
   for (let i = 0; i < arr.length; i++) {
@@ -151,7 +151,7 @@ export function toHex(str: string) {
 }
 
 export function toHexMD5(d: string) {
-  return createHash('md5').update(d).digest('hex');
+  return md5(d);
 }
 
 export function generateBase64Jazz(input: string) {

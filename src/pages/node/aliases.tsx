@@ -28,10 +28,10 @@ import { nodeActions } from '../../store/slices/node';
 function AliasesPage() {
   const dispatch = useAppDispatch();
   const aliases = useAppSelector((store) => store.node.aliases);
-  const peersObject = useAppSelector((store) => store.node.peers.parsed.connected);
-  const myNodeAddress = useAppSelector((store) => store.node.addresses.data.native);
+  const peersObject = useAppSelector((store) => store.node.peersConnected.parsed.obj);
+  const mypeerAddress = useAppSelector((store) => store.node.addresses.data.native);
   const loginData = useAppSelector((store) => store.auth.loginData);
-  const nodeAddressToOutgoingChannelLink = useAppSelector((store) => store.node.links.nodeAddressToOutgoingChannel);
+  const peerAddressToOutgoingChannelLink = useAppSelector((store) => store.node.links.peerAddressToOutgoingChannel);
 
   const handleExport = () => {
     if (aliases) {
@@ -40,30 +40,30 @@ function AliasesPage() {
           address,
           alias: aliases[address],
         })),
-        `aliases-${myNodeAddress}.csv`,
+        `aliases-${mypeerAddress}.csv`,
       );
     }
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleCSVUpload = async (parsedData: any[]) => {
-    if (!myNodeAddress) return;
+    if (!mypeerAddress) return;
     for (const data of parsedData) {
       dispatch(
         nodeActions.setAlias({
-          nodeAddress: data.address || data.nodeAddress,
+          peerAddress: data.address || data.peerAddress,
           alias: data.alias,
         }),
       );
     }
   };
 
-  const parsedTableData = Object.keys(aliases ?? {}).map((nodeAddress, index) => {
-    const alias = aliases[nodeAddress];
-    const lastSeenNumeric = nodeAddress && peersObject[nodeAddress]?.lastSeen;
-    const lastSeen =
-      (lastSeenNumeric as number) > 0
-        ? new Date(lastSeenNumeric)
+  const parsedTableData = Object.keys(aliases ?? {}).map((peerAddress, index) => {
+    const alias = aliases[peerAddress];
+    const lastUpdateNumeric = peerAddress ? peersObject[peerAddress]?.lastUpdate : 0;
+    const lastUpdate =
+      lastUpdateNumeric > 0
+        ? new Date(lastUpdateNumeric)
             .toLocaleString('en-US', {
               year: 'numeric',
               month: '2-digit',
@@ -76,30 +76,32 @@ function AliasesPage() {
         : 'Not seen';
 
     return {
-      id: nodeAddress,
+      id: peerAddress,
       key: index.toString(),
       alias,
-      node: <PeersInfo nodeAddress={nodeAddress} />,
-      lastSeen: <span style={{ whiteSpace: 'break-spaces' }}>{myNodeAddress === nodeAddress ? '-' : lastSeen}</span>,
-      nodeAddress: nodeAddress,
+      node: <PeersInfo peerAddress={peerAddress} />,
+      lastUpdate: (
+        <span style={{ whiteSpace: 'break-spaces' }}>{mypeerAddress === peerAddress ? '-' : lastUpdate}</span>
+      ),
+      peerAddress: peerAddress,
       actions: (
         <>
           <PingModal
-            address={nodeAddress}
-            disabled={nodeAddress === myNodeAddress}
-            tooltip={nodeAddress === myNodeAddress ? `You can't ping yourself` : undefined}
+            address={peerAddress}
+            disabled={peerAddress === mypeerAddress}
+            tooltip={peerAddress === mypeerAddress ? `You can't ping yourself` : undefined}
           />
-          <CreateAliasModal address={nodeAddress} />
-          {nodeAddress && nodeAddressToOutgoingChannelLink[nodeAddress] ? (
-            <FundChannelModal channelId={nodeAddressToOutgoingChannelLink[nodeAddress]} />
+          <CreateAliasModal address={peerAddress} />
+          {peerAddress && peerAddressToOutgoingChannelLink[peerAddress] ? (
+            <FundChannelModal address={peerAddress} />
           ) : (
             <OpenChannelModal
-              peerAddress={nodeAddress}
-              disabled={nodeAddress === myNodeAddress}
-              tooltip={nodeAddress === myNodeAddress ? `You can't open a channel to yourself` : undefined}
+              peerAddress={peerAddress}
+              disabled={peerAddress === mypeerAddress}
+              tooltip={peerAddress === mypeerAddress ? `You can't open a channel to yourself` : undefined}
             />
           )}
-          <OpenSessionModal destination={nodeAddress} />
+          <OpenSessionModal destination={peerAddress} />
           <IconButton
             iconComponent={<RemoveAliasIcon />}
             aria-label="delete alias"
@@ -111,7 +113,7 @@ function AliasesPage() {
               </span>
             }
             onClick={() => {
-              dispatch(nodeActions.removeAlias(nodeAddress));
+              dispatch(nodeActions.removeAlias(peerAddress));
             }}
           />
         </>
@@ -132,12 +134,12 @@ function AliasesPage() {
       maxWidth: '350px',
     },
     {
-      key: 'lastSeen',
-      name: 'Last Seen',
+      key: 'lastUpdate',
+      name: 'Last update',
       maxWidth: '20px',
     },
     {
-      key: 'nodeAddress',
+      key: 'peerAddress',
       name: 'Node Address',
       search: true,
       maxWidth: '60px',
@@ -201,9 +203,9 @@ function CreateAliasForm() {
     error: string | undefined;
   }>();
   const [success, set_success] = useState(false);
-  const [form, set_form] = useState<{ peerId: string; alias: string }>({
+  const [form, set_form] = useState<{ peerAddress: string; alias: string }>({
     alias: '',
-    peerId: '',
+    peerAddress: '',
   });
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -218,10 +220,10 @@ function CreateAliasForm() {
     <div>
       <input
         type="text"
-        name="peerId"
-        placeholder="peerId"
+        name="peerAddress"
+        placeholder="peerAddress"
         onChange={handleChange}
-        value={form.peerId}
+        value={form.peerAddress}
       />
       <input
         type="text"
@@ -231,7 +233,7 @@ function CreateAliasForm() {
         value={form.alias}
       />
       <button
-        disabled={form.alias.length === 0 || form.peerId.length === 0}
+        disabled={form.alias.length === 0 || form.peerAddress.length === 0}
         onClick={() => {}}
       >
         add

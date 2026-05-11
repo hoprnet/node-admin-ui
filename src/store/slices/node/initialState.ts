@@ -2,9 +2,8 @@ import type {
   GetTicketStatisticsResponseType,
   GetChannelsResponseType,
   GetInfoResponseType,
-  GetPeersResponseType,
-  GetTokenResponseType,
-  GetEntryNodesResponseType,
+  GetAnnouncedResponseType,
+  GetConnectedResponseType,
   PingPeerResponseType,
   GetConfigurationResponseType,
   GetMinimumNetworkProbabilityResponseType,
@@ -51,7 +50,30 @@ export type ChannelsIncomingType = {
 
 export type AddressesType = { native: string | null };
 
+export type ParsedStrategiesType = {
+  [key: string]: {
+    [key: string]: string | number | boolean;
+  };
+};
+
 type WebsocketConnectionStatus = 'connecting' | 'connected' | 'error' | null;
+
+export type PacketCounter = {
+  data: string | null;
+  timestamp: number | null;
+};
+
+export type PacketAverages = {
+  now: number | null;
+  oneMin: number | null;
+  fiveMin: number | null;
+  fifteenMin: number | null;
+};
+
+export type PacketStats = {
+  history: PacketCounter[];
+  averages: PacketAverages;
+};
 
 type InitialState = {
   info: {
@@ -131,23 +153,24 @@ type InitialState = {
   };
   configuration: {
     data: GetConfigurationResponseType | null;
+    parsedStrategies: ParsedStrategiesType;
     isFetching: boolean;
   };
   links: {
-    nodeAddressToOutgoingChannel: {
-      [nodeAddress: string]: string;
+    peerAddressToOutgoingChannel: {
+      [peerAddress: string]: string;
     };
-    nodeAddressToIncomingChannel: {
-      [nodeAddress: string]: string;
+    peerAddressToIncomingChannel: {
+      [peerAddress: string]: string;
     };
-    incomingChannelToNodeAddress: {
+    incomingChannelTopeerAddress: {
       [channelId: string]: string;
     };
-    aliasToNodeAddress: {
+    aliasTopeerAddress: {
       [alias: string]: string;
     };
     sortedAliases: string[];
-    nodeAddressesWithAliases: string[];
+    peerAddressesWithAliases: string[];
   };
   messages: {
     data: Message[];
@@ -156,45 +179,33 @@ type InitialState = {
   };
   messagesSent: Message[];
   signedMessages: { timestamp: number; body: string }[];
-  peers: {
-    data: GetPeersResponseType | null;
+  peersAnnounced: {
+    data: GetAnnouncedResponseType | null;
     parsed: {
-      connected: {
-        //TODO: add ConnectedPeerType to SDK
-        [peerId: string]: {
-          address: string;
-          quality: number;
-          multiaddr: string | null;
-          heartbeats: {
-            sent: number;
-            success: number;
-          };
-          lastSeen: number;
-          lastSeenLatency: number;
-          backoff: number;
-          isNew: boolean;
-        };
+      obj: {
+        [address: string]: GetAnnouncedResponseType[number];
       };
-      connectedSorted: string[];
-      announcedSorted: string[];
+      sorted: string[];
+    };
+    isFetching: boolean;
+    alreadyFetched: boolean;
+  };
+  peersConnected: {
+    data: GetConnectedResponseType | null;
+    parsed: {
+      obj: {
+        [address: string]: GetConnectedResponseType[number];
+      };
+      sorted: string[];
     };
     isFetching: boolean;
     alreadyFetched: boolean;
   };
   probability: { data: number | null; isFetching: boolean };
-  entryNodes: { data: GetEntryNodesResponseType | null; isFetching: boolean };
-  peerInfo: {
-    data: {
-      announced: string[];
-      observed: string[];
-    };
-    isFetching: boolean;
-  };
   statistics: { data: GetTicketStatisticsResponseType | null; isFetching: boolean };
-  tokens: { data: GetTokenResponseType[]; isFetching: boolean };
   version: { data: string | null; isFetching: boolean };
   transactions: { data: string[]; isFetching: boolean };
-  pings: (PingPeerResponseType & { peerId: string })[];
+  pings: (PingPeerResponseType & { peerAddress: string })[];
   metrics: {
     data: {
       raw: string | null;
@@ -215,18 +226,23 @@ type InitialState = {
     tickets: {
       incoming: {
         redeemed: {
-          [peerId: string]: {
+          [peerAddress: string]: {
             value: string;
             formatted: string;
           };
         };
         unredeemed: {
-          [peerId: string]: {
+          [peerAddress: string]: {
             value: string;
             formatted: string;
           };
         };
       };
+    };
+    packets: {
+      sent: PacketStats;
+      received: PacketStats;
+      forwarded: PacketStats;
     };
     nodeStartEpoch: number | null;
     checksum: string | null;
@@ -327,6 +343,7 @@ export const initialState: InitialState = {
   },
   configuration: {
     data: null,
+    parsedStrategies: {},
     isFetching: false,
   },
   messages: {
@@ -336,34 +353,27 @@ export const initialState: InitialState = {
   },
   messagesSent: [],
   signedMessages: [],
-  peers: {
+  peersAnnounced: {
     data: null,
     parsed: {
-      connected: {},
-      connectedSorted: [],
-      announcedSorted: [],
+      obj: {},
+      sorted: [],
     },
     isFetching: false,
     alreadyFetched: false,
   },
-  peerInfo: {
-    data: {
-      announced: [],
-      observed: [],
+  peersConnected: {
+    data: null,
+    parsed: {
+      obj: {},
+      sorted: [],
     },
     isFetching: false,
+    alreadyFetched: false,
   },
   probability: { data: null, isFetching: false },
-  entryNodes: {
-    data: null,
-    isFetching: false,
-  },
   statistics: {
     data: null,
-    isFetching: false,
-  },
-  tokens: {
-    data: [],
     isFetching: false,
   },
   version: {
@@ -390,6 +400,11 @@ export const initialState: InitialState = {
         unredeemed: {},
       },
     },
+    packets: {
+      sent: { history: [], averages: { now: null, oneMin: null, fiveMin: null, fifteenMin: null } },
+      received: { history: [], averages: { now: null, oneMin: null, fiveMin: null, fifteenMin: null } },
+      forwarded: { history: [], averages: { now: null, oneMin: null, fiveMin: null, fifteenMin: null } },
+    },
     nodeStartEpoch: null,
     checksum: null,
     blockNumber: null,
@@ -415,12 +430,12 @@ export const initialState: InitialState = {
     isFetching: false,
   },
   links: {
-    nodeAddressToOutgoingChannel: {},
-    nodeAddressToIncomingChannel: {},
-    incomingChannelToNodeAddress: {},
-    aliasToNodeAddress: {},
+    peerAddressToOutgoingChannel: {},
+    peerAddressToIncomingChannel: {},
+    incomingChannelTopeerAddress: {},
+    aliasTopeerAddress: {},
     sortedAliases: [],
-    nodeAddressesWithAliases: [],
+    peerAddressesWithAliases: [],
   },
   apiEndpoint: null,
   nodeIsReady: {

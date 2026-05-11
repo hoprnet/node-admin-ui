@@ -36,7 +36,7 @@ type ParsedNode = {
 };
 
 type ConnectNodeModalProps = {
-  open: boolean;
+  open?: boolean;
   handleClose: () => void;
 };
 
@@ -132,9 +132,9 @@ const CloseOverlayIconButton = styled(IconButton)`
 
 const loginAnywaysWarning =
   'Your node did not start properly and might not be fully functioning. Some features might be offline and not working. By clicking on the "Login anyways" button, you are only troubleshooting issues. It should not be used when your node is in the syncing process or has not been properly started.';
-const defaultProps = { open: false };
 
-function ConnectNodeModal(props: ConnectNodeModalProps) {
+function ConnectNodeModal({ open = false, handleClose }: ConnectNodeModalProps) {
+  const props = { open, handleClose };
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const nodesSavedLocally = useAppSelector((store) => store.auth.nodes);
@@ -292,12 +292,6 @@ function ConnectNodeModal(props: ConnectNodeModalProps) {
           }),
         );
         dispatch(
-          nodeActionsAsync.getChannelsCorruptedThunk({
-            apiEndpoint,
-            apiToken: apiToken ? apiToken : '',
-          }),
-        );
-        dispatch(
           nodeActionsAsync.getConfigurationThunk({
             apiToken,
             apiEndpoint,
@@ -344,7 +338,7 @@ function ConnectNodeModal(props: ConnectNodeModalProps) {
     }
   };
 
-  const handleClose = () => {
+  const handleCloseLocal = () => {
     props.handleClose();
     if (errorMessage) {
       setTimeout(() => {
@@ -385,7 +379,7 @@ function ConnectNodeModal(props: ConnectNodeModalProps) {
     <>
       <SModal
         open={props.open}
-        onClose={handleClose}
+        onClose={handleCloseLocal}
         title="CONNECT NODE"
         maxWidth={'580px'}
         disableScrollLock={true}
@@ -581,5 +575,4 @@ function ConnectNodeModal(props: ConnectNodeModalProps) {
   );
 }
 
-ConnectNodeModal.defaultProps = defaultProps;
 export default ConnectNodeModal;

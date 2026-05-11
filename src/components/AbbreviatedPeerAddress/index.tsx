@@ -11,11 +11,11 @@ const AbbrLogId = styled(LogId.withComponent('abbr'))`
   text-decoration: underline dotted;
 `;
 
-type AbbreviatedPeerIdProps = {
+type AbbreviatedPeerAddressProps = {
   id: string;
 };
 
-const AbbreviatedPeerId = ({ id }: AbbreviatedPeerIdProps) => {
+const AbbreviatedPeerAddress = ({ id }: AbbreviatedPeerAddressProps) => {
   const [isExpanded, set_isExpanded] = useState(false);
 
   const handleClick = () => {
@@ -33,4 +33,4 @@ const AbbreviatedPeerId = ({ id }: AbbreviatedPeerIdProps) => {
   );
 };
 
-export default AbbreviatedPeerId;
+export default AbbreviatedPeerAddress;

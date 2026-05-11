@@ -1,6 +1,5 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import { actionsAsync, createAsyncReducer } from './actionsAsync';
-import { createFetchingReducer } from './actionsFetching';
 import { initialState } from './initialState';
 import { isAddress, getAddress } from 'viem';
 import { loadStateFromLocalStorage, saveStateToLocalStorage } from '../../../utils/localStorage';
@@ -66,50 +65,50 @@ const nodeSlice = createSlice({
     },
     // handle aliases
     loadAliasesFromLocalStorage(state, action) {
-      const nodeAddress = action.payload;
-      if (!isAddress(nodeAddress)) return;
-      const nodeAddressValidated = getAddress(nodeAddress);
-      const aliases = loadStateFromLocalStorage(`node/aliases/${nodeAddressValidated}`) as {
+      const peerAddress = action.payload;
+      if (!isAddress(peerAddress)) return;
+      const peerAddressValidated = getAddress(peerAddress);
+      const aliases = loadStateFromLocalStorage(`node/aliases/${peerAddressValidated}`) as {
         [key: string]: string;
       } | null;
       if (aliases) {
         state.aliases = aliases;
-        Object.keys(aliases).forEach((nodeAddress) => {
-          const alias = aliases[nodeAddress];
-          state.links.aliasToNodeAddress[alias] = nodeAddress;
+        Object.keys(aliases).forEach((peerAddress) => {
+          const alias = aliases[peerAddress];
+          state.links.aliasTopeerAddress[alias] = peerAddress;
         });
         const sortedAliases = Object.values(aliases).sort((a, b) =>
           a.localeCompare(b, undefined, { sensitivity: 'base' }),
         );
         state.links.sortedAliases = sortedAliases;
-        state.links.nodeAddressesWithAliases = Object.keys(aliases);
+        state.links.peerAddressesWithAliases = Object.keys(aliases);
       }
     },
-    setAlias(state, action: PayloadAction<{ nodeAddress: string; alias: string }>) {
-      const nodeAddress = action.payload.nodeAddress;
+    setAlias(state, action: PayloadAction<{ peerAddress: string; alias: string }>) {
+      const peerAddress = action.payload.peerAddress;
       const alias = action.payload.alias;
-      if (!nodeAddress || !alias || !isAddress(nodeAddress)) return;
-      const nodeAddressValidated = getAddress(nodeAddress);
-      delete state.links.aliasToNodeAddress[state.aliases[nodeAddressValidated]];
-      state.aliases[nodeAddressValidated] = alias;
-      state.links.aliasToNodeAddress[alias] = nodeAddressValidated;
+      if (!peerAddress || !alias || !isAddress(peerAddress)) return;
+      const peerAddressValidated = getAddress(peerAddress);
+      delete state.links.aliasTopeerAddress[state.aliases[peerAddressValidated]];
+      state.aliases[peerAddressValidated] = alias;
+      state.links.aliasTopeerAddress[alias] = peerAddressValidated;
       const sortedAliases = Object.values(state.aliases).sort((a, b) =>
         a.localeCompare(b, undefined, { sensitivity: 'base' }),
       );
       state.links.sortedAliases = sortedAliases;
-      state.links.nodeAddressesWithAliases = Object.keys(state.aliases);
+      state.links.peerAddressesWithAliases = Object.keys(state.aliases);
       saveStateToLocalStorage(`node/aliases/${state.addresses.data.native}`, state.aliases);
     },
     removeAlias(state, action: PayloadAction<string>) {
-      const nodeAddress = action.payload;
-      if (state.aliases[nodeAddress]) {
-        delete state.links.aliasToNodeAddress[state.aliases[nodeAddress]];
-        delete state.aliases[nodeAddress];
+      const peerAddress = action.payload;
+      if (state.aliases[peerAddress]) {
+        delete state.links.aliasTopeerAddress[state.aliases[peerAddress]];
+        delete state.aliases[peerAddress];
         const sortedAliases = Object.values(state.aliases).sort((a, b) =>
           a.localeCompare(b, undefined, { sensitivity: 'base' }),
         );
         state.links.sortedAliases = sortedAliases;
-        state.links.nodeAddressesWithAliases = Object.keys(state.aliases);
+        state.links.peerAddressesWithAliases = Object.keys(state.aliases);
       }
       saveStateToLocalStorage(`node/aliases/${state.addresses.data.native}`, state.aliases);
     },
@@ -132,7 +131,7 @@ const nodeSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    createAsyncReducer(builder), createFetchingReducer(builder);
+    createAsyncReducer(builder);
   },
 });
 

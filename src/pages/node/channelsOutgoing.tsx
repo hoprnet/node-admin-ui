@@ -50,7 +50,13 @@ function ChannelsPage() {
       }),
     );
     dispatch(
-      actionsAsync.getPeersThunk({
+      actionsAsync.getConnectedPeersThunk({
+        apiEndpoint: loginData.apiEndpoint!,
+        apiToken: loginData.apiToken ? loginData.apiToken : '',
+      }),
+    );
+    dispatch(
+      actionsAsync.getAnnouncedPeersThunk({
         apiEndpoint: loginData.apiEndpoint!,
         apiToken: loginData.apiToken ? loginData.apiToken : '',
       }),
@@ -67,7 +73,7 @@ function ChannelsPage() {
       exportToCsv(
         Object.entries(channelsData).map(([, channel]) => ({
           channelId: channel.id,
-          nodeAddress: channel.peerAddress,
+          peerAddress: channel.peerAddress,
           status: channel.status,
           dedicatedFunds: channel.balance,
         })),
@@ -76,12 +82,13 @@ function ChannelsPage() {
     }
   };
 
-  const handleCloseChannels = (channelId: string) => {
+  const handleCloseChannels = (address: string) => {
     dispatch(
       actionsAsync.closeChannelThunk({
         apiEndpoint: loginData.apiEndpoint!,
         apiToken: loginData.apiToken ? loginData.apiToken : '',
-        channelId: channelId,
+        direction: 'outgoing',
+        address: address,
         timeout: 5 * 60_000,
       }),
     )
@@ -99,7 +106,9 @@ function ChannelsPage() {
           e instanceof sdkApiError &&
           e.hoprdErrorPayload?.error?.includes('channel closure time has not elapsed yet, remaining')
         ) {
-          const errMsg = `Closing of outgoing channel ${channelId} halted. C${e.hoprdErrorPayload?.error.substring(1)}`;
+          const errMsg = `Closing of outgoing channel to ${address} halted. C${e.hoprdErrorPayload?.error.substring(
+            1,
+          )}`;
           sendNotification({
             notificationPayload: {
               source: 'node',
@@ -113,7 +122,7 @@ function ChannelsPage() {
           return;
         }
 
-        let errMsg = `Closing of outgoing channel ${channelId} failed`;
+        let errMsg = `Closing of outgoing channel to ${address} failed`;
         if (e instanceof sdkApiError && e.hoprdErrorPayload?.status)
           errMsg = errMsg + `.\n${e.hoprdErrorPayload.status}`;
         if (e instanceof sdkApiError && e.hoprdErrorPayload?.error) errMsg = errMsg + `.\n${e.hoprdErrorPayload.error}`;
@@ -212,7 +221,7 @@ function ChannelsPage() {
       return {
         id: (index + 1).toString(),
         key: id,
-        node: <PeersInfo nodeAddress={peerAddress} />,
+        node: <PeersInfo peerAddress={peerAddress} />,
         peerAddress: getAliasByPeerAddress(peerAddress as string),
         status: channelsOutgoingObject[id].status as string,
         funds: `${channelsOutgoingObject[id].balance} ${HOPR_TOKEN_USED}`,
@@ -234,7 +243,7 @@ function ChannelsPage() {
               }
             />
             <CreateAliasModal address={peerAddress} />
-            <FundChannelModal channelId={id} />
+            <FundChannelModal address={peerAddress} />
             <IconButton
               iconComponent={<CloseChannelIcon />}
               pending={channelsOutgoingObject[id]?.isClosing}
@@ -245,20 +254,20 @@ function ChannelsPage() {
                   outgoing channel
                 </span>
               }
-              onClick={() => handleCloseChannels(id)}
+              onClick={() => handleCloseChannels(peerAddress)}
             />
             <OpenSessionModal destination={peerAddress} />
             {/* <SendMessageModal
-              peerId={peerId}
-              disabled={!peerId}
+              peerAddress={peerAddress}
+              disabled={!peerAddress}
               tooltip={
-                !peerId ? (
+                !peerAddress ? (
                   <span>
                     DISABLED
                     <br />
                     Unable to find
                     <br />
-                    peerId
+                    peerAddress
                   </span>
                 ) : undefined
               }

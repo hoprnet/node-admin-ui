@@ -15,7 +15,7 @@ import Footer from './footer';
 import Drawer from './drawer';
 
 // Types
-import { ApplicationMapType } from '../../router';
+import { ApplicationMapType } from '../../applicationMap';
 import { useAppSelector } from '../../store';
 import { loadStateFromLocalStorage, saveStateToLocalStorage } from '../../utils/localStorage';
 

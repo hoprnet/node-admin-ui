@@ -69,18 +69,18 @@ function TicketsPage() {
       });
   };
 
-  const handleResetTicketsStatistics = () => {
-    dispatch(
-      actionsAsync.resetTicketStatisticsThunk({
-        apiEndpoint: loginData.apiEndpoint!,
-        apiToken: loginData.apiToken ? loginData.apiToken : '',
-      }),
-    )
-      .unwrap()
-      .then(() => {
-        handleRefresh();
-      });
-  };
+  // const handleResetTicketsStatistics = () => {
+  //   dispatch(
+  //     actionsAsync.resetTicketStatisticsThunk({
+  //       apiEndpoint: loginData.apiEndpoint!,
+  //       apiToken: loginData.apiToken ? loginData.apiToken : '',
+  //     }),
+  //   )
+  //     .unwrap()
+  //     .then(() => {
+  //       handleRefresh();
+  //     });
+  // };
 
   return (
     <Section
@@ -111,13 +111,14 @@ function TicketsPage() {
               iconComponent={<RotateLeftIcon />}
               tooltipText={
                 <span>
-                  RESET
+                  {'<REMOVED in V4> '}RESET
                   <br />
                   ticket statistics
                 </span>
               }
               reloading={resettingStats}
-              onClick={handleResetTicketsStatistics}
+              disabled
+              //  onClick={handleResetTicketsStatistics}
             />
           </>
         }
@@ -166,7 +167,7 @@ function TicketsPage() {
               </th>
               <td>{statistics?.rejectedValue ? statistics?.rejectedValue : '-'} wxHOPR</td>
             </tr>
-            <tr>
+            {/* <tr>
               <th>
                 <Tooltip
                   title="The value of all your redeemed tickets. Value is counted from last DB reset."
@@ -176,7 +177,7 @@ function TicketsPage() {
                 </Tooltip>
               </th>
               <td>{statistics?.redeemedValue ? statistics?.redeemedValue : '-'} wxHOPR</td>
-            </tr>
+            </tr> */}
           </tbody>
         </TableExtended>
 
@@ -199,7 +200,8 @@ function TicketsPage() {
             <tr>
               <th>
                 <Tooltip
-                  title={`Minimum allowed winning probability of the ticket as defined in the ${info?.network} network`}
+                  //  title={`Minimum allowed winning probability of the ticket as defined in the ${info?.network} network`}
+                  title={`Minimum allowed winning probability of the ticket as defined in the current network`}
                   notWide
                 >
                   <span>Minimum ticket winning probability</span>

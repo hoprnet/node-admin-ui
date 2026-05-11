@@ -29,6 +29,7 @@ import DataObjectIcon from '@mui/icons-material/DataObject';
 
 //Info Components
 import NodeUptime from './node-uptime';
+import Packets from './packets';
 
 const TdActionIcons = styled.td`
   display: flex;
@@ -51,8 +52,10 @@ function InfoPage() {
   const versionFetching = useAppSelector((store) => store.node.version.isFetching);
   const info = useAppSelector((store) => store.node.info.data);
   const infoFetching = useAppSelector((store) => store.node.info.isFetching);
-  const peers = useAppSelector((store) => store.node.peers.data);
-  const peersFetching = useAppSelector((store) => store.node.peers.isFetching);
+  const peersAnnounced = useAppSelector((store) => store.node.peersAnnounced.data);
+  const peersAnnouncedFetching = useAppSelector((store) => store.node.peersAnnounced.isFetching);
+  const peersConnected = useAppSelector((store) => store.node.peersConnected.data);
+  const peersConnectedFetching = useAppSelector((store) => store.node.peersConnected.isFetching);
   const aliases = useAppSelector((store) => store.node.aliases);
   const nodeStartedEpoch = useAppSelector((store) => store.node.metricsParsed.nodeStartEpoch);
   const nodeStartedTime =
@@ -60,17 +63,12 @@ function InfoPage() {
       ? new Date(nodeStartedEpoch * 1000).toJSON().replace('T', ' ').replace('Z', ' UTC')
       : '-';
   const nodeSync = useAppSelector((store) => store.node.metricsParsed.nodeSync);
-  const indexerDataSource = useAppSelector((store) => store.node.metricsParsed.indexerDataSource); // >=3.0.0
-  const blockNumberFromInfo = useAppSelector((store) => store.node.info.data?.indexerBlock); // >=2.2.0
-  const indexerLastLogBlock = useAppSelector((store) => store.node.info.data?.indexerLastLogBlock); // >=2.2.0
-  const indexerLastLogChecksum = useAppSelector((store) => store.node.info.data?.indexerLastLogChecksum); // >=2.2.0
   const ticketPrice = useAppSelector((store) => store.node.ticketPrice.data);
   const minimumNetworkProbability = useAppSelector((store) => store.node.probability.data);
-  const channelsCorrupted = useAppSelector((store) => store.node.channels.corrupted.data.length > 0);
   const [showWholeProvider, set_showWholeProvider] = useState(false);
   const [providerShort, set_providerShort] = useState('');
   const [providerContainsSecret, set_providerContainsSecret] = useState(true);
-  const provider = info?.provider;
+  const provider = info?.providerUrl;
 
   useEffect(() => {
     fetchInfoData();
@@ -125,12 +123,6 @@ function InfoPage() {
       }),
     );
     dispatch(
-      nodeActionsAsync.getChannelsCorruptedThunk({
-        apiEndpoint,
-        apiToken: apiToken ? apiToken : '',
-      }),
-    );
-    dispatch(
       nodeActionsAsync.getAddressesThunk({
         apiEndpoint,
         apiToken: apiToken ? apiToken : '',
@@ -149,7 +141,13 @@ function InfoPage() {
       }),
     );
     dispatch(
-      nodeActionsAsync.getPeersThunk({
+      nodeActionsAsync.getConnectedPeersThunk({
+        apiEndpoint,
+        apiToken: apiToken ? apiToken : '',
+      }),
+    );
+    dispatch(
+      nodeActionsAsync.getAnnouncedPeersThunk({
         apiEndpoint,
         apiToken: apiToken ? apiToken : '',
       }),
@@ -169,7 +167,8 @@ function InfoPage() {
     channelsFetching,
     versionFetching,
     infoFetching,
-    peersFetching,
+    peersConnectedFetching,
+    peersAnnouncedFetching,
   ].includes(true);
 
   const noCopyPaste = !(
@@ -258,17 +257,6 @@ function InfoPage() {
             <tr>
               <th>
                 <Tooltip
-                  title="Whether or not your node is eligible to connect to the network"
-                  notWide
-                >
-                  <span>Eligible</span>
-                </Tooltip>
-              </th>
-              <td>{info?.isEligible ? 'Yes' : 'No'}</td>
-            </tr>
-            <tr>
-              <th>
-                <Tooltip
                   title={
                     <ul
                       style={{
@@ -291,7 +279,7 @@ function InfoPage() {
                 <ColorStatus className={`status-${info?.connectivityStatus}`}>{info?.connectivityStatus}</ColorStatus>
               </td>
             </tr>
-            <tr>
+            {/* <tr>
               <th>
                 <Tooltip
                   title="The sync process of your node with the blockchain"
@@ -301,23 +289,12 @@ function InfoPage() {
                 </Tooltip>
               </th>
               <td>{nodeSync && typeof nodeSync === 'number' ? <ProgressBar value={nodeSync} /> : '-'}</td>
-            </tr>
-            <tr>
-              <th>
-                <Tooltip
-                  title="The sync process indexer data source"
-                  notWide
-                >
-                  <span>Indexer data source</span>
-                </Tooltip>
-              </th>
-              <td>{indexerDataSource || '-'}</td>
-            </tr>
+            </tr> */}
             <tr>
               <th style={providerContainsSecret ? { padding: '3px 8px' } : {}}>
                 <div style={{ display: 'flex' }}>
                   <Tooltip
-                    title="The RPC provider address your node uses sync"
+                    title="The blokli provider address your node uses sync"
                     notWide
                   >
                     <span style={{ display: 'flex', alignItems: 'center' }}>Provider address</span>
@@ -357,17 +334,7 @@ function InfoPage() {
                   )}
                 </div>
               </th>
-              <td>
-                {channelsCorrupted ? (
-                  <span style={{ color: 'red', fontWeight: 'bold' }}>
-                    Faulty RPC | {showWholeProvider ? provider : providerShort}
-                  </span>
-                ) : showWholeProvider ? (
-                  provider
-                ) : (
-                  providerShort
-                )}
-              </td>
+              <td>{showWholeProvider ? provider : providerShort}</td>
             </tr>
             <tr>
               <th>
@@ -391,7 +358,7 @@ function InfoPage() {
               </th>
               <td>{info?.listeningAddress}</td>
             </tr>
-            <tr>
+            {/* <tr>
               <th>
                 <Tooltip
                   title="The network/environment your node is running in"
@@ -412,8 +379,8 @@ function InfoPage() {
                 </Tooltip>
               </th>
               <td>{info?.chain}</td>
-            </tr>
-            <tr>
+            </tr> */}
+            {/* <tr>
               <th>
                 <Tooltip
                   title="Last block that the node got from the RPC"
@@ -423,8 +390,8 @@ function InfoPage() {
                 </Tooltip>
               </th>
               <td>{blockNumberFromInfo ? blockNumberFromInfo : '-'}</td>
-            </tr>
-            <tr>
+            </tr> */}
+            {/* <tr>
               <th>
                 <Tooltip
                   title="Last indexed block from the chain which contains HOPR data"
@@ -453,7 +420,7 @@ function InfoPage() {
                 </Tooltip>
               </th>
               <td>{indexerLastLogChecksum ? indexerLastLogChecksum : '-'}</td>
-            </tr>
+            </tr> */}
           </tbody>
         </TableExtended>
 
@@ -555,7 +522,8 @@ function InfoPage() {
             <tr>
               <th>
                 <Tooltip
-                  title={`Minimum allowed winning probability of the ticket as defined in the ${info?.network} network`}
+                  //  title={`Minimum allowed winning probability of the ticket as defined in the ${info?.network} network`}
+                  title={`Minimum allowed winning probability of the ticket as defined in the network`}
                   notWide
                 >
                   <span>Minimum ticket winning probability</span>
@@ -635,7 +603,7 @@ function InfoPage() {
                 )}
               </TdActionIcons>
             </tr>
-            <tr>
+            {/* <tr>
               <th>
                 <Tooltip
                   title="The contract address of the HOPR token"
@@ -666,8 +634,8 @@ function InfoPage() {
                   </>
                 )}
               </TdActionIcons>
-            </tr>
-            <tr>
+            </tr> */}
+            {/* <tr>
               <th>
                 <Tooltip
                   title="The contract address of the Hopr management module"
@@ -698,8 +666,8 @@ function InfoPage() {
                   </>
                 )}
               </TdActionIcons>
-            </tr>
-            <tr>
+            </tr> */}
+            {/* <tr>
               <th>
                 <Tooltip
                   title="The contract address of the hoprChannels smart contract"
@@ -730,7 +698,7 @@ function InfoPage() {
                   </>
                 )}
               </TdActionIcons>
-            </tr>
+            </tr> */}
           </tbody>
         </TableExtended>
 
@@ -764,6 +732,8 @@ function InfoPage() {
             <NodeUptime />
           </tbody>
         </TableExtended>
+
+        <Packets />
 
         <TableExtended
           title="Channels"
@@ -809,7 +779,7 @@ function InfoPage() {
                   <span>Announced</span>
                 </Tooltip>
               </th>
-              <td>{peers?.announced.length}</td>
+              <td>{peersAnnounced?.length}</td>
             </tr>
             <tr>
               <th>
@@ -820,7 +790,7 @@ function InfoPage() {
                   <span>Connected</span>
                 </Tooltip>
               </th>
-              <td>{peers?.connected.length}</td>
+              <td>{peersConnected?.length}</td>
             </tr>
           </tbody>
         </TableExtended>

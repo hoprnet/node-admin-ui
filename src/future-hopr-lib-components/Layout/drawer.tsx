@@ -13,7 +13,7 @@ import {
   useMediaQuery,
 } from '@mui/material';
 import { Link, useLocation } from 'react-router-dom';
-import { ApplicationMapType } from '../../router';
+import { ApplicationMapType } from '../../applicationMap';
 import Details from '../../components/InfoBar/details';
 import { rounder2 } from '../../utils/functions';
 import RefreshIcon from '@mui/icons-material/Refresh';

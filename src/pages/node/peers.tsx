@@ -25,10 +25,10 @@ import GetAppIcon from '@mui/icons-material/GetApp';
 function PeersPage() {
   const dispatch = useAppDispatch();
   const loginData = useAppSelector((store) => store.auth.loginData);
-  const peers = useAppSelector((store) => store.node.peers.data);
-  const peersFetching = useAppSelector((store) => store.node.peers.isFetching);
+  const peersConnected = useAppSelector((store) => store.node.peersConnected.data);
+  const peersFetching = useAppSelector((store) => store.node.peersConnected.isFetching);
   const aliases = useAppSelector((store) => store.node.aliases);
-  const nodeAddressToOutgoingChannelLink = useAppSelector((store) => store.node.links.nodeAddressToOutgoingChannel);
+  const peerAddressToOutgoingChannelLink = useAppSelector((store) => store.node.links.peerAddressToOutgoingChannel);
 
   useEffect(() => {
     handleRefresh();
@@ -38,7 +38,13 @@ function PeersPage() {
     if (!loginData.apiEndpoint) return;
 
     dispatch(
-      actionsAsync.getPeersThunk({
+      actionsAsync.getConnectedPeersThunk({
+        apiEndpoint: loginData.apiEndpoint!,
+        apiToken: loginData.apiToken ? loginData.apiToken : '',
+      }),
+    );
+    dispatch(
+      actionsAsync.getAnnouncedPeersThunk({
         apiEndpoint: loginData.apiEndpoint!,
         apiToken: loginData.apiToken ? loginData.apiToken : '',
       }),
@@ -51,16 +57,14 @@ function PeersPage() {
   };
 
   const handleExport = () => {
-    if (peers?.connected) {
+    if (peersConnected && peersConnected.length > 0) {
       exportToCsv(
-        peers.connected.map((peer) => ({
-          nodeAddress: peer.address,
-          quality: peer.quality,
-          multiaddr: peer.multiaddr,
-          heartbeats: peer.heartbeats,
-          lastSeen: peer.lastSeen,
-          backoff: peer.backoff,
-          isNew: peer.isNew,
+        peersConnected.map((peer) => ({
+          peerAddress: peer.address,
+          score: peer.score,
+          lastUpdate: peer.lastUpdate,
+          averageLatency: peer.averageLatency,
+          probeRate: peer.probeRate,
         })),
         'peers.csv',
       );
@@ -85,26 +89,28 @@ function PeersPage() {
       hidden: true,
     },
     {
-      key: 'lastSeen',
-      name: 'Last seen',
+      key: 'lastUpdate',
+      name: 'Last update',
       tooltip: true,
-      maxWidth: '10px',
+      width: '120px',
+      maxWidth: '120px',
     },
     {
-      key: 'quality',
-      name: 'Quality',
-      maxWidth: '10px',
+      key: 'score',
+      name: 'Score',
+      width: '90px',
+      maxWidth: '90px',
     },
     {
       key: 'actions',
       name: 'Actions',
       search: false,
-      width: '190px',
-      maxWidth: '190px',
+      width: '150px',
+      maxWidth: '150px',
     },
   ];
 
-  const peersWithAliases = (peers?.connected || []).filter((peer) => aliases && peer.address && aliases[peer.address]);
+  const peersWithAliases = (peersConnected || []).filter((peer) => aliases && peer.address && aliases[peer.address]);
   const peersWithAliasesSorted = peersWithAliases.sort((a, b) => {
     if (getAliasByAddress(b.address).toLowerCase() > getAliasByAddress(a.address).toLowerCase()) {
       return -1;
@@ -114,7 +120,7 @@ function PeersPage() {
     }
     return 0;
   });
-  const peersWithoutAliases = (peers?.connected || []).filter(
+  const peersWithoutAliases = (peersConnected || []).filter(
     (peer) => aliases && peer.address && !aliases[peer.address],
   );
   const peersWithoutAliasesSorted = peersWithoutAliases.sort((a, b) => {
@@ -130,9 +136,9 @@ function PeersPage() {
   const peersSorted = [...peersWithAliasesSorted, ...peersWithoutAliasesSorted];
 
   const parsedTableData = peersSorted.map((peer, index) => {
-    const lastSeen =
-      (peer.lastSeen as number) > 0
-        ? new Date(peer.lastSeen)
+    const lastUpdate =
+      peer.lastUpdate > 0
+        ? new Date(peer.lastUpdate)
             .toLocaleString('en-US', {
               year: 'numeric',
               month: '2-digit',
@@ -146,17 +152,17 @@ function PeersPage() {
 
     return {
       id: index + 1,
-      node: <PeersInfo nodeAddress={peer.address} />,
+      node: <PeersInfo peerAddress={peer.address} />,
       address: getAliasByAddress(peer.address),
       peerAddress: peer.address,
-      quality: <ProgressBar value={peer.quality} />,
-      lastSeen: <span style={{ whiteSpace: 'break-spaces' }}>{lastSeen}</span>,
+      score: <ProgressBar value={peer.score} />,
+      lastUpdate: <span style={{ whiteSpace: 'break-spaces' }}>{lastUpdate}</span>,
       actions: (
         <>
           <PingModal address={peer.address} />
           <CreateAliasModal address={peer.address} />
-          {nodeAddressToOutgoingChannelLink[peer.address] ? (
-            <FundChannelModal channelId={nodeAddressToOutgoingChannelLink[peer.address]} />
+          {peerAddressToOutgoingChannelLink[peer.address] ? (
+            <FundChannelModal address={peer.address} />
           ) : (
             <OpenChannelModal peerAddress={peer.address} />
           )}
@@ -172,7 +178,7 @@ function PeersPage() {
       yellow
     >
       <SubpageTitle
-        title={`PEERS (${peers?.connected?.length || '-'})`}
+        title={`PEERS (${peersConnected?.length || '-'})`}
         refreshFunction={handleRefresh}
         reloading={peersFetching}
         actions={
@@ -187,7 +193,7 @@ function PeersPage() {
                   seen peers as a CSV
                 </span>
               }
-              disabled={!peers?.connected || Object.keys(peers.connected).length === 0}
+              disabled={!peersConnected || peersConnected.length === 0}
               onClick={handleExport}
             />
           </>

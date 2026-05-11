@@ -10,14 +10,14 @@ type InitialState = {
     connected: boolean;
     error: {
       data: string | null;
-      type: 'API_ERROR' | 'NOT_ELIGIBLE_ERROR' | 'FETCH_ERROR';
+      type: 'API_ERROR' | 'CUSTOM_ERROR' | 'FETCH_ERROR';
     } | null;
   };
   loginData: {
     apiEndpoint: string | null;
     apiToken: string | null;
     localName: string | null;
-    peerId: string | null;
+    peerAddress: string | null;
     jazzIcon: string | null;
   };
   nodes: {
@@ -41,7 +41,7 @@ export const initialState: InitialState = {
     apiEndpoint: null,
     apiToken: null,
     localName: null,
-    peerId: null,
+    peerAddress: null,
     jazzIcon: null,
   },
   nodes: ADMIN_UI_NODE_LIST ? ADMIN_UI_NODE_LIST : [],

@@ -34,14 +34,14 @@ function convertArrayToCsv<T extends object>(data: T[]) {
   return [header, ...rows].join('\n');
 }
 
-export function truncateHOPRPeerId(peerId: string) {
-  if (!peerId) return;
+export function truncateHOPRpeerAddress(peerAddress: string) {
+  if (!peerAddress) return;
 
-  // Check if the peerId starts with "12D3Ko" and has a total length of 52 characters.
-  if (!peerId.startsWith('12D3Ko') || peerId.length !== 52) return peerId;
+  // Check if the peerAddress starts with "12D3Ko" and has a total length of 52 characters.
+  if (!peerAddress.startsWith('12D3Ko') || peerAddress.length !== 52) return peerAddress;
 
-  // Get the last 8 characters of the peerId.
-  const last8Characters = peerId.slice(-8);
+  // Get the last 8 characters of the peerAddress.
+  const last8Characters = peerAddress.slice(-8);
 
   return `12D3Ko…${last8Characters}`;
 }

@@ -149,12 +149,8 @@ const truncateBalanceto5charsWhenNoDecimals = (value: string | number | undefine
 };
 
 export default function Details(props: Props) {
-  const channels = useAppSelector((store) => store.node.channels.data);
-  const peers = useAppSelector((store) => store.node.peers.data);
   const balances = useAppSelector((store) => store.node.balances.data);
   const info = useAppSelector((store) => store.node.info.data);
-  const nodeConnected = useAppSelector((store) => store.auth.status.connected);
-  const loginData = useAppSelector((store) => store.auth.loginData);
   const statistics = useAppSelector((store) => store.node.statistics.data);
 
   const totalwxHOPR =

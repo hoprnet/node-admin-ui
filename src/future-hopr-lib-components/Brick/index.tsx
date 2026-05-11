@@ -60,30 +60,52 @@ const Image = styled.img<ImageProps>`
   }
 `;
 
-function Brick(props: any) {
+type BrickProps = {
+  title: string;
+  text: React.ReactNode;
+  image: string;
+  className?: string;
+  reverse?: boolean;
+  centerText?: boolean;
+  noShadow?: boolean;
+  button?: string;
+  buttonHref?: string;
+};
+
+function Brick({
+  className = '',
+  reverse = false,
+  centerText,
+  title,
+  image,
+  noShadow,
+  text,
+  button,
+  buttonHref,
+}: BrickProps) {
   return (
-    <SBrick className={`Brick ${props.reverse ? 'Brick--reverse' : ''} ${props.className}`}>
-      <TextContainer centerText={props.centerText}>
-        <Typography type="h5">{props.title}</Typography>
+    <SBrick className={`Brick ${reverse ? 'Brick--reverse' : ''} ${className}`}>
+      <TextContainer centerText={centerText}>
+        <Typography type="h5">{title}</Typography>
         <Image
           className="mobileOnly"
-          src={props.image}
-          noShadow={props.noShadow}
+          src={image}
+          noShadow={noShadow}
         />
-        <Typography>{props.text}</Typography>
-        {props.button && (
+        <Typography>{text}</Typography>
+        {button && (
           <Button
-            href={props.buttonHref}
+            href={buttonHref}
             target="_blank"
           >
-            {props.button}
+            {button}
           </Button>
         )}
       </TextContainer>
       <ImageContainer>
         <Image
-          src={props.image}
-          noShadow={props.noShadow}
+          src={image}
+          noShadow={noShadow}
         />
       </ImageContainer>
     </SBrick>
@@ -91,8 +113,3 @@ function Brick(props: any) {
 }
 
 export default Brick;
-
-Brick.defaultProps = {
-  className: '',
-  reverse: false,
-};

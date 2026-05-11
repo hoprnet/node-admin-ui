@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { DialogActions, DialogTitle, InputAdornment, TextField } from '@mui/material';
 import { parseEther } from 'viem';
 import { SDialog, SDialogContent, SIconButton, TopBar } from '../../../future-hopr-lib-components/Modal/styled';
 import { useAppDispatch, useAppSelector } from '../../../store';
@@ -8,6 +7,20 @@ import { sendNotification } from '../../../hooks/useWatcher/notifications';
 import { HOPR_TOKEN_USED } from '../../../../config';
 import { utils } from '@hoprnet/hopr-sdk';
 const { sdkApiError } = utils;
+import {
+  DialogTitle,
+  DialogActions,
+  CircularProgress,
+  TextField,
+  SelectChangeEvent,
+  Select,
+  MenuItem,
+  Autocomplete,
+  Tooltip,
+  IconButton as IconButtonMui,
+  InputAdornment,
+  Radio,
+} from '@mui/material';
 
 // HOPR Components
 import IconButton from '../../../future-hopr-lib-components/Button/IconButton';
@@ -16,9 +29,10 @@ import Button from '../../../future-hopr-lib-components/Button';
 
 // Mui
 import CloseIcon from '@mui/icons-material/Close';
+import { add } from 'lodash';
 
 type FundChannelModalModalProps = {
-  channelId?: string;
+  address?: string;
   disabled?: boolean;
 };
 
@@ -27,15 +41,29 @@ export const FundChannelModal = ({ ...props }: FundChannelModalModalProps) => {
   const loginData = useAppSelector((store) => store.auth.loginData);
   const [openChannelModal, set_openChannelModal] = useState(false);
   const [amount, set_amount] = useState('');
-  const [channelId, set_channelId] = useState(props.channelId ? props.channelId : '');
-  const canFund = !(!amount || parseFloat(amount) <= 0 || !channelId);
+  const [address, set_address] = useState(props.address ? props.address : '');
+  const canFund = !(!amount || parseFloat(amount) <= 0 || !address);
+
+  const aliases = useAppSelector((store) => store.node.aliases);
+  const myAddress = useAppSelector((store) => store.node.addresses.data.native || '');
+  const sortedAliases = useAppSelector((store) => store.node.links.sortedAliases);
+  const aliasTopeerAddress = useAppSelector((store) => store.node.links.aliasTopeerAddress);
+  const sortedAnnouncedPeers = useAppSelector((store) => store.node.peersAnnounced.parsed.sorted);
+  const peerAddressesWithAliases = useAppSelector((store) => store.node.links.peerAddressesWithAliases);
+  const addressBook = [
+    myAddress,
+    ...sortedAliases.map((alias) => aliasTopeerAddress[alias]),
+    ...sortedAnnouncedPeers.filter(
+      (peerAddress) => peerAddress !== myAddress && !peerAddressesWithAliases.includes(peerAddress),
+    ),
+  ];
 
   useEffect(() => {
     window.addEventListener('keydown', handleEnter as EventListener);
     return () => {
       window.removeEventListener('keydown', handleEnter as EventListener);
     };
-  }, [openChannelModal, loginData, amount, channelId]);
+  }, [openChannelModal, loginData, amount, address]);
 
   const handleOpenChannelDialog = () => {
     (document.activeElement as HTMLInputElement).blur();
@@ -45,23 +73,23 @@ export const FundChannelModal = ({ ...props }: FundChannelModalModalProps) => {
   const handleCloseModal = () => {
     set_openChannelModal(false);
     set_amount('');
-    set_channelId(props.channelId ? props.channelId : '');
+    set_address(props.address ? props.address : '');
   };
 
   const handleAction = async () => {
-    const handleFundChannel = async (weiValue: string, channelId: string) => {
+    const handleFundChannel = async (weiValue: string, address: string) => {
       await dispatch(
         actionsAsync.fundChannelThunk({
           apiEndpoint: loginData.apiEndpoint!,
           apiToken: loginData.apiToken ? loginData.apiToken : '',
           amount: `${weiValue} wei wxHOPR`,
-          channelId: channelId,
+          address: address,
           timeout: 120_000, //TODO: put those values as default to HOPRd SDK, average is 50s
         }),
       )
         .unwrap()
         .then(() => {
-          const msg = `Channel ${channelId} is funded`;
+          const msg = `Channel to ${address} is funded`;
           sendNotification({
             notificationPayload: {
               source: 'node',
@@ -79,7 +107,7 @@ export const FundChannelModal = ({ ...props }: FundChannelModalModalProps) => {
           ).unwrap();
           if (!isCurrentApiEndpointTheSame) return;
 
-          let errMsg = `Channel ${channelId} failed to be funded`;
+          let errMsg = `Channel to ${address} failed to be funded`;
           if (e instanceof sdkApiError && e.hoprdErrorPayload?.status)
             errMsg = errMsg + `.\n${e.hoprdErrorPayload.status}`;
           if (e instanceof sdkApiError && e.hoprdErrorPayload?.error)
@@ -101,7 +129,7 @@ export const FundChannelModal = ({ ...props }: FundChannelModalModalProps) => {
     handleCloseModal();
     const parsedOutgoing = parseFloat(amount ?? '0') >= 0 ? amount ?? '0' : '0';
     const weiValue = parseEther(parsedOutgoing).toString();
-    await handleFundChannel(weiValue, channelId);
+    await handleFundChannel(weiValue, address);
     dispatch(
       actionsAsync.getChannelsThunk({
         apiEndpoint: loginData.apiEndpoint!,
@@ -146,13 +174,25 @@ export const FundChannelModal = ({ ...props }: FundChannelModalModalProps) => {
           </SIconButton>
         </TopBar>
         <SDialogContent>
-          <TextField
-            label="Channel Id"
-            value={channelId}
-            placeholder="0x4f5a...1728"
-            onChange={(e) => set_channelId(e.target.value)}
-            sx={{ mt: '6px' }}
-            autoFocus={channelId === ''}
+          <Autocomplete
+            value={address}
+            onChange={(event, newValue) => {
+              set_address(newValue || '');
+            }}
+            options={addressBook}
+            getOptionLabel={(address) => (aliases[address] ? `${aliases[address]} (${address})` : address)}
+            autoSelect
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Destination"
+                placeholder="Select Destination"
+                fullWidth
+              />
+            )}
+            style={{
+              flex: 1,
+            }}
           />
           <TextField
             label="Amount"
@@ -162,7 +202,7 @@ export const FundChannelModal = ({ ...props }: FundChannelModalModalProps) => {
             onChange={(e) => set_amount(e.target.value)}
             InputProps={{ endAdornment: <InputAdornment position="end">{HOPR_TOKEN_USED}</InputAdornment> }}
             sx={{ mt: '6px' }}
-            autoFocus={channelId !== ''}
+            autoFocus={address !== ''}
           />
         </SDialogContent>
         <DialogActions>

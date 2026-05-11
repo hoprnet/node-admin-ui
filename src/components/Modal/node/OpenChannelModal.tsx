@@ -5,7 +5,6 @@ import { actionsAsync } from '../../../store/slices/node/actionsAsync';
 import { sendNotification } from '../../../hooks/useWatcher/notifications';
 import { HOPR_TOKEN_USED } from '../../../../config';
 import { utils } from '@hoprnet/hopr-sdk';
-import type { GetPeersResponseType, OpenSessionPayloadType } from '@hoprnet/hopr-sdk';
 import { parseEther } from 'viem';
 const { sdkApiError } = utils;
 
@@ -50,17 +49,16 @@ export const OpenChannelModal = ({ ...props }: OpenChannelModalProps) => {
   const [amount, set_amount] = useState('');
   const [peerAddress, set_peerAddress] = useState(props.peerAddress ? props.peerAddress : '');
   const canOpen = !(!amount || parseFloat(amount) <= 0 || !peerAddress);
-  const peers = useAppSelector((store) => store.node.peers.data);
   const myAddress = useAppSelector((store) => store.node.addresses.data.native || '');
   const sortedAliases = useAppSelector((store) => store.node.links.sortedAliases);
-  const aliasToNodeAddress = useAppSelector((store) => store.node.links.aliasToNodeAddress);
-  const sortedAnnouncedPeers = useAppSelector((store) => store.node.peers.parsed.announcedSorted);
-  const nodeAddressesWithAliases = useAppSelector((store) => store.node.links.nodeAddressesWithAliases);
+  const aliasTopeerAddress = useAppSelector((store) => store.node.links.aliasTopeerAddress);
+  const sortedAnnouncedPeers = useAppSelector((store) => store.node.peersAnnounced.parsed.sorted);
+  const peerAddressesWithAliases = useAppSelector((store) => store.node.links.peerAddressesWithAliases);
   const addressBook = [
     myAddress,
-    ...sortedAliases.map((alias) => aliasToNodeAddress[alias]),
+    ...sortedAliases.map((alias) => aliasTopeerAddress[alias]),
     ...sortedAnnouncedPeers.filter(
-      (nodeAddress) => nodeAddress !== myAddress && !nodeAddressesWithAliases.includes(nodeAddress),
+      (peerAddress) => peerAddress !== myAddress && !peerAddressesWithAliases.includes(peerAddress),
     ),
   ];
 
