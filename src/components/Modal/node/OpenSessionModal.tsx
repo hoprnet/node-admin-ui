@@ -239,7 +239,7 @@ export const OpenSessionModal = (props: OpenSessionModalProps) => {
     };
 
     // ts fix
-    if(!sessionPayload.capabilities) return;
+    if (!sessionPayload.capabilities) return;
 
     if (sendForwardMode === 'numberOfHops') {
       sessionPayload.forwardPath = {
@@ -629,7 +629,12 @@ export const OpenSessionModal = (props: OpenSessionModalProps) => {
               className={sendForwardMode === 'numberOfHops' ? 'numerOfHops' : 'noNumberOfHops'}
             >
               <MenuItem value="numberOfHops">Number of hops</MenuItem>
-              <MenuItem value="path" disabled>Intermediate Path</MenuItem>
+              <MenuItem
+                value="path"
+                disabled
+              >
+                Intermediate Path
+              </MenuItem>
             </Select>
             {sendForwardMode === 'numberOfHops' && (
               <TextField
@@ -714,7 +719,12 @@ export const OpenSessionModal = (props: OpenSessionModalProps) => {
               className={sendReturnMode === 'numberOfHops' ? 'numerOfHops' : 'noNumberOfHops'}
             >
               <MenuItem value="numberOfHops">Number of hops</MenuItem>
-              <MenuItem value="path" disabled>Intermediate Path</MenuItem>
+              <MenuItem
+                value="path"
+                disabled
+              >
+                Intermediate Path
+              </MenuItem>
             </Select>
             {sendReturnMode === 'numberOfHops' && (
               <TextField

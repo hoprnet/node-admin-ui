@@ -84,7 +84,7 @@ export const loginThunk = createAsyncThunk<
       return rejectWithValue({
         data:
           'Unable to connect.\n\n' +
-          `Your xDai balance seems to low to operate the node.\nPlease top up your node.\nAddress: ${addresses?.native}`,
+          `Your xDai balance seems too low to operate the node.\nPlease top up your node.\nAddress: ${addresses?.native}`,
         type: 'CUSTOM_ERROR',
       });
     }

@@ -170,10 +170,10 @@ function SessionsPage() {
               // Sessions with path got temporary removed
               // JSON.stringify(session.forwardPath).includes('Hops') ?
               // (
-                JSON.stringify(session.forwardPath)
-                  .replace(/{|}|\[|\]|"/g, '')
-                  .replace('IntermediatePath:', 'IntermediatePath:\n')
-                  .replace(/,/g, ' ')
+              JSON.stringify(session.forwardPath)
+                .replace(/{|}|\[|\]|"/g, '')
+                .replace('IntermediatePath:', 'IntermediatePath:\n')
+                .replace(/,/g, ' ')
               // ) : (
               //   <>
               //     {session?.forwardPath?.IntermediatePath?.map((hop: string, i: number) => (
@@ -197,10 +197,10 @@ function SessionsPage() {
               // Sessions with path got temporary removed
               // JSON.stringify(session.returnPath).includes('Hops') ?
               // (
-                JSON.stringify(session.returnPath)
-                  .replace(/{|}|\[|\]|"/g, '')
-                  .replace('IntermediatePath:', 'IntermediatePath:\n')
-                  .replace(/,/g, ' ')
+              JSON.stringify(session.returnPath)
+                .replace(/{|}|\[|\]|"/g, '')
+                .replace('IntermediatePath:', 'IntermediatePath:\n')
+                .replace(/,/g, ' ')
               // ) : (
               //   <>
               //     {session?.returnPath?.IntermediatePath?.map((hop: string, i: number) => (

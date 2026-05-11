@@ -29,7 +29,7 @@ import {
   type CloseSessionPayloadType,
   type GetConnectedResponseType,
   type GetAnnouncedResponseType,
-  RedeemAllTicketsPayloadType
+  RedeemAllTicketsPayloadType,
 } from '@hoprnet/hopr-sdk';
 import { parseMetrics } from '../../../utils/metrics';
 import { RootState } from '../..';
@@ -64,7 +64,6 @@ const {
   redeemAllTickets,
   withdraw,
   isNodeReady,
-
 } = api;
 const { openMultipleChannels } = flows;
 
@@ -237,7 +236,11 @@ const getConfigurationThunk = createAsyncThunk<
   },
 );
 
-const getConnectedPeersThunk = createAsyncThunk<GetConnectedResponseType | undefined, BasePayloadType, { state: RootState }>(
+const getConnectedPeersThunk = createAsyncThunk<
+  GetConnectedResponseType | undefined,
+  BasePayloadType,
+  { state: RootState }
+>(
   'node/getConnectedPeers',
   async (payload, { rejectWithValue }) => {
     try {
@@ -260,7 +263,11 @@ const getConnectedPeersThunk = createAsyncThunk<GetConnectedResponseType | undef
   },
 );
 
-const getAnnouncedPeersThunk = createAsyncThunk<GetAnnouncedResponseType | undefined, BasePayloadType, { state: RootState }>(
+const getAnnouncedPeersThunk = createAsyncThunk<
+  GetAnnouncedResponseType | undefined,
+  BasePayloadType,
+  { state: RootState }
+>(
   'node/getAnnouncedPeers',
   async (payload, { rejectWithValue }) => {
     try {
@@ -894,22 +901,28 @@ export const createAsyncReducer = (builder: ActionReducerMapBuilder<typeof initi
   builder.addCase(closeChannelThunk.pending, (state, action) => {
     const address = action.meta.arg.address;
     const direction = action.meta.arg.direction;
-    if (direction === 'outgoing' && state.channels.parsed.outgoing[address]) state.channels.parsed.outgoing[address].isClosing = true;
-    if (direction === 'incoming' && state.channels.parsed.incoming[address]) state.channels.parsed.incoming[address].isClosing = true;
+    if (direction === 'outgoing' && state.channels.parsed.outgoing[address])
+      state.channels.parsed.outgoing[address].isClosing = true;
+    if (direction === 'incoming' && state.channels.parsed.incoming[address])
+      state.channels.parsed.incoming[address].isClosing = true;
   });
   builder.addCase(closeChannelThunk.fulfilled, (state, action) => {
     if (action.meta.arg.apiEndpoint !== state.apiEndpoint) return;
     const address = action.meta.arg.address;
     const direction = action.meta.arg.direction;
-    if (direction === 'outgoing' && state.channels.parsed.outgoing[address]) state.channels.parsed.outgoing[address].isClosing = false;
-    if (direction === 'incoming' && state.channels.parsed.incoming[address]) state.channels.parsed.incoming[address].isClosing = false;
+    if (direction === 'outgoing' && state.channels.parsed.outgoing[address])
+      state.channels.parsed.outgoing[address].isClosing = false;
+    if (direction === 'incoming' && state.channels.parsed.incoming[address])
+      state.channels.parsed.incoming[address].isClosing = false;
   });
   builder.addCase(closeChannelThunk.rejected, (state, action) => {
     if (action.meta.arg.apiEndpoint !== state.apiEndpoint) return;
     const address = action.meta.arg.address;
     const direction = action.meta.arg.direction;
-    if (direction === 'outgoing' && state.channels.parsed.outgoing[address]) state.channels.parsed.outgoing[address].isClosing = false;
-    if (direction === 'incoming' && state.channels.parsed.incoming[address]) state.channels.parsed.incoming[address].isClosing = false;
+    if (direction === 'outgoing' && state.channels.parsed.outgoing[address])
+      state.channels.parsed.outgoing[address].isClosing = false;
+    if (direction === 'incoming' && state.channels.parsed.incoming[address])
+      state.channels.parsed.incoming[address].isClosing = false;
   });
   //getConfiguration
   builder.addCase(getConfigurationThunk.pending, (state, action) => {
@@ -922,7 +935,7 @@ export const createAsyncReducer = (builder: ActionReducerMapBuilder<typeof initi
 
       const parsedStrategies: ParsedStrategiesType = {};
 
-      action.payload?.strategy?.strategies.forEach((strategyObj: ParsedStrategiesType) => {
+      action.payload?.strategy?.strategies?.forEach((strategyObj: ParsedStrategiesType) => {
         try {
           const strategyName = Object.keys(strategyObj)[0];
           if (typeof strategyName !== 'string') return;
@@ -1215,7 +1228,7 @@ export const actionsAsync = {
   redeemChannelTicketsThunk,
   pingNodeThunk,
   redeemAllTicketsThunk,
-//  resetTicketStatisticsThunk,
+  //  resetTicketStatisticsThunk,
   getTicketPriceThunk,
   getMinimumNetworkProbabilityThunk,
   getSessionsThunk,

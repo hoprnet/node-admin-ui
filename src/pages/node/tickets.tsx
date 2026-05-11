@@ -118,7 +118,7 @@ function TicketsPage() {
               }
               reloading={resettingStats}
               disabled
-            //  onClick={handleResetTicketsStatistics}
+              //  onClick={handleResetTicketsStatistics}
             />
           </>
         }

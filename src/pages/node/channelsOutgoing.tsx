@@ -106,7 +106,9 @@ function ChannelsPage() {
           e instanceof sdkApiError &&
           e.hoprdErrorPayload?.error?.includes('channel closure time has not elapsed yet, remaining')
         ) {
-          const errMsg = `Closing of outgoing channel to ${address} halted. C${e.hoprdErrorPayload?.error.substring(1)}`;
+          const errMsg = `Closing of outgoing channel to ${address} halted. C${e.hoprdErrorPayload?.error.substring(
+            1,
+          )}`;
           sendNotification({
             notificationPayload: {
               source: 'node',
