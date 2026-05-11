@@ -58,6 +58,16 @@ export type ParsedStrategiesType = {
 
 type WebsocketConnectionStatus = 'connecting' | 'connected' | 'error' | null;
 
+type PacketCounter = {
+  data: bigint | null;
+  timestamp: number | null;
+};
+
+type PacketSample = {
+  now: PacketCounter;
+  previous: PacketCounter;
+};
+
 type InitialState = {
   info: {
     data: GetInfoResponseType | null;
@@ -222,6 +232,11 @@ type InitialState = {
         };
       };
     };
+    packets: {
+      sent: PacketSample;
+      received: PacketSample;
+      forwarded: PacketSample;
+    };
     nodeStartEpoch: number | null;
     checksum: string | null;
     blockNumber: number | null;
@@ -376,6 +391,20 @@ export const initialState: InitialState = {
       incoming: {
         redeemed: {},
         unredeemed: {},
+      },
+    },
+    packets: {
+      sent: {
+        now: { data: null, timestamp: null },
+        previous: { data: null, timestamp: null },
+      },
+      received: {
+        now: { data: null, timestamp: null },
+        previous: { data: null, timestamp: null },
+      },
+      forwarded: {
+        now: { data: null, timestamp: null },
+        previous: { data: null, timestamp: null },
       },
     },
     nodeStartEpoch: null,
