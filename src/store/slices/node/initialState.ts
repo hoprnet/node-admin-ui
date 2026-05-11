@@ -2,14 +2,12 @@ import type {
   GetTicketStatisticsResponseType,
   GetChannelsResponseType,
   GetInfoResponseType,
-  GetPeersResponseType,
-  GetTokenResponseType,
-  GetEntryNodesResponseType,
+  GetAnnouncedResponseType,
+  GetConnectedResponseType,
   PingPeerResponseType,
   GetConfigurationResponseType,
   GetMinimumNetworkProbabilityResponseType,
   GetSessionsResponseType,
-  PeerConnectedType,
 } from '@hoprnet/hopr-sdk';
 
 export type Message = {
@@ -164,29 +162,30 @@ type InitialState = {
   };
   messagesSent: Message[];
   signedMessages: { timestamp: number; body: string }[];
-  peers: {
-    data: GetPeersResponseType | null;
+  peersAnnounced: {
+    data: GetAnnouncedResponseType | null;
     parsed: {
-      connected: {
-        [peerId: string]: PeerConnectedType;
+      obj: {
+        [address: string]: GetAnnouncedResponseType[number];
       };
-      connectedSorted: string[];
-      announcedSorted: string[];
+      sorted: string[];
+    };
+    isFetching: boolean;
+    alreadyFetched: boolean;
+  };
+  peersConnected: {
+    data: GetConnectedResponseType | null;
+    parsed: {
+      obj: {
+        [address: string]: GetConnectedResponseType[number];
+      };
+      sorted: string[];
     };
     isFetching: boolean;
     alreadyFetched: boolean;
   };
   probability: { data: number | null; isFetching: boolean };
-  entryNodes: { data: GetEntryNodesResponseType | null; isFetching: boolean };
-  peerInfo: {
-    data: {
-      announced: string[];
-      observed: string[];
-    };
-    isFetching: boolean;
-  };
   statistics: { data: GetTicketStatisticsResponseType | null; isFetching: boolean };
-  tokens: { data: GetTokenResponseType[]; isFetching: boolean };
   version: { data: string | null; isFetching: boolean };
   transactions: { data: string[]; isFetching: boolean };
   pings: (PingPeerResponseType & { peerId: string })[];
@@ -332,34 +331,27 @@ export const initialState: InitialState = {
   },
   messagesSent: [],
   signedMessages: [],
-  peers: {
+  peersAnnounced: {
     data: null,
     parsed: {
-      connected: {},
-      connectedSorted: [],
-      announcedSorted: [],
+      obj: {},
+      sorted: [],
     },
     isFetching: false,
     alreadyFetched: false,
   },
-  peerInfo: {
-    data: {
-      announced: [],
-      observed: [],
+  peersConnected: {
+    data: null,
+    parsed: {
+      obj: {},
+      sorted: [],
     },
     isFetching: false,
+    alreadyFetched: false,
   },
   probability: { data: null, isFetching: false },
-  entryNodes: {
-    data: null,
-    isFetching: false,
-  },
   statistics: {
     data: null,
-    isFetching: false,
-  },
-  tokens: {
-    data: [],
     isFetching: false,
   },
   version: {

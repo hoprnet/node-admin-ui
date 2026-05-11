@@ -4,7 +4,7 @@ import { sendNotification } from '../../../hooks/useWatcher/notifications';
 
 // HOPRd SDK
 import { utils as hoprdUtils } from '@hoprnet/hopr-sdk';
-import type { GetPeersResponseType, OpenSessionPayloadType } from '@hoprnet/hopr-sdk';
+import type { OpenSessionPayloadType } from '@hoprnet/hopr-sdk';
 const { sdkApiError } = hoprdUtils;
 
 // HOPR Components
@@ -139,7 +139,7 @@ export const OpenSessionModal = (props: OpenSessionModalProps) => {
   const myAddress = useAppSelector((store) => store.node.addresses.data.native || '');
   const sortedAliases = useAppSelector((store) => store.node.links.sortedAliases);
   const aliasToNodeAddress = useAppSelector((store) => store.node.links.aliasToNodeAddress);
-  const sortedAnnouncedPeers = useAppSelector((store) => store.node.peers.parsed.announcedSorted);
+  const sortedAnnouncedPeers = useAppSelector((store) => store.node.peersAnnounced.parsed.sorted);
   const nodeAddressesWithAliases = useAppSelector((store) => store.node.links.nodeAddressesWithAliases);
   const addressBook = [
     myAddress,
@@ -238,26 +238,34 @@ export const OpenSessionModal = (props: OpenSessionModalProps) => {
       maxClientSessions: maxClientSessions,
     };
 
+    // ts fix
+    if(!sessionPayload.capabilities) return;
+
     if (sendForwardMode === 'numberOfHops') {
       sessionPayload.forwardPath = {
         Hops: numberOfForwardHops,
       };
     }
-    if (sendForwardMode == 'path' && intermediateForwardPath.length > 0 && !intermediateForwardPath.includes(null)) {
-      sessionPayload.forwardPath = {
-        IntermediatePath: intermediateForwardPath as string[],
-      };
-    }
+
+    // sendForwardMode == 'path' got temporary? removed
+    // if (sendForwardMode == 'path' && intermediateForwardPath.length > 0 && !intermediateForwardPath.includes(null)) {
+    //   sessionPayload.forwardPath = {
+    //     IntermediatePath: intermediateForwardPath as string[],
+    //   };
+    // }
+
     if (sendReturnMode === 'numberOfHops') {
       sessionPayload.returnPath = {
         Hops: numberOfForwardHops,
       };
     }
-    if (sendReturnMode == 'path' && intermediateReturnPath.length > 0 && !intermediateReturnPath.includes(null)) {
-      sessionPayload.returnPath = {
-        IntermediatePath: intermediateReturnPath as string[],
-      };
-    }
+
+    // sendReturnMode == 'path' got temporary? removed
+    // if (sendReturnMode == 'path' && intermediateReturnPath.length > 0 && !intermediateReturnPath.includes(null)) {
+    //   sessionPayload.returnPath = {
+    //     IntermediatePath: intermediateReturnPath as string[],
+    //   };
+    // }
 
     if (retransmission) {
       sessionPayload.capabilities.push('Retransmission');
@@ -621,7 +629,7 @@ export const OpenSessionModal = (props: OpenSessionModalProps) => {
               className={sendForwardMode === 'numberOfHops' ? 'numerOfHops' : 'noNumberOfHops'}
             >
               <MenuItem value="numberOfHops">Number of hops</MenuItem>
-              <MenuItem value="path">Intermediate Path</MenuItem>
+              <MenuItem value="path" disabled>Intermediate Path</MenuItem>
             </Select>
             {sendForwardMode === 'numberOfHops' && (
               <TextField
@@ -706,7 +714,7 @@ export const OpenSessionModal = (props: OpenSessionModalProps) => {
               className={sendReturnMode === 'numberOfHops' ? 'numerOfHops' : 'noNumberOfHops'}
             >
               <MenuItem value="numberOfHops">Number of hops</MenuItem>
-              <MenuItem value="path">Intermediate Path</MenuItem>
+              <MenuItem value="path" disabled>Intermediate Path</MenuItem>
             </Select>
             {sendReturnMode === 'numberOfHops' && (
               <TextField

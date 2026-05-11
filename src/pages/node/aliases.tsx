@@ -28,7 +28,7 @@ import { nodeActions } from '../../store/slices/node';
 function AliasesPage() {
   const dispatch = useAppDispatch();
   const aliases = useAppSelector((store) => store.node.aliases);
-  const peersObject = useAppSelector((store) => store.node.peers.parsed.connected);
+  const peersObject = useAppSelector((store) => store.node.peersConnected.parsed.obj);
   const myNodeAddress = useAppSelector((store) => store.node.addresses.data.native);
   const loginData = useAppSelector((store) => store.auth.loginData);
   const nodeAddressToOutgoingChannelLink = useAppSelector((store) => store.node.links.nodeAddressToOutgoingChannel);

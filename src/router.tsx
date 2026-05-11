@@ -225,8 +225,8 @@ const LayoutEnhanced = () => {
   const apiEndpoint = searchParams.get('apiEndpoint');
   const apiToken = searchParams.get('apiToken');
 
-  const numberOfPeers = useAppSelector((store) => store.node.peers.data?.connected.length);
-  const fetchingPeers = useAppSelector((store) => store.node.peers.isFetching);
+  const numberOfPeers = useAppSelector((store) => store.node.peersConnected.data?.length);
+  const fetchingPeers = useAppSelector((store) => store.node.peersConnected.isFetching);
   const numberOfAliases = useAppSelector((store) => store.node.aliases && Object.keys(store.node.aliases).length);
   const numberOfMessagesReceived = useAppSelector((store) => store.node.messages.data.length);
   const numberOfChannelsIn = useAppSelector((store) => store.node.channels.data?.incoming.length);
@@ -294,7 +294,13 @@ const LayoutEnhanced = () => {
             }),
           );
           dispatch(
-            nodeActionsAsync.getPeersThunk({
+            nodeActionsAsync.getAnnouncedPeersThunk({
+              apiEndpoint,
+              apiToken: apiToken ? apiToken : '',
+            }),
+          );
+          dispatch(
+            nodeActionsAsync.getConnectedPeersThunk({
               apiEndpoint,
               apiToken: apiToken ? apiToken : '',
             }),

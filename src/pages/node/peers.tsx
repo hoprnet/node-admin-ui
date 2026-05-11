@@ -25,8 +25,8 @@ import GetAppIcon from '@mui/icons-material/GetApp';
 function PeersPage() {
   const dispatch = useAppDispatch();
   const loginData = useAppSelector((store) => store.auth.loginData);
-  const peers = useAppSelector((store) => store.node.peers.data);
-  const peersFetching = useAppSelector((store) => store.node.peers.isFetching);
+  const peersConnected = useAppSelector((store) => store.node.peersConnected.data);
+  const peersFetching = useAppSelector((store) => store.node.peersConnected.isFetching);
   const aliases = useAppSelector((store) => store.node.aliases);
   const nodeAddressToOutgoingChannelLink = useAppSelector((store) => store.node.links.nodeAddressToOutgoingChannel);
 
@@ -38,7 +38,13 @@ function PeersPage() {
     if (!loginData.apiEndpoint) return;
 
     dispatch(
-      actionsAsync.getPeersThunk({
+      actionsAsync.getConnectedPeersThunk({
+        apiEndpoint: loginData.apiEndpoint!,
+        apiToken: loginData.apiToken ? loginData.apiToken : '',
+      }),
+    );
+    dispatch(
+      actionsAsync.getAnnouncedPeersThunk({
         apiEndpoint: loginData.apiEndpoint!,
         apiToken: loginData.apiToken ? loginData.apiToken : '',
       }),
@@ -51,12 +57,11 @@ function PeersPage() {
   };
 
   const handleExport = () => {
-    if (peers?.connected) {
+    if (peersConnected && peersConnected.length > 0) {
       exportToCsv(
-        peers.connected.map((peer) => ({
+        peersConnected.map((peer) => ({
           nodeAddress: peer.address,
           score: peer.score,
-          multiaddr: peer.multiaddr,
           lastUpdate: peer.lastUpdate,
           averageLatency: peer.averageLatency,
           probeRate: peer.probeRate,
@@ -105,7 +110,7 @@ function PeersPage() {
     },
   ];
 
-  const peersWithAliases = (peers?.connected || []).filter((peer) => aliases && peer.address && aliases[peer.address]);
+  const peersWithAliases = (peersConnected || []).filter((peer) => aliases && peer.address && aliases[peer.address]);
   const peersWithAliasesSorted = peersWithAliases.sort((a, b) => {
     if (getAliasByAddress(b.address).toLowerCase() > getAliasByAddress(a.address).toLowerCase()) {
       return -1;
@@ -115,7 +120,7 @@ function PeersPage() {
     }
     return 0;
   });
-  const peersWithoutAliases = (peers?.connected || []).filter(
+  const peersWithoutAliases = (peersConnected || []).filter(
     (peer) => aliases && peer.address && !aliases[peer.address],
   );
   const peersWithoutAliasesSorted = peersWithoutAliases.sort((a, b) => {
@@ -157,7 +162,7 @@ function PeersPage() {
           <PingModal address={peer.address} />
           <CreateAliasModal address={peer.address} />
           {nodeAddressToOutgoingChannelLink[peer.address] ? (
-            <FundChannelModal channelId={nodeAddressToOutgoingChannelLink[peer.address]} />
+            <FundChannelModal address={peer.address} />
           ) : (
             <OpenChannelModal peerAddress={peer.address} />
           )}
@@ -173,7 +178,7 @@ function PeersPage() {
       yellow
     >
       <SubpageTitle
-        title={`PEERS (${peers?.connected?.length || '-'})`}
+        title={`PEERS (${peersConnected?.length || '-'})`}
         refreshFunction={handleRefresh}
         reloading={peersFetching}
         actions={
@@ -188,7 +193,7 @@ function PeersPage() {
                   seen peers as a CSV
                 </span>
               }
-              disabled={!peers?.connected || Object.keys(peers.connected).length === 0}
+              disabled={!peersConnected || peersConnected.length === 0}
               onClick={handleExport}
             />
           </>

@@ -432,10 +432,10 @@
   resolved "https://registry.npmjs.org/@fontsource/roboto/-/roboto-5.2.6.tgz"
   integrity sha512-hzarG7yAhMoP418smNgfY4fO7UmuUEm5JUtbxCoCcFHT0hOJB+d/qAEyoNjz7YkPU5OjM2LM8rJnW8hfm0JLaA==
 
-"@hoprnet/hopr-sdk@4.0.0-pr.159-20260122142307":
-  version "4.0.0-pr.159-20260122142307"
-  resolved "https://europe-west3-npm.pkg.dev/hoprassociation/npm/@hoprnet/hopr-sdk/-/@hoprnet/hopr-sdk-4.0.0-pr.159-20260122142307.tgz#7944c4fe8e5172e9593877748d781091a3cdc327"
-  integrity sha512-xR9lkdt2QXD+ZFwzgyF1DJOoAaC3CC2vcgYRFJ2xuXBoV4HvYI4e3bI6wlHW2FAD4dJ8iJoovX2MJJ7mdPkIkQ==
+"@hoprnet/hopr-sdk@4.0.0-rc.0-pr.159":
+  version "4.0.0-rc.0-pr.159"
+  resolved "https://europe-west3-npm.pkg.dev/hoprassociation/npm/@hoprnet/hopr-sdk/-/@hoprnet/hopr-sdk-4.0.0-rc.0-pr.159.tgz#e1c160b069ac312001458d9b6025514e4b2c4b16"
+  integrity sha512-fwjO7luSjfGoTidSkw6I6+tauUGKy7tTu7TVDFW6HlUPdHD5LZsc87CL3Ehr19doK2zujzkvfCzGGrM88KJxwQ==
   dependencies:
     debug "^4.4.3"
     isomorphic-ws "^5.0.0"

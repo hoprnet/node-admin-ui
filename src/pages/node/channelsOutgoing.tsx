@@ -50,7 +50,13 @@ function ChannelsPage() {
       }),
     );
     dispatch(
-      actionsAsync.getPeersThunk({
+      actionsAsync.getConnectedPeersThunk({
+        apiEndpoint: loginData.apiEndpoint!,
+        apiToken: loginData.apiToken ? loginData.apiToken : '',
+      }),
+    );
+    dispatch(
+      actionsAsync.getAnnouncedPeersThunk({
         apiEndpoint: loginData.apiEndpoint!,
         apiToken: loginData.apiToken ? loginData.apiToken : '',
       }),
@@ -76,12 +82,13 @@ function ChannelsPage() {
     }
   };
 
-  const handleCloseChannels = (channelId: string) => {
+  const handleCloseChannels = (address: string) => {
     dispatch(
       actionsAsync.closeChannelThunk({
         apiEndpoint: loginData.apiEndpoint!,
         apiToken: loginData.apiToken ? loginData.apiToken : '',
-        channelId: channelId,
+        direction: 'outgoing',
+        address: address,
         timeout: 5 * 60_000,
       }),
     )
@@ -99,7 +106,7 @@ function ChannelsPage() {
           e instanceof sdkApiError &&
           e.hoprdErrorPayload?.error?.includes('channel closure time has not elapsed yet, remaining')
         ) {
-          const errMsg = `Closing of outgoing channel ${channelId} halted. C${e.hoprdErrorPayload?.error.substring(1)}`;
+          const errMsg = `Closing of outgoing channel to ${address} halted. C${e.hoprdErrorPayload?.error.substring(1)}`;
           sendNotification({
             notificationPayload: {
               source: 'node',
@@ -113,7 +120,7 @@ function ChannelsPage() {
           return;
         }
 
-        let errMsg = `Closing of outgoing channel ${channelId} failed`;
+        let errMsg = `Closing of outgoing channel to ${address} failed`;
         if (e instanceof sdkApiError && e.hoprdErrorPayload?.status)
           errMsg = errMsg + `.\n${e.hoprdErrorPayload.status}`;
         if (e instanceof sdkApiError && e.hoprdErrorPayload?.error) errMsg = errMsg + `.\n${e.hoprdErrorPayload.error}`;
@@ -234,7 +241,7 @@ function ChannelsPage() {
               }
             />
             <CreateAliasModal address={peerAddress} />
-            <FundChannelModal channelId={id} />
+            <FundChannelModal address={peerAddress} />
             <IconButton
               iconComponent={<CloseChannelIcon />}
               pending={channelsOutgoingObject[id]?.isClosing}
@@ -245,7 +252,7 @@ function ChannelsPage() {
                   outgoing channel
                 </span>
               }
-              onClick={() => handleCloseChannels(id)}
+              onClick={() => handleCloseChannels(peerAddress)}
             />
             <OpenSessionModal destination={peerAddress} />
             {/* <SendMessageModal

@@ -52,7 +52,13 @@ function ChannelsPage() {
       }),
     );
     dispatch(
-      actionsAsync.getPeersThunk({
+      actionsAsync.getConnectedPeersThunk({
+        apiEndpoint: loginData.apiEndpoint!,
+        apiToken: loginData.apiToken ? loginData.apiToken : '',
+      }),
+    );
+    dispatch(
+      actionsAsync.getAnnouncedPeersThunk({
         apiEndpoint: loginData.apiEndpoint!,
         apiToken: loginData.apiToken ? loginData.apiToken : '',
       }),
@@ -131,13 +137,13 @@ function ChannelsPage() {
     },
   ];
 
-  const handleCloseChannel = (channelId: string) => {
-    console.log('handleCloseChannel', channelId);
+  const handleCloseChannel = (address: string) => {
     dispatch(
       actionsAsync.closeChannelThunk({
         apiEndpoint: loginData.apiEndpoint!,
         apiToken: loginData.apiToken ? loginData.apiToken : '',
-        channelId: channelId,
+        direction: 'incoming',
+        address: address,
         timeout: 120_000, //TODO: put those values as default to HOPRd SDK, average is 50s
       }),
     )
@@ -151,7 +157,7 @@ function ChannelsPage() {
         ).unwrap();
         if (!isCurrentApiEndpointTheSame) return;
 
-        let errMsg = `Closing of incoming channel ${channelId} failed`;
+        let errMsg = `Closing of incoming channel from ${address} failed`;
         if (e instanceof sdkApiError && e.hoprdErrorPayload?.status)
           errMsg = errMsg + `.\n${e.hoprdErrorPayload.status}`;
         if (e instanceof sdkApiError && e.hoprdErrorPayload?.error) errMsg = errMsg + `.\n${e.hoprdErrorPayload.error}`;

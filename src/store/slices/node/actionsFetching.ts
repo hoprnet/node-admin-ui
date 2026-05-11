@@ -1,5 +1,6 @@
 import { ActionReducerMapBuilder, createAction } from '@reduxjs/toolkit';
 import { initialState } from './initialState';
+import { set } from 'lodash';
 
 // Helper action to update the isFetching state
 const setInfoFetching = createAction<boolean>('node/setInfoFetching');
@@ -7,8 +8,8 @@ const setMetricsFetching = createAction<boolean>('node/setMetricsFetching');
 const setAddressesFetching = createAction<boolean>('node/setAddressesFetching');
 const setBalancesFetching = createAction<boolean>('node/setBalancesFetching');
 const setChannelsFetching = createAction<boolean>('node/setChannelsFetching');
-const setPeersFetching = createAction<boolean>('node/setPeersFetching');
-const setPeerInfoFetching = createAction<boolean>('node/setPeerInfoFetching');
+const setPeersConnectedFetching = createAction<boolean>('node/setPeersConnectedFetching');
+const setPeersAnnouncedFetching = createAction<boolean>('node/setPeersAnnouncedFetching');
 const setEntryNodesFetching = createAction<boolean>('node/setEntryNodesFetching');
 const setSettingsFetching = createAction<boolean>('node/setSettingsFetching');
 const setTicketStatisticsFetching = createAction<boolean>('node/setTicketStatisticsFetching');
@@ -28,8 +29,8 @@ export const nodeActionsFetching = {
   setAddressesFetching,
   setBalancesFetching,
   setChannelsFetching,
-  setPeerInfoFetching,
-  setPeersFetching,
+  setPeersConnectedFetching,
+  setPeersAnnouncedFetching,
   setEntryNodesFetching,
   setSettingsFetching,
   setTicketStatisticsFetching,
@@ -49,45 +50,39 @@ export const createFetchingReducer = (builder: ActionReducerMapBuilder<typeof in
   builder.addCase(setInfoFetching, (state, action) => {
     state.info.isFetching = action.payload;
   }),
-    builder.addCase(setMetricsFetching, (state, action) => {
-      state.metrics.isFetching = action.payload;
-    }),
-    builder.addCase(setAddressesFetching, (state, action) => {
-      state.addresses.isFetching = action.payload;
-    }),
-    builder.addCase(setBalancesFetching, (state, action) => {
-      state.balances.isFetching = action.payload;
-    }),
-    builder.addCase(setChannelsFetching, (state, action) => {
-      state.channels.isFetching = action.payload;
-    }),
-    builder.addCase(setPeersFetching, (state, action) => {
-      state.peers.isFetching = action.payload;
-    }),
-    builder.addCase(setPeerInfoFetching, (state, action) => {
-      state.peerInfo.isFetching = action.payload;
-    }),
-    builder.addCase(setEntryNodesFetching, (state, action) => {
-      state.entryNodes.isFetching = action.payload;
-    }),
-    builder.addCase(setTicketStatisticsFetching, (state, action) => {
-      state.statistics.isFetching = action.payload;
-    }),
-    builder.addCase(setTokensFetching, (state, action) => {
-      state.tokens.isFetching = action.payload;
-    }),
-    builder.addCase(setVersionFetching, (state, action) => {
-      state.version.isFetching = action.payload;
-    }),
-    builder.addCase(setTransactionsFetching, (state, action) => {
-      state.transactions.isFetching = action.payload;
-    }),
-    builder.addCase(setTicketPriceFetching, (state, action) => {
-      state.ticketPrice.isFetching = action.payload;
-    }),
-    builder.addCase(setRedeemAllTicketsFetching, (state, action) => {
-      state.redeemAllTickets.isFetching = action.payload;
-    });
+  builder.addCase(setMetricsFetching, (state, action) => {
+    state.metrics.isFetching = action.payload;
+  }),
+  builder.addCase(setAddressesFetching, (state, action) => {
+    state.addresses.isFetching = action.payload;
+  }),
+  builder.addCase(setBalancesFetching, (state, action) => {
+    state.balances.isFetching = action.payload;
+  }),
+  builder.addCase(setChannelsFetching, (state, action) => {
+    state.channels.isFetching = action.payload;
+  }),
+  builder.addCase(setEntryNodesFetching, (state, action) => {
+    state.entryNodes.isFetching = action.payload;
+  }),
+  builder.addCase(setTicketStatisticsFetching, (state, action) => {
+    state.statistics.isFetching = action.payload;
+  }),
+  builder.addCase(setTokensFetching, (state, action) => {
+    state.tokens.isFetching = action.payload;
+  }),
+  builder.addCase(setVersionFetching, (state, action) => {
+    state.version.isFetching = action.payload;
+  }),
+  builder.addCase(setTransactionsFetching, (state, action) => {
+    state.transactions.isFetching = action.payload;
+  }),
+  builder.addCase(setTicketPriceFetching, (state, action) => {
+    state.ticketPrice.isFetching = action.payload;
+  }),
+  builder.addCase(setRedeemAllTicketsFetching, (state, action) => {
+    state.redeemAllTickets.isFetching = action.payload;
+  });
   builder.addCase(setResetTicketStatisticsFetching, (state, action) => {
     state.resetTicketStatistics.isFetching = action.payload;
   });
@@ -96,5 +91,11 @@ export const createFetchingReducer = (builder: ActionReducerMapBuilder<typeof in
   });
   builder.addCase(openSessionsFetching, (state, action) => {
     state.sessions.isFetching = action.payload;
+  });
+  builder.addCase(setPeersAnnouncedFetching, (state, action) => {
+    state.peersAnnounced.isFetching = action.payload;
+  });
+  builder.addCase(setPeersConnectedFetching, (state, action) => {
+    state.peersConnected.isFetching = action.payload;
   });
 };

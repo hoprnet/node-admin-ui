@@ -51,8 +51,10 @@ function InfoPage() {
   const versionFetching = useAppSelector((store) => store.node.version.isFetching);
   const info = useAppSelector((store) => store.node.info.data);
   const infoFetching = useAppSelector((store) => store.node.info.isFetching);
-  const peers = useAppSelector((store) => store.node.peers.data);
-  const peersFetching = useAppSelector((store) => store.node.peers.isFetching);
+  const peersAnnounced = useAppSelector((store) => store.node.peersAnnounced.data);
+  const peersAnnouncedFetching = useAppSelector((store) => store.node.peersAnnounced.isFetching);
+  const peersConnected = useAppSelector((store) => store.node.peersConnected.data);
+  const peersConnectedFetching = useAppSelector((store) => store.node.peersConnected.isFetching);
   const aliases = useAppSelector((store) => store.node.aliases);
   const nodeStartedEpoch = useAppSelector((store) => store.node.metricsParsed.nodeStartEpoch);
   const nodeStartedTime =
@@ -138,7 +140,13 @@ function InfoPage() {
       }),
     );
     dispatch(
-      nodeActionsAsync.getPeersThunk({
+      nodeActionsAsync.getConnectedPeersThunk({
+        apiEndpoint,
+        apiToken: apiToken ? apiToken : '',
+      }),
+    );
+    dispatch(
+      nodeActionsAsync.getAnnouncedPeersThunk({
         apiEndpoint,
         apiToken: apiToken ? apiToken : '',
       }),
@@ -158,7 +166,8 @@ function InfoPage() {
     channelsFetching,
     versionFetching,
     infoFetching,
-    peersFetching,
+    peersConnectedFetching,
+    peersAnnouncedFetching,
   ].includes(true);
 
   const noCopyPaste = !(
@@ -767,7 +776,7 @@ function InfoPage() {
                   <span>Announced</span>
                 </Tooltip>
               </th>
-              <td>{peers?.announced.length}</td>
+              <td>{peersAnnounced?.length}</td>
             </tr>
             <tr>
               <th>
@@ -778,7 +787,7 @@ function InfoPage() {
                   <span>Connected</span>
                 </Tooltip>
               </th>
-              <td>{peers?.connected.length}</td>
+              <td>{peersConnected?.length}</td>
             </tr>
           </tbody>
         </TableExtended>
