@@ -1,6 +1,5 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import { actionsAsync, createAsyncReducer } from './actionsAsync';
-import { createFetchingReducer } from './actionsFetching';
 import { initialState } from './initialState';
 import { isAddress, getAddress } from 'viem';
 import { loadStateFromLocalStorage, saveStateToLocalStorage } from '../../../utils/localStorage';
@@ -132,7 +131,7 @@ const nodeSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    createAsyncReducer(builder), createFetchingReducer(builder);
+    createAsyncReducer(builder);
   },
 });
 

@@ -33,7 +33,6 @@ import {
 import { parseMetrics } from '../../../utils/metrics';
 import { RootState } from '../..';
 import { formatEther, parseEther } from 'viem';
-import { nodeActionsFetching } from './actionsFetching';
 import { sendNotification } from '../../../hooks/useWatcher/notifications';
 import { useAppDispatch } from '../../../store';
 import { authActions } from '../auth';
@@ -91,8 +90,7 @@ const isNodeReadyThunk = createAsyncThunk<IsNodeReadyResponseType | undefined, B
 
 const getInfoThunk = createAsyncThunk<GetInfoResponseType | undefined, BasePayloadType, { state: RootState }>(
   'node/getInfo',
-  async (payload, { rejectWithValue, dispatch }) => {
-    dispatch(nodeActionsFetching.setInfoFetching(true));
+  async (payload, { rejectWithValue }) => {
     try {
       const info = await getInfo(payload);
       return info;
@@ -123,7 +121,6 @@ const getAddressesThunk = createAsyncThunk<
 >(
   'node/getAccount',
   async (payload, { rejectWithValue, dispatch }) => {
-    dispatch(nodeActionsFetching.setAddressesFetching(true));
     try {
       const addresses = await getAddresses(payload);
       if (addresses?.native) {
@@ -162,8 +159,7 @@ const getBalancesThunk = createAsyncThunk<
   { state: RootState; dispatch: ThunkDispatch<RootState, unknown, AnyAction> }
 >(
   'node/getBalances',
-  async (payload, { rejectWithValue, dispatch }) => {
-    dispatch(nodeActionsFetching.setBalancesFetching(true));
+  async (payload, { rejectWithValue }) => {
     try {
       const balances = await getBalances(payload);
       return balances;
@@ -241,8 +237,7 @@ const getConfigurationThunk = createAsyncThunk<
 
 const getConnectedPeersThunk = createAsyncThunk<GetConnectedResponseType | undefined, BasePayloadType, { state: RootState }>(
   'node/getConnectedPeers',
-  async (payload, { rejectWithValue, dispatch }) => {
-    dispatch(nodeActionsFetching.setPeersConnectedFetching(true));
+  async (payload, { rejectWithValue }) => {
     try {
       const peers = await getConnected(payload);
       return peers;
@@ -265,8 +260,7 @@ const getConnectedPeersThunk = createAsyncThunk<GetConnectedResponseType | undef
 
 const getAnnouncedPeersThunk = createAsyncThunk<GetAnnouncedResponseType | undefined, BasePayloadType, { state: RootState }>(
   'node/getAnnouncedPeers',
-  async (payload, { rejectWithValue, dispatch }) => {
-    dispatch(nodeActionsFetching.setPeersAnnouncedFetching(true));
+  async (payload, { rejectWithValue }) => {
     try {
       const peers = await getAnnounced(payload);
       return peers;
@@ -293,8 +287,7 @@ const getTicketStatisticsThunk = createAsyncThunk<
   { state: RootState }
 >(
   'node/getTicketStatistics',
-  async (payload, { rejectWithValue, dispatch }) => {
-    dispatch(nodeActionsFetching.setTicketStatisticsFetching(true));
+  async (payload, { rejectWithValue }) => {
     try {
       const statistics = await getTicketStatistics(payload);
       return statistics;
@@ -317,8 +310,7 @@ const getTicketStatisticsThunk = createAsyncThunk<
 
 const getVersionThunk = createAsyncThunk<string | undefined, BasePayloadType, { state: RootState }>(
   'node/getVersion',
-  async (payload, { rejectWithValue, dispatch }) => {
-    dispatch(nodeActionsFetching.setVersionFetching(true));
+  async (payload, { rejectWithValue }) => {
     try {
       const version = await getVersion(payload);
       return version;
@@ -341,8 +333,7 @@ const getVersionThunk = createAsyncThunk<string | undefined, BasePayloadType, { 
 
 const withdrawThunk = createAsyncThunk<string | undefined, WithdrawPayloadType, { state: RootState }>(
   'node/withdraw',
-  async (payload, { rejectWithValue, dispatch }) => {
-    dispatch(nodeActionsFetching.setTransactionsFetching(true));
+  async (payload, { rejectWithValue }) => {
     try {
       const res = await withdraw(payload);
       return res;
@@ -465,8 +456,7 @@ const redeemChannelTicketsThunk = createAsyncThunk<
   { state: RootState }
 >(
   'node/redeemChannelTickets',
-  async (payload, { rejectWithValue, dispatch }) => {
-    dispatch(nodeActionsFetching.setRedeemAllTicketsFetching(true));
+  async (payload, { rejectWithValue }) => {
     try {
       const res = await redeemChannelTickets(payload);
       return res;
@@ -504,8 +494,7 @@ const pingNodeThunk = createAsyncThunk('node/pingNode', async (payload: PingPeer
 
 const redeemAllTicketsThunk = createAsyncThunk<boolean | undefined, BasePayloadType, { state: RootState }>(
   'node/redeemAllTickets',
-  async (payload, { rejectWithValue, dispatch }) => {
-    dispatch(nodeActionsFetching.setRedeemAllTicketsFetching(true));
+  async (payload, { rejectWithValue }) => {
     try {
       const res = await redeemAllTickets(payload);
       return res;
@@ -528,8 +517,7 @@ const redeemAllTicketsThunk = createAsyncThunk<boolean | undefined, BasePayloadT
 
 const resetTicketStatisticsThunk = createAsyncThunk<boolean | undefined, BasePayloadType, { state: RootState }>(
   'node/resetTicketStatisticsThunk',
-  async (payload, { rejectWithValue, dispatch }) => {
-    dispatch(nodeActionsFetching.setResetTicketStatisticsFetching(true));
+  async (payload, { rejectWithValue }) => {
     try {
       const res = await resetTicketStatistics(payload);
       return res;
@@ -552,8 +540,7 @@ const resetTicketStatisticsThunk = createAsyncThunk<boolean | undefined, BasePay
 
 const getPrometheusMetricsThunk = createAsyncThunk<string | undefined, BasePayloadType, { state: RootState }>(
   'node/getPrometheusMetrics',
-  async (payload, { rejectWithValue, dispatch }) => {
-    dispatch(nodeActionsFetching.setMetricsFetching(true));
+  async (payload, { rejectWithValue }) => {
     try {
       const res = await getMetrics(payload);
       return res;
@@ -580,8 +567,7 @@ const getTicketPriceThunk = createAsyncThunk<
   { state: RootState }
 >(
   'node/getTicketPrice',
-  async (payload, { rejectWithValue, dispatch }) => {
-    dispatch(nodeActionsFetching.setTicketPriceFetching(true));
+  async (payload, { rejectWithValue }) => {
     try {
       const res = await getTicketPrice(payload);
       return res;
@@ -608,8 +594,7 @@ const getMinimumNetworkProbabilityThunk = createAsyncThunk<
   { state: RootState }
 >(
   'node/getMinimumTicketProbability',
-  async (payload, { rejectWithValue, dispatch }) => {
-    dispatch(nodeActionsFetching.setMinimumTicketProbabilityFetching(true));
+  async (payload, { rejectWithValue }) => {
     try {
       const res = await getMinimumTicketProbability(payload);
       return res;
@@ -632,8 +617,7 @@ const getMinimumNetworkProbabilityThunk = createAsyncThunk<
 
 const getSessionsThunk = createAsyncThunk<GetSessionsResponseType | undefined, BasePayloadType, { state: RootState }>(
   'node/getSessionsThunk',
-  async (payload, { rejectWithValue, dispatch }) => {
-    dispatch(nodeActionsFetching.openSessionsFetching(true));
+  async (payload, { rejectWithValue }) => {
     try {
       const bothRes = await Promise.all([
         getSessions({
@@ -719,6 +703,9 @@ export const createAsyncReducer = (builder: ActionReducerMapBuilder<typeof initi
     state.nodeIsReady.isFetching = true;
   });
   // getInfo
+  builder.addCase(getInfoThunk.pending, (state) => {
+    state.info.isFetching = true;
+  });
   builder.addCase(getInfoThunk.fulfilled, (state, action) => {
     if (action.meta.arg.apiEndpoint !== state.apiEndpoint) return;
     if (action.payload) {
@@ -730,6 +717,9 @@ export const createAsyncReducer = (builder: ActionReducerMapBuilder<typeof initi
     state.info.isFetching = false;
   });
   // getAddresses
+  builder.addCase(getAddressesThunk.pending, (state) => {
+    state.addresses.isFetching = true;
+  });
   builder.addCase(getAddressesThunk.fulfilled, (state, action) => {
     if (action.meta.arg.apiEndpoint !== state.apiEndpoint) return;
     if (action.payload) {
@@ -741,6 +731,9 @@ export const createAsyncReducer = (builder: ActionReducerMapBuilder<typeof initi
     state.addresses.isFetching = false;
   });
   // getBalances
+  builder.addCase(getBalancesThunk.pending, (state) => {
+    state.balances.isFetching = true;
+  });
   builder.addCase(getBalancesThunk.fulfilled, (state, action) => {
     if (action.meta.arg.apiEndpoint !== state.apiEndpoint) return;
     if (action.payload) {
@@ -944,6 +937,9 @@ export const createAsyncReducer = (builder: ActionReducerMapBuilder<typeof initi
     state.configuration.isFetching = false;
   });
   // getConnectedPeers
+  builder.addCase(getConnectedPeersThunk.pending, (state) => {
+    state.peersConnected.isFetching = true;
+  });
   builder.addCase(getConnectedPeersThunk.fulfilled, (state, action) => {
     state.peersConnected.isFetching = false;
     if (action.meta.arg.apiEndpoint !== state.apiEndpoint) return;
@@ -962,6 +958,9 @@ export const createAsyncReducer = (builder: ActionReducerMapBuilder<typeof initi
     state.peersConnected.isFetching = false;
   });
   // getAnnouncedPeers
+  builder.addCase(getAnnouncedPeersThunk.pending, (state) => {
+    state.peersAnnounced.isFetching = true;
+  });
   builder.addCase(getAnnouncedPeersThunk.fulfilled, (state, action) => {
     state.peersAnnounced.isFetching = false;
     if (action.meta.arg.apiEndpoint !== state.apiEndpoint) return;
@@ -980,6 +979,9 @@ export const createAsyncReducer = (builder: ActionReducerMapBuilder<typeof initi
     state.peersAnnounced.isFetching = false;
   });
   // redeemAllTicketsThunk
+  builder.addCase(redeemAllTicketsThunk.pending, (state) => {
+    state.redeemAllTickets.isFetching = true;
+  });
   builder.addCase(redeemAllTicketsThunk.fulfilled, (state) => {
     state.redeemAllTickets.isFetching = false;
     state.redeemAllTickets.error = undefined;
@@ -996,6 +998,9 @@ export const createAsyncReducer = (builder: ActionReducerMapBuilder<typeof initi
     ).error;
   });
   // resetTicketStatisticsThunk
+  builder.addCase(resetTicketStatisticsThunk.pending, (state) => {
+    state.resetTicketStatistics.isFetching = true;
+  });
   builder.addCase(resetTicketStatisticsThunk.fulfilled, (state) => {
     if (!state.statistics.data) return;
     state.statistics.data.neglectedValue = '0';
@@ -1008,6 +1013,9 @@ export const createAsyncReducer = (builder: ActionReducerMapBuilder<typeof initi
     state.resetTicketStatistics.isFetching = false;
   });
   // getVersion
+  builder.addCase(getVersionThunk.pending, (state) => {
+    state.version.isFetching = true;
+  });
   builder.addCase(getVersionThunk.fulfilled, (state, action) => {
     if (action.meta.arg.apiEndpoint !== state.apiEndpoint) return;
     if (action.payload) {
@@ -1019,6 +1027,9 @@ export const createAsyncReducer = (builder: ActionReducerMapBuilder<typeof initi
     state.version.isFetching = false;
   });
   // withdraw
+  builder.addCase(withdrawThunk.pending, (state) => {
+    state.transactions.isFetching = true;
+  });
   builder.addCase(withdrawThunk.fulfilled, (state, action) => {
     if (action.meta.arg.apiEndpoint !== state.apiEndpoint) return;
     if (action.payload) {
@@ -1030,6 +1041,9 @@ export const createAsyncReducer = (builder: ActionReducerMapBuilder<typeof initi
     state.transactions.isFetching = false;
   });
   // getTicketStatistics
+  builder.addCase(getTicketStatisticsThunk.pending, (state) => {
+    state.statistics.isFetching = true;
+  });
   builder.addCase(getTicketStatisticsThunk.fulfilled, (state, action) => {
     if (action.meta.arg.apiEndpoint !== state.apiEndpoint) return;
     if (action.payload) {
@@ -1062,6 +1076,9 @@ export const createAsyncReducer = (builder: ActionReducerMapBuilder<typeof initi
     }
   });
   // getPrometheusMetrics
+  builder.addCase(getPrometheusMetricsThunk.pending, (state) => {
+    state.metrics.isFetching = true;
+  });
   builder.addCase(getPrometheusMetricsThunk.fulfilled, (state, action) => {
     if (action.meta.arg.apiEndpoint !== state.apiEndpoint) return;
     if (action.payload) {
@@ -1125,6 +1142,9 @@ export const createAsyncReducer = (builder: ActionReducerMapBuilder<typeof initi
     state.metrics.isFetching = false;
   });
   // redeemChannelTickets
+  builder.addCase(redeemChannelTicketsThunk.pending, (state) => {
+    state.redeemAllTickets.isFetching = true;
+  });
   builder.addCase(redeemChannelTicketsThunk.fulfilled, (state) => {
     state.redeemAllTickets.isFetching = false;
   });
@@ -1132,6 +1152,9 @@ export const createAsyncReducer = (builder: ActionReducerMapBuilder<typeof initi
     state.redeemAllTickets.isFetching = false;
   });
   // getTicketPrice
+  builder.addCase(getTicketPriceThunk.pending, (state) => {
+    state.ticketPrice.isFetching = true;
+  });
   builder.addCase(getTicketPriceThunk.fulfilled, (state, action) => {
     if (action.meta.arg.apiEndpoint !== state.apiEndpoint) return;
     state.ticketPrice.data = action.payload?.price || null;
@@ -1141,6 +1164,9 @@ export const createAsyncReducer = (builder: ActionReducerMapBuilder<typeof initi
     state.ticketPrice.isFetching = false;
   });
   // getMinimumNetworkProbability
+  builder.addCase(getMinimumNetworkProbabilityThunk.pending, (state) => {
+    state.probability.isFetching = true;
+  });
   builder.addCase(getMinimumNetworkProbabilityThunk.fulfilled, (state, action) => {
     if (action.meta.arg.apiEndpoint !== state.apiEndpoint) return;
     state.probability.data = action.payload?.probability || null;
@@ -1150,6 +1176,9 @@ export const createAsyncReducer = (builder: ActionReducerMapBuilder<typeof initi
     state.probability.isFetching = false;
   });
   // getSessionsThunk
+  builder.addCase(getSessionsThunk.pending, (state) => {
+    state.sessions.isFetching = true;
+  });
   builder.addCase(getSessionsThunk.fulfilled, (state, action) => {
     if (action.meta.arg.apiEndpoint !== state.apiEndpoint) return;
     state.sessions.data = action.payload || null;
