@@ -17,7 +17,7 @@ export const useWatcher = ({ intervalDuration = 60_000 }: { intervalDuration?: n
   const channelsParsed = useAppSelector((store) => store.node.channels.parsed);
   const firstChannelsCallWasSuccesfull = useAppSelector((store) => !!store.node.channels.data);
   const connected = useAppSelector((store) => store.auth.status.connected);
-  const nodeAddress = useAppSelector((store) => store.node.addresses.data.native);
+  const peerAddress = useAppSelector((store) => store.node.addresses.data.native);
 
   // flags to activate notifications
   const activeChannels = useAppSelector((store) => store.app.configuration.notifications.channels);
@@ -239,6 +239,6 @@ export const useWatcher = ({ intervalDuration = 60_000 }: { intervalDuration?: n
 
   // Aliases
   useEffect(() => {
-    dispatch(nodeActions.loadAliasesFromLocalStorage(nodeAddress));
-  }, [nodeAddress]);
+    dispatch(nodeActions.loadAliasesFromLocalStorage(peerAddress));
+  }, [peerAddress]);
 };

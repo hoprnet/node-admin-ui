@@ -102,7 +102,7 @@ export default function ConnectNode() {
   const connecting = useAppSelector((store) => store.auth.status.connecting);
   const error = useAppSelector((store) => store.auth.status.error);
   const openLoginModalToNode = useAppSelector((store) => store.auth.helper.openLoginModalToNode);
-  const nodeAddress = useAppSelector((store) => store.node.addresses.data.native);
+  const peerAddress = useAppSelector((store) => store.node.addresses.data.native);
   const localNameFromLocalStorage = useAppSelector((store) => store.auth.loginData.localName);
   const jazzIconFromLocalStorage = useAppSelector((store) => store.auth.loginData.jazzIcon);
   const localNameToDisplay =
@@ -113,7 +113,7 @@ export default function ConnectNode() {
         )}`
       : localNameFromLocalStorage;
   const apiEndpoint = useAppSelector((store) => store.auth.loginData.apiEndpoint);
-  const [nodeAddressIcon, set_nodeAddressIcon] = useState<string | null>(null);
+  const [peerAddressIcon, set_peerAddressIcon] = useState<string | null>(null);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null); // State variable to hold the anchor element for the menu
 
   const containerRef = useRef<HTMLButtonElement>(null);
@@ -133,15 +133,15 @@ export default function ConnectNode() {
   }, []);
 
   useEffect(() => {
-    if (!connected) set_nodeAddressIcon(null);
+    if (!connected) set_peerAddressIcon(null);
     if (!apiEndpoint) return;
     console.log(jazzIconFromLocalStorage);
     const md5 = toHexMD5(apiEndpoint);
     const b64 = generateBase64Jazz(
-      nodeAddress ? nodeAddress : jazzIconFromLocalStorage ? jazzIconFromLocalStorage : md5,
+      peerAddress ? peerAddress : jazzIconFromLocalStorage ? jazzIconFromLocalStorage : md5,
     );
-    if (connected && b64) set_nodeAddressIcon(b64);
-  }, [connected, apiEndpoint, nodeAddress, jazzIconFromLocalStorage]);
+    if (connected && b64) set_peerAddressIcon(b64);
+  }, [connected, apiEndpoint, peerAddress, jazzIconFromLocalStorage]);
 
   useEffect(() => {
     if (error) set_modalVisible(true);
@@ -200,8 +200,8 @@ export default function ConnectNode() {
           id="jazz-icon-node"
         >
           <img
-            className={`${nodeAddressIcon && 'node-jazz-icon-present'}`}
-            src={nodeAddressIcon ?? '/assets/hopr_logo.svg'}
+            className={`${peerAddressIcon && 'node-jazz-icon-present'}`}
+            src={peerAddressIcon ?? '/assets/hopr_logo.svg'}
           />
         </div>
         {connected ? (
@@ -210,11 +210,11 @@ export default function ConnectNode() {
               <span>
                 {localNameToDisplay && <p className="node-info node-info-localname">{localNameToDisplay}</p>}
                 <p className="node-info">
-                  {nodeAddress && (
+                  {peerAddress && (
                     <>
                       <span style={{ textTransform: 'lowercase' }}>0x</span>
-                      {nodeAddress.substring(2, 6).toUpperCase()}...
-                      {nodeAddress.substring(nodeAddress.length - 7, nodeAddress.length).toUpperCase()}
+                      {peerAddress.substring(2, 6).toUpperCase()}...
+                      {peerAddress.substring(peerAddress.length - 7, peerAddress.length).toUpperCase()}
                     </>
                   )}
                 </p>

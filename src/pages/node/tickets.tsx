@@ -69,18 +69,18 @@ function TicketsPage() {
       });
   };
 
-  const handleResetTicketsStatistics = () => {
-    dispatch(
-      actionsAsync.resetTicketStatisticsThunk({
-        apiEndpoint: loginData.apiEndpoint!,
-        apiToken: loginData.apiToken ? loginData.apiToken : '',
-      }),
-    )
-      .unwrap()
-      .then(() => {
-        handleRefresh();
-      });
-  };
+  // const handleResetTicketsStatistics = () => {
+  //   dispatch(
+  //     actionsAsync.resetTicketStatisticsThunk({
+  //       apiEndpoint: loginData.apiEndpoint!,
+  //       apiToken: loginData.apiToken ? loginData.apiToken : '',
+  //     }),
+  //   )
+  //     .unwrap()
+  //     .then(() => {
+  //       handleRefresh();
+  //     });
+  // };
 
   return (
     <Section
@@ -111,13 +111,14 @@ function TicketsPage() {
               iconComponent={<RotateLeftIcon />}
               tooltipText={
                 <span>
-                  RESET
+                  {'<REMOVED in V4> '}RESET
                   <br />
                   ticket statistics
                 </span>
               }
               reloading={resettingStats}
-              onClick={handleResetTicketsStatistics}
+              disabled
+            //  onClick={handleResetTicketsStatistics}
             />
           </>
         }

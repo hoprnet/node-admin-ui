@@ -140,20 +140,20 @@ type InitialState = {
     isFetching: boolean;
   };
   links: {
-    nodeAddressToOutgoingChannel: {
-      [nodeAddress: string]: string;
+    peerAddressToOutgoingChannel: {
+      [peerAddress: string]: string;
     };
-    nodeAddressToIncomingChannel: {
-      [nodeAddress: string]: string;
+    peerAddressToIncomingChannel: {
+      [peerAddress: string]: string;
     };
-    incomingChannelToNodeAddress: {
+    incomingChannelTopeerAddress: {
       [channelId: string]: string;
     };
-    aliasToNodeAddress: {
+    aliasTopeerAddress: {
       [alias: string]: string;
     };
     sortedAliases: string[];
-    nodeAddressesWithAliases: string[];
+    peerAddressesWithAliases: string[];
   };
   messages: {
     data: Message[];
@@ -188,7 +188,7 @@ type InitialState = {
   statistics: { data: GetTicketStatisticsResponseType | null; isFetching: boolean };
   version: { data: string | null; isFetching: boolean };
   transactions: { data: string[]; isFetching: boolean };
-  pings: (PingPeerResponseType & { peerId: string })[];
+  pings: (PingPeerResponseType & { peerAddress: string })[];
   metrics: {
     data: {
       raw: string | null;
@@ -209,13 +209,13 @@ type InitialState = {
     tickets: {
       incoming: {
         redeemed: {
-          [peerId: string]: {
+          [peerAddress: string]: {
             value: string;
             formatted: string;
           };
         };
         unredeemed: {
-          [peerId: string]: {
+          [peerAddress: string]: {
             value: string;
             formatted: string;
           };
@@ -403,12 +403,12 @@ export const initialState: InitialState = {
     isFetching: false,
   },
   links: {
-    nodeAddressToOutgoingChannel: {},
-    nodeAddressToIncomingChannel: {},
-    incomingChannelToNodeAddress: {},
-    aliasToNodeAddress: {},
+    peerAddressToOutgoingChannel: {},
+    peerAddressToIncomingChannel: {},
+    incomingChannelTopeerAddress: {},
+    aliasTopeerAddress: {},
     sortedAliases: [],
-    nodeAddressesWithAliases: [],
+    peerAddressesWithAliases: [],
   },
   apiEndpoint: null,
   nodeIsReady: {

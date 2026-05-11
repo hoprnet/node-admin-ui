@@ -12,7 +12,7 @@ import CopyIcon from '@mui/icons-material/ContentCopy';
 import LaunchIcon from '@mui/icons-material/Launch';
 
 interface Props {
-  nodeAddress?: string;
+  peerAddress?: string;
 }
 
 const Container = styled.div`
@@ -25,7 +25,7 @@ const Container = styled.div`
 `;
 
 const PeersInfo: React.FC<Props> = (props) => {
-  const { nodeAddress, ...rest } = props;
+  const { peerAddress, ...rest } = props;
   const aliases = useAppSelector((store) => store.node.aliases);
 
   const getAliasByAddress = (address: string): string => {
@@ -39,19 +39,19 @@ const PeersInfo: React.FC<Props> = (props) => {
     window.location.hostname === '127.0.0.1'
   );
 
-  const icon = nodeAddress && generateBase64Jazz(nodeAddress);
+  const icon = peerAddress && generateBase64Jazz(peerAddress);
 
   return (
     <Container>
       <img
         className={`node-jazz-icon node-jazz-icon-present`}
         src={icon || ''}
-        data-src={nodeAddress}
+        data-src={peerAddress}
       />
       <div>
-        <span>{nodeAddress && getAliasByAddress(nodeAddress)}</span>{' '}
+        <span>{peerAddress && getAliasByAddress(peerAddress)}</span>{' '}
         <SmallActionButton
-          onClick={() => navigator.clipboard.writeText(nodeAddress as string)}
+          onClick={() => navigator.clipboard.writeText(peerAddress as string)}
           disabled={noCopyPaste}
           tooltip={noCopyPaste ? 'Clipboard not supported on HTTP' : 'Copy Node Address'}
         >
@@ -59,7 +59,7 @@ const PeersInfo: React.FC<Props> = (props) => {
         </SmallActionButton>
         <SmallActionButton tooltip={'Open in gnosisscan.io'}>
           <Link
-            to={`https://gnosisscan.io/address/${nodeAddress}`}
+            to={`https://gnosisscan.io/address/${peerAddress}`}
             target="_blank"
           >
             <LaunchIcon />

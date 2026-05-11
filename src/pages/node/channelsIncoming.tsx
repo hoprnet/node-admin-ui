@@ -37,7 +37,7 @@ function ChannelsPage() {
   const aliases = useAppSelector((store) => store.node.aliases);
   const currentApiEndpoint = useAppSelector((store) => store.node.apiEndpoint);
   const loginData = useAppSelector((store) => store.auth.loginData);
-  const nodeAddressToOutgoingChannelLink = useAppSelector((store) => store.node.links.nodeAddressToOutgoingChannel);
+  const peerAddressToOutgoingChannelLink = useAppSelector((store) => store.node.links.peerAddressToOutgoingChannel);
   const tickets = useAppSelector((store) => store.node.metricsParsed.tickets.incoming);
   const tabLabel = 'incoming';
   const channelsData = channels?.incoming;
@@ -75,7 +75,7 @@ function ChannelsPage() {
       exportToCsv(
         Object.entries(channelsData).map(([, channel]) => ({
           channelId: channel.id,
-          nodeAddress: channel.peerAddress,
+          peerAddress: channel.peerAddress,
           status: channel.status,
           dedicatedFunds: channel.balance,
         })),
@@ -213,7 +213,7 @@ function ChannelsPage() {
         return;
       const outgoingChannelOpened = !!(
         channelsIncomingObject[id].peerAddress &&
-        !!nodeAddressToOutgoingChannelLink[channelsIncomingObject[id].peerAddress as string]
+        !!peerAddressToOutgoingChannelLink[channelsIncomingObject[id].peerAddress as string]
       );
       const peerAddress = channelsIncomingObject[id].peerAddress;
 
@@ -226,7 +226,7 @@ function ChannelsPage() {
       return {
         id: (index + 1).toString(),
         key: id,
-        node: <PeersInfo nodeAddress={peerAddress} />,
+        node: <PeersInfo peerAddress={peerAddress} />,
         peerAddress: getAliasByPeerAddress(peerAddress as string),
         status: channelsIncomingObject[id].status,
         funds: `${channelsIncomingObject[id].balance} ${HOPR_TOKEN_USED}`,
@@ -250,9 +250,9 @@ function ChannelsPage() {
             />
             <CreateAliasModal address={peerAddress} />
             {outgoingChannelOpened ? (
-              <FundChannelModal channelId={id} />
+              <FundChannelModal address={peerAddress} />
             ) : (
-              <OpenChannelModal peerAddress={channelsIncomingObject[id].peerAddress} />
+              <OpenChannelModal peerAddress={peerAddress} />
             )}
             <IconButton
               iconComponent={<CloseChannelIcon />}
@@ -268,16 +268,16 @@ function ChannelsPage() {
             />
             <OpenSessionModal destination={peerAddress} />
             {/* <SendMessageModal
-              peerId={peerId}
-              disabled={!peerId}
+              peerAddress={peerAddress}
+              disabled={!peerAddress}
               tooltip={
-                !peerId ? (
+                !peerAddress ? (
                   <span>
                     DISABLED
                     <br />
                     Unable to find
                     <br />
-                    peerId
+                    peerAddress
                   </span>
                 ) : undefined
               }

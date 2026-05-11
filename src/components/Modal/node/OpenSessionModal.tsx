@@ -138,14 +138,14 @@ export const OpenSessionModal = (props: OpenSessionModalProps) => {
 
   const myAddress = useAppSelector((store) => store.node.addresses.data.native || '');
   const sortedAliases = useAppSelector((store) => store.node.links.sortedAliases);
-  const aliasToNodeAddress = useAppSelector((store) => store.node.links.aliasToNodeAddress);
+  const aliasTopeerAddress = useAppSelector((store) => store.node.links.aliasTopeerAddress);
   const sortedAnnouncedPeers = useAppSelector((store) => store.node.peersAnnounced.parsed.sorted);
-  const nodeAddressesWithAliases = useAppSelector((store) => store.node.links.nodeAddressesWithAliases);
+  const peerAddressesWithAliases = useAppSelector((store) => store.node.links.peerAddressesWithAliases);
   const addressBook = [
     myAddress,
-    ...sortedAliases.map((alias) => aliasToNodeAddress[alias]),
+    ...sortedAliases.map((alias) => aliasTopeerAddress[alias]),
     ...sortedAnnouncedPeers.filter(
-      (nodeAddress) => nodeAddress !== myAddress && !nodeAddressesWithAliases.includes(nodeAddress),
+      (peerAddress) => peerAddress !== myAddress && !peerAddressesWithAliases.includes(peerAddress),
     ),
   ];
 
@@ -183,10 +183,10 @@ export const OpenSessionModal = (props: OpenSessionModalProps) => {
       intermediateReturnPath.length > 0) ||
       sendReturnMode === 'numberOfHops');
 
-  const setPropPeerId = () => {
+  const setProppeerAddress = () => {
     if (props.destination) set_destination(props.destination);
   };
-  useEffect(setPropPeerId, [props.destination]);
+  useEffect(setProppeerAddress, [props.destination]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleEnter as EventListener);
@@ -219,7 +219,7 @@ export const OpenSessionModal = (props: OpenSessionModalProps) => {
     if (!loginData.apiEndpoint || !destination) return;
     set_error(null);
     set_loader(true);
-    //const validatedReceiver = validatePeerId(destination);
+    //const validatedReceiver = validatepeerAddress(destination);
 
     const sessionPayload: OpenSessionPayloadType = {
       apiToken: loginData.apiToken ? loginData.apiToken : '',
@@ -363,7 +363,7 @@ export const OpenSessionModal = (props: OpenSessionModalProps) => {
     return false;
   };
 
-  const validatePeerId = (receiver: string) => {
+  const validatepeerAddress = (receiver: string) => {
     // if (aliases && isAlias(receiver)) {
     //   return aliases[receiver];
     // }

@@ -55,7 +55,7 @@ function SettingsPage() {
   const strategy = useAppSelector((store) => store.node.configuration.data?.strategy);
   const configuration = useAppSelector((store) => store.node.configuration.data);
   const ticketPrice = useAppSelector((store) => store.node.ticketPrice.data);
-  const myNodeAddress = useAppSelector((store) => store.node.addresses.data.native);
+  const mypeerAddress = useAppSelector((store) => store.node.addresses.data.native);
   const [strategiesString, set_strategiesString] = useState<string | null>(null);
   const [configurationString, set_configurationString] = useState<string | null>(null);
   const [localNotificationSettings, set_localNotificationSettings] = useState<typeof prevNotificationSettings>();
@@ -169,7 +169,7 @@ function SettingsPage() {
 
   const handleExport = () => {
     if (strategiesString) {
-      exportToFile(strategiesString, `strategy-${myNodeAddress}.yaml`, 'text/yaml');
+      exportToFile(strategiesString, `strategy-${mypeerAddress}.yaml`, 'text/yaml');
     }
   };
 

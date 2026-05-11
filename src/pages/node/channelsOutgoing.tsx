@@ -73,7 +73,7 @@ function ChannelsPage() {
       exportToCsv(
         Object.entries(channelsData).map(([, channel]) => ({
           channelId: channel.id,
-          nodeAddress: channel.peerAddress,
+          peerAddress: channel.peerAddress,
           status: channel.status,
           dedicatedFunds: channel.balance,
         })),
@@ -219,7 +219,7 @@ function ChannelsPage() {
       return {
         id: (index + 1).toString(),
         key: id,
-        node: <PeersInfo nodeAddress={peerAddress} />,
+        node: <PeersInfo peerAddress={peerAddress} />,
         peerAddress: getAliasByPeerAddress(peerAddress as string),
         status: channelsOutgoingObject[id].status as string,
         funds: `${channelsOutgoingObject[id].balance} ${HOPR_TOKEN_USED}`,
@@ -256,16 +256,16 @@ function ChannelsPage() {
             />
             <OpenSessionModal destination={peerAddress} />
             {/* <SendMessageModal
-              peerId={peerId}
-              disabled={!peerId}
+              peerAddress={peerAddress}
+              disabled={!peerAddress}
               tooltip={
-                !peerId ? (
+                !peerAddress ? (
                   <span>
                     DISABLED
                     <br />
                     Unable to find
                     <br />
-                    peerId
+                    peerAddress
                   </span>
                 ) : undefined
               }

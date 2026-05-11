@@ -1,6 +1,6 @@
 import styled from '@emotion/styled';
 import type { Log } from '../../types';
-import AbbreviatedPeerId from '../AbbreviatedPeerId';
+import AbbreviatedPeerAddress from '../AbbreviatedPeerAddress';
 import JazzIcon from '../../future-hopr-lib-components/Icons/JazzIcon';
 import { Tooltip } from '@mui/material';
 
@@ -55,20 +55,20 @@ type LogLineProps = {
 };
 
 const LogLine = ({ log }: LogLineProps) => {
-  const peerId = log.message.match(regex)?.[0];
+  const peerAddress = log.message.match(regex)?.[0];
 
   return (
     <LogLineContainer>
       <Pre>
-        {peerId ? (
+        {peerAddress ? (
           <>
             <JazzIcon
-              address={peerId}
+              address={peerAddress}
               diameter={16}
             />
             <div>
-              {log.message.replace(peerId, '')}
-              <AbbreviatedPeerId id={peerId} />
+              {log.message.replace(peerAddress, '')}
+              <AbbreviatedPeerAddress id={peerAddress} />
             </div>
           </>
         ) : (

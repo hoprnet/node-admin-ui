@@ -65,7 +65,7 @@ const StatusContainer = styled.div`
 `;
 
 type SendMessageModalProps = {
-  peerId?: string;
+  peerAddress?: string;
   disabled?: boolean;
   tooltip?: JSX.Element | string;
 };
@@ -74,23 +74,23 @@ type SendMessageModalProps = {
 function sortAddresses(
   peers: GetPeersResponseType | null,
   me: AddressesType,
-  peerIdToAliasLink: {
-    [peerId: string]: string;
+  peerAddressToAliasLink: {
+    [peerAddress: string]: string;
   },
 ): string[] {
   if (!peers || !me) return [];
   const connectedPeers = peers.connected;
   const myAddress = me.hopr as string;
-  const peerIdsWithAliases = Object.keys(peerIdToAliasLink).sort((a, b) =>
-    peerIdToAliasLink[a] < peerIdToAliasLink[b] ? -1 : 1,
+  const peerAddresssWithAliases = Object.keys(peerAddressToAliasLink).sort((a, b) =>
+    peerAddressToAliasLink[a] < peerAddressToAliasLink[b] ? -1 : 1,
   );
-  if (peerIdsWithAliases.length === 0) return [myAddress, ...connectedPeers.map((peer) => peer.peerId).sort()];
-  const peerIdsWithAliasesWithoutMyAddress = peerIdsWithAliases.filter((peerId) => peerId !== myAddress);
+  if (peerAddresssWithAliases.length === 0) return [myAddress, ...connectedPeers.map((peer) => peer.peerAddress).sort()];
+  const peerAddresssWithAliasesWithoutMyAddress = peerAddresssWithAliases.filter((peerAddress) => peerAddress !== myAddress);
   const connectedPeersWithoutAliases = connectedPeers
-    .filter((peer) => !peerIdToAliasLink[peer.peerId])
-    .map((peer) => peer.peerId)
+    .filter((peer) => !peerAddressToAliasLink[peer.peerAddress])
+    .map((peer) => peer.peerAddress)
     .sort();
-  return [myAddress, ...peerIdsWithAliasesWithoutMyAddress, ...connectedPeersWithoutAliases];
+  return [myAddress, ...peerAddresssWithAliasesWithoutMyAddress, ...connectedPeersWithoutAliases];
 }
 
 export const SendMessageModal = (props: SendMessageModalProps) => {
@@ -107,11 +107,11 @@ export const SendMessageModal = (props: SendMessageModalProps) => {
   const loginData = useAppSelector((store) => store.auth.loginData);
   const hoprAddress = useAppSelector((store) => store.node.addresses.data.hopr);
   const aliases = useAppSelector((store) => store.node.aliases);
-  const peerIdToAliasLink = useAppSelector((store) => store.node.links.peerIdToAlias);
+  const peerAddressToAliasLink = useAppSelector((store) => store.node.links.peerAddressToAlias);
   const peers = useAppSelector((store) => store.node.peers.data);
   const addresses = useAppSelector((store) => store.node.addresses.data);
-  const sendMessageAddressBook = sortAddresses(peers, addresses, peerIdToAliasLink);
-  const [selectedReceiver, set_selectedReceiver] = useState<string | null>(props.peerId ? props.peerId : null);
+  const sendMessageAddressBook = sortAddresses(peers, addresses, peerAddressToAliasLink);
+  const [selectedReceiver, set_selectedReceiver] = useState<string | null>(props.peerAddress ? props.peerAddress : null);
   const canSendMessage = !(
     selectedReceiver === null ||
     (sendMode !== 'directMessage' && sendMode !== 'automaticPath' && numberOfHops < 0 && path === '') ||
@@ -123,10 +123,10 @@ export const SendMessageModal = (props: SendMessageModalProps) => {
   const maxLength = 500;
   const remainingChars = maxLength - message.length;
 
-  const setPropPeerId = () => {
-    if (props.peerId) set_selectedReceiver(props.peerId);
+  const setProppeerAddress = () => {
+    if (props.peerAddress) set_selectedReceiver(props.peerAddress);
   };
-  useEffect(setPropPeerId, [props.peerId]);
+  useEffect(setProppeerAddress, [props.peerAddress]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleEnter as EventListener);
@@ -156,13 +156,13 @@ export const SendMessageModal = (props: SendMessageModalProps) => {
     if (!loginData.apiEndpoint || !selectedReceiver) return;
     set_error(null);
     set_loader(true);
-    //const validatedReceiver = validatePeerId(selectedReceiver);
+    //const validatedReceiver = validatepeerAddress(selectedReceiver);
 
     const messagePayload: SendMessagePayloadType = {
       apiToken: loginData.apiToken ? loginData.apiToken : '',
       apiEndpoint: loginData.apiEndpoint,
       body: message,
-      peerId: selectedReceiver,
+      peerAddress: selectedReceiver,
       tag: 4677,
     };
     if (sendMode === 'automaticPath') {
@@ -189,7 +189,7 @@ export const SendMessageModal = (props: SendMessageModalProps) => {
         pathElements.push(...elements);
       }
 
-      const validatedPath = pathElements.map((element) => validatePeerId(element));
+      const validatedPath = pathElements.map((element) => validatepeerAddress(element));
       messagePayload.path = validatedPath;
     }
 
@@ -236,7 +236,7 @@ export const SendMessageModal = (props: SendMessageModalProps) => {
     set_sendMode('directMessage');
     set_numberOfHops(0);
     set_message('');
-    set_selectedReceiver(props.peerId ? props.peerId : null);
+    set_selectedReceiver(props.peerAddress ? props.peerAddress : null);
     set_path('');
     set_openModal(false);
     set_error(null);
@@ -271,7 +271,7 @@ export const SendMessageModal = (props: SendMessageModalProps) => {
     } else return false;
   };
 
-  const validatePeerId = (receiver: string) => {
+  const validatepeerAddress = (receiver: string) => {
     if (aliases && isAlias(receiver)) {
       return aliases[receiver];
     }
@@ -326,14 +326,14 @@ export const SendMessageModal = (props: SendMessageModalProps) => {
               set_selectedReceiver(newValue);
             }}
             options={sendMessageAddressBook}
-            getOptionLabel={(peerId) =>
-              peerIdToAliasLink[peerId] ? `${peerIdToAliasLink[peerId]} (${peerId})` : peerId
+            getOptionLabel={(peerAddress) =>
+              peerAddressToAliasLink[peerAddress] ? `${peerAddressToAliasLink[peerAddress]} (${peerAddress})` : peerAddress
             }
             autoSelect
             renderInput={(params) => (
               <TextField
                 {...params}
-                label="Receiver (PeerId or Alias)"
+                label="Receiver (peerAddress or Alias)"
                 placeholder="Select Receiver"
                 fullWidth
               />
@@ -363,7 +363,7 @@ export const SendMessageModal = (props: SendMessageModalProps) => {
               <MenuItem value="directMessage">Direct Message</MenuItem>
               <MenuItem value="automaticPath">Automatic Path</MenuItem>
               <MenuItem value="numberOfHops">Number of Hops</MenuItem>
-              <MenuItem value="path">Path (PeerIds or Aliases)</MenuItem>
+              <MenuItem value="path">Path (peerAddresss or Aliases)</MenuItem>
             </Select>
             {sendMode === 'numberOfHops' && (
               <TextField
@@ -384,7 +384,7 @@ export const SendMessageModal = (props: SendMessageModalProps) => {
           </PathOrHops>
           {sendMode === 'path' && (
             <TextField
-              label="Path (PeerIds or Aliases)"
+              label="Path (peerAddresss or Aliases)"
               placeholder={'0x154a...d6D9E7f3,\n12D3Ko...wxd4zv,\nAlan,\n12D3Ko...zF8c7u'}
               value={path}
               onChange={handlePath}

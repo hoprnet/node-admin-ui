@@ -23,15 +23,15 @@ export const OpenMultipleChannelsModal = () => {
   const loginData = useAppSelector((selector) => selector.auth.loginData);
   const [openChannelModal, set_openMultipleChannelsModal] = useState(false);
   const [amount, set_amount] = useState('');
-  const [peerIds, set_peerIds] = useState<string[]>([]);
-  const canOpen = !(!amount || parseFloat(amount) <= 0 || !peerIds);
+  const [peerAddresss, set_peerAddresss] = useState<string[]>([]);
+  const canOpen = !(!amount || parseFloat(amount) <= 0 || !peerAddresss);
 
   useEffect(() => {
     window.addEventListener('keydown', handleEnter as EventListener);
     return () => {
       window.removeEventListener('keydown', handleEnter as EventListener);
     };
-  }, [openChannelModal, loginData, peerIds, amount]);
+  }, [openChannelModal, loginData, peerAddresss, amount]);
 
   const handleRefresh = () => {
     if (loginData.apiEndpoint) {
@@ -47,7 +47,7 @@ export const OpenMultipleChannelsModal = () => {
   const handleCloseModal = () => {
     set_openMultipleChannelsModal(false);
     set_amount('');
-    set_peerIds([]);
+    set_peerAddresss([]);
   };
 
   const handleOpenChannel = async (weiValue: string, peerAddress: string) => {
@@ -88,9 +88,9 @@ export const OpenMultipleChannelsModal = () => {
   const handleAction = async () => {
     const parsedOutgoing = parseFloat(amount ?? '0') >= 0 ? amount ?? '0' : '0';
     const weiValue = parseEther(parsedOutgoing).toString();
-    if (peerIds && loginData.apiEndpoint) {
-      for (let i = 0; i < peerIds.length; i++) {
-        handleOpenChannel(weiValue, peerIds[i]);
+    if (peerAddresss && loginData.apiEndpoint) {
+      for (let i = 0; i < peerAddresss.length; i++) {
+        handleOpenChannel(weiValue, peerAddresss[i]);
         await new Promise((r) => setTimeout(r, 50));
       }
     }
@@ -112,7 +112,7 @@ export const OpenMultipleChannelsModal = () => {
       if (typeof contents === 'string') {
         const parsedData = parseUploadedCSV(contents);
         if (parsedData.length > 0) {
-          set_peerIds(parsedData);
+          set_peerAddresss(parsedData);
           set_openMultipleChannelsModal(true);
         } else {
           const msg = 'Failed parsing .csv to open multiple channels.';
@@ -144,23 +144,23 @@ export const OpenMultipleChannelsModal = () => {
     const header = lines[0].split(',');
     const expectedObjectKeys = header.map((key) => key.trim());
 
-    // find the index of the "nodeAddress" header
-    let peerIdIndex = expectedObjectKeys.findIndex(
-      (key) => key === 'node' || key === 'peer' || key === 'nodeAddress' || key === 'peerAddress',
+    // find the index of the "peerAddress" header
+    let peerAddressIndex = expectedObjectKeys.findIndex(
+      (key) => key === 'node' || key === 'peer' || key === 'peerAddress' || key === 'peerAddress',
     );
 
-    if (peerIdIndex === -1) {
-      peerIdIndex = expectedObjectKeys.findIndex((key) => key.length === 53 && key.substr(0, 2) === '0x');
+    if (peerAddressIndex === -1) {
+      peerAddressIndex = expectedObjectKeys.findIndex((key) => key.length === 53 && key.substr(0, 2) === '0x');
       startAtLine = 0;
     }
 
-    // loop through each line, get the peerId value and add it to parsedData
+    // loop through each line, get the peerAddress value and add it to parsedData
     for (let i = startAtLine; i < lines.length; i++) {
       const values = lines[i].split(',');
-      if (values.length > 1 && peerIdIndex !== -1) {
-        const peerId = values[peerIdIndex]?.trim();
-        if (peerId) {
-          parsedData.push(peerId);
+      if (values.length > 1 && peerAddressIndex !== -1) {
+        const peerAddress = values[peerAddressIndex]?.trim();
+        if (peerAddress) {
+          parsedData.push(peerAddress);
         }
       }
     }
@@ -225,7 +225,7 @@ export const OpenMultipleChannelsModal = () => {
             label="Peer Ids"
             type="string"
             placeholder="0x154a...d6D9E7f3,0x10a...54Ee2662,0x207...45Ef2613"
-            value={peerIds.join(',\n')}
+            value={peerAddresss.join(',\n')}
             multiline
             rows={8}
             disabled={true}

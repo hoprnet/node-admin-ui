@@ -22,7 +22,7 @@ export const CreateAliasModal = (props: CreateAliasModalProps) => {
   const dispatch = useAppDispatch();
   const loginData = useAppSelector((store) => store.auth.loginData);
   const aliases = useAppSelector((store) => store.node.aliases);
-  const nodeAddress = useAppSelector((store) => store.node.addresses.data.native);
+  const peerAddress = useAppSelector((store) => store.node.addresses.data.native);
   const [alias, set_alias] = useState<string>('');
   const [address, set_address] = useState<string>(props.address ? props.address : '');
   const isAddressValid = isAddress(address);
@@ -32,7 +32,7 @@ export const CreateAliasModal = (props: CreateAliasModalProps) => {
   const hasAlias = !!aliases[address];
 
   const aliasesArr = aliases ? Object.keys(aliases) : [];
-  const aliasPeerIdsArr = aliases ? Object.values(aliases) : [];
+  const aliaspeerAddresssArr = aliases ? Object.values(aliases) : [];
   const aliasIncludesASpace = alias.includes(' ');
   const canAddAlias = !(
     alias.length === 0 ||
@@ -48,7 +48,7 @@ export const CreateAliasModal = (props: CreateAliasModalProps) => {
     return () => {
       window.removeEventListener('keydown', handleEnter as EventListener);
     };
-  }, [loginData, alias, nodeAddress, address]);
+  }, [loginData, alias, peerAddress, address]);
 
   const setPropAddress = () => {
     if (props.address) set_address(props.address);
@@ -56,7 +56,7 @@ export const CreateAliasModal = (props: CreateAliasModalProps) => {
   useEffect(setPropAddress, [props.address]);
 
   const handleChangeAddress = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (aliasPeerIdsArr.includes(event.target.value)) {
+    if (aliaspeerAddresssArr.includes(event.target.value)) {
       set_duplicateAddress(true);
     } else {
       set_duplicateAddress(false);
@@ -90,7 +90,7 @@ export const CreateAliasModal = (props: CreateAliasModalProps) => {
   };
 
   const handleAddAlias = () => {
-    dispatch(nodeActions.setAlias({ nodeAddress: address, alias }));
+    dispatch(nodeActions.setAlias({ peerAddress: address, alias }));
     handleCloseModal();
   };
 

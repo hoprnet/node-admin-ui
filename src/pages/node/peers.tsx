@@ -28,7 +28,7 @@ function PeersPage() {
   const peersConnected = useAppSelector((store) => store.node.peersConnected.data);
   const peersFetching = useAppSelector((store) => store.node.peersConnected.isFetching);
   const aliases = useAppSelector((store) => store.node.aliases);
-  const nodeAddressToOutgoingChannelLink = useAppSelector((store) => store.node.links.nodeAddressToOutgoingChannel);
+  const peerAddressToOutgoingChannelLink = useAppSelector((store) => store.node.links.peerAddressToOutgoingChannel);
 
   useEffect(() => {
     handleRefresh();
@@ -60,7 +60,7 @@ function PeersPage() {
     if (peersConnected && peersConnected.length > 0) {
       exportToCsv(
         peersConnected.map((peer) => ({
-          nodeAddress: peer.address,
+          peerAddress: peer.address,
           score: peer.score,
           lastUpdate: peer.lastUpdate,
           averageLatency: peer.averageLatency,
@@ -152,7 +152,7 @@ function PeersPage() {
 
     return {
       id: index + 1,
-      node: <PeersInfo nodeAddress={peer.address} />,
+      node: <PeersInfo peerAddress={peer.address} />,
       address: getAliasByAddress(peer.address),
       peerAddress: peer.address,
       score: <ProgressBar value={peer.score} />,
@@ -161,7 +161,7 @@ function PeersPage() {
         <>
           <PingModal address={peer.address} />
           <CreateAliasModal address={peer.address} />
-          {nodeAddressToOutgoingChannelLink[peer.address] ? (
+          {peerAddressToOutgoingChannelLink[peer.address] ? (
             <FundChannelModal address={peer.address} />
           ) : (
             <OpenChannelModal peerAddress={peer.address} />

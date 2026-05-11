@@ -28,7 +28,8 @@ import {
   type OpenSessionPayloadType,
   type CloseSessionPayloadType,
   type GetConnectedResponseType,
-  type GetAnnouncedResponseType
+  type GetAnnouncedResponseType,
+  RedeemAllTicketsPayloadType
 } from '@hoprnet/hopr-sdk';
 import { parseMetrics } from '../../../utils/metrics';
 import { RootState } from '../..';
@@ -63,6 +64,7 @@ const {
   redeemAllTickets,
   withdraw,
   isNodeReady,
+
 } = api;
 const { openMultipleChannels } = flows;
 
@@ -370,12 +372,13 @@ const closeChannelThunk = createAsyncThunk<CloseChannelResponseType, CloseChanne
   },
   {
     condition: (_payload, { getState }) => {
-      const channelId = _payload.channelId;
+      const address = _payload.address;
+      const direction = _payload.direction;
       let isClosing = false;
-      if (getState().node.channels.parsed.outgoing[channelId]) {
-        isClosing = !!getState().node.channels.parsed.outgoing[channelId].isClosing;
-      } else if (getState().node.channels.parsed.incoming[channelId]) {
-        isClosing = !!getState().node.channels.parsed.incoming[channelId].isClosing;
+      if (direction === 'outgoing' && getState().node.channels.parsed.outgoing[address]) {
+        isClosing = !!getState().node.channels.parsed.outgoing[address].isClosing;
+      } else if (direction === 'incoming' && getState().node.channels.parsed.incoming[address]) {
+        isClosing = !!getState().node.channels.parsed.incoming[address].isClosing;
       }
       if (isClosing) {
         return false;
@@ -421,7 +424,7 @@ const openMultipleChannelsThunk = createAsyncThunk(
     payload: {
       apiEndpoint: string;
       apiToken: string;
-      peerIds: string[];
+      peerAddresss: string[];
       amount: string;
       timeout?: number;
     },
@@ -432,7 +435,7 @@ const openMultipleChannelsThunk = createAsyncThunk(
         apiEndpoint: payload.apiEndpoint,
         apiToken: payload.apiToken,
         timeout: payload.timeout,
-        destinations: payload.peerIds,
+        destinations: payload.peerAddresss,
         amount: payload.amount,
       });
       if (typeof res === 'undefined')
@@ -452,13 +455,13 @@ const openMultipleChannelsThunk = createAsyncThunk(
 
 const redeemChannelTicketsThunk = createAsyncThunk<
   boolean | undefined,
-  RedeemChannelTicketsPayloadType,
+  RedeemAllTicketsPayloadType,
   { state: RootState }
 >(
   'node/redeemChannelTickets',
   async (payload, { rejectWithValue }) => {
     try {
-      const res = await redeemChannelTickets(payload);
+      const res = await redeemAllTickets(payload);
       return res;
     } catch (e) {
       if (e instanceof sdkApiError) {
@@ -482,7 +485,7 @@ const pingNodeThunk = createAsyncThunk('node/pingNode', async (payload: PingPeer
     const res = await pingPeer(payload);
     return {
       ...res,
-      peerId: payload.address,
+      peerAddress: payload.address,
     };
   } catch (e) {
     if (e instanceof sdkApiError) {
@@ -515,28 +518,28 @@ const redeemAllTicketsThunk = createAsyncThunk<boolean | undefined, BasePayloadT
   },
 );
 
-const resetTicketStatisticsThunk = createAsyncThunk<boolean | undefined, BasePayloadType, { state: RootState }>(
-  'node/resetTicketStatisticsThunk',
-  async (payload, { rejectWithValue }) => {
-    try {
-      const res = await resetTicketStatistics(payload);
-      return res;
-    } catch (e) {
-      if (e instanceof sdkApiError) {
-        return rejectWithValue(e);
-      }
-      return rejectWithValue({ status: JSON.stringify(e) });
-    }
-  },
-  {
-    condition: (_payload, { getState }) => {
-      const isFetching = getState().node.resetTicketStatistics.isFetching;
-      if (isFetching) {
-        return false;
-      }
-    },
-  },
-);
+// const resetTicketStatisticsThunk = createAsyncThunk<boolean | undefined, BasePayloadType, { state: RootState }>(
+//   'node/resetTicketStatisticsThunk',
+//   async (payload, { rejectWithValue }) => {
+//     try {
+//       const res = await resetTicketStatistics(payload);
+//       return res;
+//     } catch (e) {
+//       if (e instanceof sdkApiError) {
+//         return rejectWithValue(e);
+//       }
+//       return rejectWithValue({ status: JSON.stringify(e) });
+//     }
+//   },
+//   {
+//     condition: (_payload, { getState }) => {
+//       const isFetching = getState().node.resetTicketStatistics.isFetching;
+//       if (isFetching) {
+//         return false;
+//       }
+//     },
+//   },
+// );
 
 const getPrometheusMetricsThunk = createAsyncThunk<string | undefined, BasePayloadType, { state: RootState }>(
   'node/getPrometheusMetrics',
@@ -816,24 +819,24 @@ export const createAsyncReducer = (builder: ActionReducerMapBuilder<typeof initi
 
       // Clean store to make sure that removed channels do not stay here
       state.channels.parsed.outgoing = {};
-      state.links.nodeAddressToOutgoingChannel = {};
+      state.links.peerAddressToOutgoingChannel = {};
 
       // Regenerate channels
       for (let i = 0; i < channels.outgoing.length; i++) {
         const channelId = channels.outgoing[i].id;
-        const nodeAddress = channels.outgoing[i].peerAddress;
-        state.links.nodeAddressToOutgoingChannel[nodeAddress] = channelId;
+        const peerAddress = channels.outgoing[i].peerAddress;
+        state.links.peerAddressToOutgoingChannel[peerAddress] = channelId;
 
         if (!state.channels.parsed.outgoing[channelId]) {
           state.channels.parsed.outgoing[channelId] = {
             balance: channels.outgoing[i].balance,
-            peerAddress: nodeAddress,
+            peerAddress: peerAddress,
             status: channels.outgoing[i].status,
             isClosing: areClosingOutgoing.includes(channelId),
           };
         } else {
           state.channels.parsed.outgoing[channelId].balance = channels.outgoing[i].balance;
-          state.channels.parsed.outgoing[channelId].peerAddress = nodeAddress;
+          state.channels.parsed.outgoing[channelId].peerAddress = peerAddress;
           state.channels.parsed.outgoing[channelId].status = channels.outgoing[i].status;
           state.channels.parsed.outgoing[channelId].isClosing = areClosingOutgoing.includes(channelId);
         }
@@ -842,14 +845,14 @@ export const createAsyncReducer = (builder: ActionReducerMapBuilder<typeof initi
       state.channels.parsed.incoming = {};
       for (let i = 0; i < channels.incoming.length; i++) {
         const channelId = channels.incoming[i].id;
-        const nodeAddress = channels.incoming[i].peerAddress;
-        state.links.nodeAddressToIncomingChannel[nodeAddress] = channelId;
-        state.links.incomingChannelToNodeAddress[channelId] = nodeAddress;
+        const peerAddress = channels.incoming[i].peerAddress;
+        state.links.peerAddressToIncomingChannel[peerAddress] = channelId;
+        state.links.incomingChannelTopeerAddress[channelId] = peerAddress;
 
         if (!state.channels.parsed.incoming[channelId]) {
           state.channels.parsed.incoming[channelId] = {
             balance: channels.incoming[i].balance,
-            peerAddress: nodeAddress,
+            peerAddress: peerAddress,
             status: channels.incoming[i].status,
             tickets: 0,
             ticketBalance: '0',
@@ -857,7 +860,7 @@ export const createAsyncReducer = (builder: ActionReducerMapBuilder<typeof initi
           };
         } else {
           state.channels.parsed.incoming[channelId].balance = channels.incoming[i].balance;
-          state.channels.parsed.incoming[channelId].peerAddress = nodeAddress;
+          state.channels.parsed.incoming[channelId].peerAddress = peerAddress;
           state.channels.parsed.incoming[channelId].status = channels.incoming[i].status;
           state.channels.parsed.incoming[channelId].isClosing = areClosingIncoming.includes(channelId);
         }
@@ -889,21 +892,24 @@ export const createAsyncReducer = (builder: ActionReducerMapBuilder<typeof initi
   });
   //closeChannel
   builder.addCase(closeChannelThunk.pending, (state, action) => {
-    const channelId = action.meta.arg.channelId;
-    if (state.channels.parsed.outgoing[channelId]) state.channels.parsed.outgoing[channelId].isClosing = true;
-    if (state.channels.parsed.incoming[channelId]) state.channels.parsed.incoming[channelId].isClosing = true;
+    const address = action.meta.arg.address;
+    const direction = action.meta.arg.direction;
+    if (direction === 'outgoing' && state.channels.parsed.outgoing[address]) state.channels.parsed.outgoing[address].isClosing = true;
+    if (direction === 'incoming' && state.channels.parsed.incoming[address]) state.channels.parsed.incoming[address].isClosing = true;
   });
   builder.addCase(closeChannelThunk.fulfilled, (state, action) => {
     if (action.meta.arg.apiEndpoint !== state.apiEndpoint) return;
-    const channelId = action.meta.arg.channelId;
-    if (state.channels.parsed.outgoing[channelId]) state.channels.parsed.outgoing[channelId].isClosing = false;
-    if (state.channels.parsed.incoming[channelId]) state.channels.parsed.incoming[channelId].isClosing = false;
+    const address = action.meta.arg.address;
+    const direction = action.meta.arg.direction;
+    if (direction === 'outgoing' && state.channels.parsed.outgoing[address]) state.channels.parsed.outgoing[address].isClosing = false;
+    if (direction === 'incoming' && state.channels.parsed.incoming[address]) state.channels.parsed.incoming[address].isClosing = false;
   });
   builder.addCase(closeChannelThunk.rejected, (state, action) => {
     if (action.meta.arg.apiEndpoint !== state.apiEndpoint) return;
-    const channelId = action.meta.arg.channelId;
-    if (state.channels.parsed.outgoing[channelId]) state.channels.parsed.outgoing[channelId].isClosing = false;
-    if (state.channels.parsed.incoming[channelId]) state.channels.parsed.incoming[channelId].isClosing = false;
+    const address = action.meta.arg.address;
+    const direction = action.meta.arg.direction;
+    if (direction === 'outgoing' && state.channels.parsed.outgoing[address]) state.channels.parsed.outgoing[address].isClosing = false;
+    if (direction === 'incoming' && state.channels.parsed.incoming[address]) state.channels.parsed.incoming[address].isClosing = false;
   });
   //getConfiguration
   builder.addCase(getConfigurationThunk.pending, (state, action) => {
@@ -998,20 +1004,20 @@ export const createAsyncReducer = (builder: ActionReducerMapBuilder<typeof initi
     ).error;
   });
   // resetTicketStatisticsThunk
-  builder.addCase(resetTicketStatisticsThunk.pending, (state) => {
-    state.resetTicketStatistics.isFetching = true;
-  });
-  builder.addCase(resetTicketStatisticsThunk.fulfilled, (state) => {
-    if (!state.statistics.data) return;
-    state.statistics.data.neglectedValue = '0';
-    state.statistics.data.redeemedValue = '0';
-    state.statistics.data.rejectedValue = '0';
-    state.statistics.data.winningCount = 0;
-    state.resetTicketStatistics.isFetching = false;
-  });
-  builder.addCase(resetTicketStatisticsThunk.rejected, (state) => {
-    state.resetTicketStatistics.isFetching = false;
-  });
+  // builder.addCase(resetTicketStatisticsThunk.pending, (state) => {
+  //   state.resetTicketStatistics.isFetching = true;
+  // });
+  // builder.addCase(resetTicketStatisticsThunk.fulfilled, (state) => {
+  //   if (!state.statistics.data) return;
+  //   state.statistics.data.neglectedValue = '0';
+  //   state.statistics.data.redeemedValue = '0';
+  //   state.statistics.data.rejectedValue = '0';
+  //   state.statistics.data.winningCount = 0;
+  //   state.resetTicketStatistics.isFetching = false;
+  // });
+  // builder.addCase(resetTicketStatisticsThunk.rejected, (state) => {
+  //   state.resetTicketStatistics.isFetching = false;
+  // });
   // getVersion
   builder.addCase(getVersionThunk.pending, (state) => {
     state.version.isFetching = true;
@@ -1058,19 +1064,19 @@ export const createAsyncReducer = (builder: ActionReducerMapBuilder<typeof initi
   builder.addCase(pingNodeThunk.fulfilled, (state, action) => {
     if (action.meta.arg.apiEndpoint !== state.apiEndpoint) return;
     if (action.payload) {
-      const pingExists = state.pings.findIndex((ping) => ping.peerId === action.payload?.peerId);
+      const pingExists = state.pings.findIndex((ping) => ping.peerAddress === action.payload?.peerAddress);
 
-      if (!action.payload.peerId) return;
+      if (!action.payload.peerAddress) return;
 
       if (pingExists) {
         state.pings[pingExists] = {
           latency: action.payload.latency,
-          peerId: action.payload.peerId,
+          peerAddress: action.payload.peerAddress,
         };
       } else {
         state.pings.push({
           latency: action.payload.latency,
-          peerId: action.payload.peerId,
+          peerAddress: action.payload.peerAddress,
         });
       }
     }
@@ -1209,7 +1215,7 @@ export const actionsAsync = {
   redeemChannelTicketsThunk,
   pingNodeThunk,
   redeemAllTicketsThunk,
-  resetTicketStatisticsThunk,
+//  resetTicketStatisticsThunk,
   getTicketPriceThunk,
   getMinimumNetworkProbabilityThunk,
   getSessionsThunk,

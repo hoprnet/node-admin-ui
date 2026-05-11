@@ -51,14 +51,14 @@ export const OpenChannelModal = ({ ...props }: OpenChannelModalProps) => {
   const canOpen = !(!amount || parseFloat(amount) <= 0 || !peerAddress);
   const myAddress = useAppSelector((store) => store.node.addresses.data.native || '');
   const sortedAliases = useAppSelector((store) => store.node.links.sortedAliases);
-  const aliasToNodeAddress = useAppSelector((store) => store.node.links.aliasToNodeAddress);
+  const aliasTopeerAddress = useAppSelector((store) => store.node.links.aliasTopeerAddress);
   const sortedAnnouncedPeers = useAppSelector((store) => store.node.peersAnnounced.parsed.sorted);
-  const nodeAddressesWithAliases = useAppSelector((store) => store.node.links.nodeAddressesWithAliases);
+  const peerAddressesWithAliases = useAppSelector((store) => store.node.links.peerAddressesWithAliases);
   const addressBook = [
     myAddress,
-    ...sortedAliases.map((alias) => aliasToNodeAddress[alias]),
+    ...sortedAliases.map((alias) => aliasTopeerAddress[alias]),
     ...sortedAnnouncedPeers.filter(
-      (nodeAddress) => nodeAddress !== myAddress && !nodeAddressesWithAliases.includes(nodeAddress),
+      (peerAddress) => peerAddress !== myAddress && !peerAddressesWithAliases.includes(peerAddress),
     ),
   ];
 

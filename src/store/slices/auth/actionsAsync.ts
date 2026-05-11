@@ -71,9 +71,9 @@ export const loginThunk = createAsyncThunk<
     }
 
     if (e instanceof sdkApiError && e.hoprdErrorPayload?.error?.includes('get_peer_multiaddresses')) {
-      const nodeAddressIsAvailable = addresses?.native ? `\n\nNode Address: ${addresses.native}` : '';
+      const peerAddressIsAvailable = addresses?.native ? `\n\nNode Address: ${addresses.native}` : '';
       return rejectWithValue({
-        data: 'Your Node seems to be starting, wait a couple of minutes before accessing it.' + nodeAddressIsAvailable,
+        data: 'Your Node seems to be starting, wait a couple of minutes before accessing it.' + peerAddressIsAvailable,
         type: 'API_ERROR',
       });
     }
