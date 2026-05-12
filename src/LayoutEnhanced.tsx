@@ -156,7 +156,8 @@ const LayoutEnhanced = () => {
       }
     };
     useNode();
-  }, [apiEndpoint, apiToken, loginData.apiEndpoint, loginData.apiToken]);
+    // run only on first mount — URL-driven auto-login
+  }, []);
 
   return (
     <Layout

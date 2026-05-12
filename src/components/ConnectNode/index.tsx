@@ -14,6 +14,7 @@ import { appActions } from '../../store/slices/app';
 
 //MUI
 import { Button, Menu, MenuItem, CircularProgress } from '@mui/material';
+import { abortAllPending } from '../../store/abortRegistry';
 
 const Container = styled(Button)`
   align-items: center;
@@ -152,10 +153,10 @@ export default function ConnectNode() {
   }, [openLoginModalToNode]);
 
   const handleLogout = () => {
+    abortAllPending();
     dispatch(authActions.resetState());
     dispatch(nodeActions.resetState());
     dispatch(appActions.resetNodeState());
-    //  dispatch(nodeActions.closeMessagesWebsocket());
     navigate('/');
   };
 
