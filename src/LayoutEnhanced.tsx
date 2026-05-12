@@ -156,7 +156,6 @@ const LayoutEnhanced = () => {
       }
     };
     useNode();
-    // run only on first mount — URL-driven auto-login
   }, []);
 
   return (

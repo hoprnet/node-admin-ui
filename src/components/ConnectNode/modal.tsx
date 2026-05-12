@@ -260,7 +260,6 @@ function ConnectNodeModal({ open = false, handleClose }: ConnectNodeModalProps) 
     abortAllPending();
     dispatch(authActions.resetState());
     dispatch(nodeActions.resetState());
-    abortAllPending;
     try {
       console.log('Node Admin login from modal');
       const loginInfo = await dispatch(
@@ -490,7 +489,7 @@ function ConnectNodeModal({ open = false, handleClose }: ConnectNodeModalProps) 
               color="primary"
               aria-label="close modal"
               onClick={() => {
-                dispatch(authActions.removeFailedLogin());
+                dispatch(authActions.resetState());
               }}
             >
               <CloseIcon />

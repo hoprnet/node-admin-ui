@@ -15,13 +15,6 @@ const authSlice = createSlice({
       if (ADMIN_UI_NODE_LIST) state.nodes = ADMIN_UI_NODE_LIST;
       return state;
     },
-    removeFailedLogin: (state) => {
-      state.status = {
-        connecting: false,
-        connected: false,
-        error: null,
-      };
-    },
     useNodeData(
       state,
       action: PayloadAction<{
