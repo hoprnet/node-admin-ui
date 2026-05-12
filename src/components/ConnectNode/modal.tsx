@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../store';
+import { abortAllPending } from '../../store/abortRegistry';
 import styled from '@emotion/styled';
 import { trackGoal } from 'fathom-client';
 import { parseAndFormatUrl } from '../../utils/parseAndFormatUrl';
@@ -256,10 +257,9 @@ function ConnectNodeModal({ open = false, handleClose }: ConnectNodeModalProps) 
         apiEndpoint: formattedApiEndpoint,
       });
     }
+    abortAllPending();
     dispatch(authActions.resetState());
     dispatch(nodeActions.resetState());
-    dispatch(appActions.resetNodeState());
-    dispatch(nodeActions.closeMessagesWebsocket());
     try {
       console.log('Node Admin login from modal');
       const loginInfo = await dispatch(

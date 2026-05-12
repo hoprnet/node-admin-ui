@@ -1,10 +1,24 @@
-import { configureStore } from '@reduxjs/toolkit';
+import { configureStore, Middleware } from '@reduxjs/toolkit';
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 
 import authSlice from './slices/auth';
 import nodeSlice from './slices/node';
 import appSlice from './slices/app';
+import { trackAbortable } from './abortRegistry';
 //import { websocketMiddleware } from './slices/node/websocketMiddleware';
+
+const abortTrackingMiddleware: Middleware = () => (next) => (action) => {
+  const result = next(action);
+  if (
+    result &&
+    typeof result === 'object' &&
+    typeof (result as { abort?: unknown }).abort === 'function' &&
+    typeof (result as { then?: unknown }).then === 'function'
+  ) {
+    trackAbortable(result as { abort: () => void } & PromiseLike<unknown>);
+  }
+  return result;
+};
 
 const store = configureStore({
   reducer: {
@@ -12,7 +26,7 @@ const store = configureStore({
     node: nodeSlice,
     app: appSlice,
   },
-  //  middleware: (getDefaultMiddleware) => getDefaultMiddleware().prepend(websocketMiddleware),
+  middleware: (getDefaultMiddleware) => getDefaultMiddleware().prepend(abortTrackingMiddleware),
   devTools: import.meta.env.PROD ? false : { maxAge: 5000 },
 });
 
