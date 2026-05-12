@@ -55,7 +55,7 @@ jobs:
     steps:
       - name: Release version
         id: release
-        uses: hoprnet/hopr-workflows/actions/release-version@release-version-v3
+        uses: hoprnet/hopr-workflows/actions/release-version@release-version-v4
         with:
           source_branch: ${{ github.ref_name }}
           file: package.json
@@ -67,3 +67,20 @@ jobs:
           zulip_topic: Releases
           gcp_service_account: ${{ secrets.GCP_SA_GITHUB_RUNNER }}
           github_token: ${{ secrets.GH_RUNNER_TOKEN }}
+  post-release:
+    name: Post Release
+    runs-on: depot-ubuntu-24.04
+    needs: release
+    permissions:
+      contents: read
+    steps:
+      - name: Bump dappnode testnet package
+        uses: peter-evans/repository-dispatch@28959ce8df70de7be546dd1250a005dd32156697 # v4.0.1
+        with:
+          token: ${{ secrets.GNOSIS_GITHUB_WORKFLOW_TOKEN }}
+          repository: dappnode/DAppNodePackage-Hopr-testnet
+          event-type: bump
+          client-payload: |-
+            {
+              "node_admin_version": "${{ needs.release.outputs.released_version }}"
+            }
