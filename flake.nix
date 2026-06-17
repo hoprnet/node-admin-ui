@@ -64,9 +64,10 @@
       {
         devShells.default = pkgs.mkShell {
           inputsFrom = [ (import ./shell.nix { inherit pkgs; }) ];
+          buildInputs = [ pkgs.gh ];
           shellHook = ''
-            ${pre-commit-check.shellHook}
             export GITHUB_TOKEN="''${GITHUB_TOKEN:-$(gh auth token 2>/dev/null || true)}"
+            ${pre-commit-check.shellHook}
           '';
         };
         devShells.ci = pkgs.mkShell {
