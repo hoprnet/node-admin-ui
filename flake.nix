@@ -24,7 +24,7 @@
         dockerBuild = pkgs.writeShellApplication {
           name = "dockerBuild";
           runtimeInputs = [
-            pkgs.docker
+            pkgs.docker_29
             pkgs.coreutils
           ];
           text = ''
