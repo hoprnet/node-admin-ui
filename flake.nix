@@ -3,7 +3,7 @@
 
   inputs = {
     flake-utils.url = "github:numtide/flake-utils";
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
     pre-commit.url = "github:cachix/git-hooks.nix";
     pre-commit.inputs.nixpkgs.follows = "nixpkgs";
   };
@@ -64,6 +64,14 @@
               files = "^\\.github/workflows/.*\\.ya?ml$";
               language = "system";
               pass_filenames = false;
+            };
+            dependabot-validator = {
+              enable = true;
+              name = "Dependabot config validator";
+              entry = "${pkgs.check-jsonschema}/bin/check-jsonschema --builtin-schema vendor.dependabot";
+              files = "\\.github/dependabot\\.yml$";
+              language = "system";
+              pass_filenames = true;
             };
           };
           tools = pkgs;
