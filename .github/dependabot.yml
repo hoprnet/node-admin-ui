@@ -6,14 +6,14 @@ updates:
   # to git add/reset/pwd only. Every Monday run ends with "Digest is not updated" →
   # level-40 "Error updating branch: update failure". Dependabot handles flake.lock
   # instead; the nix manager is disabled in renovate.json.
-  - package-ecosystem: "nix"
-    directory: "/"
+  - package-ecosystem: 'nix'
+    directory: '/'
     schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "02:00"
-      timezone: "UTC"
+      interval: 'weekly'
+      day: 'monday'
+      time: '02:00'
+      timezone: 'UTC'
     groups:
       nix-flake-inputs:
         patterns:
-          - "*"
+          - '*'
