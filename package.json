@@ -1,6 +1,6 @@
 {
   "name": "node-admin-ui",
-  "version": "4.0.0-rc.2",
+  "version": "10.0.0-rc.2",
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.11.0",
