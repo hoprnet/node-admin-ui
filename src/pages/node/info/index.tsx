@@ -13,6 +13,8 @@ import Visibility from '@mui/icons-material/Visibility';
 // HOPR Components
 import Section from '../../../future-hopr-lib-components/Section';
 import { actionsAsync as nodeActionsAsync } from '../../../store/slices/node/actionsAsync';
+import { fetchBlokliData } from '../../../store/slices/blokli/fetchBlokliData';
+import { selectBlokliUrl, selectChannelsOutBalance } from '../../../store/selectors/blokli';
 import { TableExtended } from '../../../future-hopr-lib-components/Table/columed-data';
 import { SubpageTitle } from '../../../components/SubpageTitle';
 import Tooltip from '../../../future-hopr-lib-components/Tooltip/tooltip-fixed-width';
@@ -65,6 +67,12 @@ function InfoPage() {
   const nodeSync = useAppSelector((store) => store.node.metricsParsed.nodeSync);
   const ticketPrice = useAppSelector((store) => store.node.ticketPrice.data);
   const minimumNetworkProbability = useAppSelector((store) => store.node.probability.data);
+  // blokli: safe wide channel stake and this node's on chain ticket redemptions
+  const blokliUrl = useAppSelector(selectBlokliUrl);
+  const channelsOut = useAppSelector(selectChannelsOutBalance);
+  const channelStatsFetching = useAppSelector((store) => store.blokli.channelStats.isFetching);
+  const ticketRedemption = useAppSelector((store) => store.blokli.ticketRedemption.data);
+  const ticketRedemptionFetching = useAppSelector((store) => store.blokli.ticketRedemption.isFetching);
   const [showWholeProvider, set_showWholeProvider] = useState(false);
   const [providerShort, set_providerShort] = useState('');
   const [providerContainsSecret, set_providerContainsSecret] = useState(true);
@@ -158,6 +166,12 @@ function InfoPage() {
         apiToken: apiToken ? apiToken : '',
       }),
     );
+    fetchBlokliData({
+      blokliUrl,
+      nodeAddress: addresses?.native,
+      safeAddress: info?.hoprNodeSafe,
+      dispatch,
+    });
   };
 
   // This will allow us to improve readability on the reloading prop for SubpageTitle
@@ -169,6 +183,8 @@ function InfoPage() {
     infoFetching,
     peersConnectedFetching,
     peersAnnouncedFetching,
+    channelStatsFetching,
+    ticketRedemptionFetching,
   ].includes(true);
 
   const noCopyPaste = !(
@@ -465,13 +481,20 @@ function InfoPage() {
             <tr>
               <th>
                 <Tooltip
-                  title="The amount of wxHOPR tokens staked in the channels your Node has opened with counterparties"
+                  title={
+                    channelsOut.fromBlokli
+                      ? 'The amount of wxHOPR tokens staked in the outgoing channels of every Node registered to your Safe. Read from blokli.'
+                      : 'The amount of wxHOPR tokens staked in the channels your Node has opened with counterparties. Blokli is unavailable, so this covers only this Node.'
+                  }
                   notWide
                 >
                   <span>wxHOPR: Channels OUT</span>
                 </Tooltip>
               </th>
-              <td>{balances.channels?.formatted} wxHOPR</td>
+              <td>
+                {channelsOut.formatted ? channelsOut.formatted : '-'} wxHOPR
+                {channelsOut.count !== null && ` (${channelsOut.count} channels)`}
+              </td>
             </tr>
             <tr>
               <th>
@@ -494,11 +517,22 @@ function InfoPage() {
                 </Tooltip>
               </th>
               <td>
-                {balances.channels?.value && balances.safeHopr?.value
-                  ? formatEther(BigInt(balances.channels?.value) + BigInt(balances.safeHopr?.value))
+                {channelsOut.value && balances.safeHopr?.value
+                  ? formatEther(BigInt(channelsOut.value) + BigInt(balances.safeHopr?.value))
                   : '-'}{' '}
                 wxHOPR
               </td>
+            </tr>
+            <tr>
+              <th>
+                <Tooltip
+                  title="The total value of the tickets this Node has redeemed on chain, all time. Read from blokli, so unlike the Node's own ticket statistics it survives a database reset."
+                  notWide
+                >
+                  <span>Redeemed wxHOPR</span>
+                </Tooltip>
+              </th>
+              <td>{ticketRedemption ? `${ticketRedemption.redeemed.formatted} wxHOPR` : '-'}</td>
             </tr>
           </tbody>
         </TableExtended>

@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../../store';
 import { actionsAsync } from '../../store/slices/node/actionsAsync';
+import { fetchBlokliData } from '../../store/slices/blokli/fetchBlokliData';
+import { selectBlokliUrl } from '../../store/selectors/blokli';
 import { exportToFile } from '../../utils/helpers';
 import { formatEther } from 'viem';
 
@@ -27,6 +29,9 @@ function TicketsPage() {
   const redeemAllTicketsErrors = useAppSelector((store) => store.node.redeemAllTickets.error);
   const loginData = useAppSelector((store) => store.auth.loginData);
   const info = useAppSelector((store) => store.node.info.data);
+  const nodeAddress = useAppSelector((store) => store.node.addresses.data.native);
+  const blokliUrl = useAppSelector(selectBlokliUrl);
+  const ticketRedemption = useAppSelector((store) => store.blokli.ticketRedemption.data);
   const ticketPrice = useAppSelector((store) => store.node.ticketPrice.data);
   const minimumNetworkProbability = useAppSelector((store) => store.node.probability.data);
   const [resettingStats, set_resettingStats] = useState(false);
@@ -54,6 +59,12 @@ function TicketsPage() {
         }),
       );
     }
+    fetchBlokliData({
+      blokliUrl,
+      nodeAddress,
+      safeAddress: info?.hoprNodeSafe,
+      dispatch,
+    });
   };
 
   const handleRedeemAllTickets = () => {
@@ -167,17 +178,28 @@ function TicketsPage() {
               </th>
               <td>{statistics?.rejectedValue ? statistics?.rejectedValue : '-'} wxHOPR</td>
             </tr>
-            {/* <tr>
+            <tr>
               <th>
                 <Tooltip
-                  title="The value of all your redeemed tickets. Value is counted from last DB reset."
+                  title="The total value of the tickets this node has redeemed on chain, all time. Read from blokli, so unlike the values above it survives a DB reset."
                   notWide
                 >
                   <span>Redeemed value</span>
                 </Tooltip>
               </th>
-              <td>{statistics?.redeemedValue ? statistics?.redeemedValue : '-'} wxHOPR</td>
-            </tr> */}
+              <td>{ticketRedemption ? `${ticketRedemption.redeemed.formatted} wxHOPR` : '-'}</td>
+            </tr>
+            <tr>
+              <th>
+                <Tooltip
+                  title="The number of on chain ticket redemptions made by this node, all time. Read from blokli."
+                  notWide
+                >
+                  <span>Redemptions</span>
+                </Tooltip>
+              </th>
+              <td>{ticketRedemption ? ticketRedemption.redemptionCount : '-'}</td>
+            </tr>
           </tbody>
         </TableExtended>
 

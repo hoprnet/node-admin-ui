@@ -1,4 +1,5 @@
 import { useAppSelector } from '../../store';
+import { selectChannelsOutBalance } from '../../store/selectors/blokli';
 import styled from '@emotion/styled';
 import { formatEther } from 'viem';
 import Tooltip from '@mui/material/Tooltip';
@@ -152,10 +153,12 @@ export default function Details(props: Props) {
   const balances = useAppSelector((store) => store.node.balances.data);
   const info = useAppSelector((store) => store.node.info.data);
   const statistics = useAppSelector((store) => store.node.statistics.data);
+  // same source as the info page's Channels OUT row, so the 2 cannot disagree
+  const channelsOut = useAppSelector(selectChannelsOutBalance);
 
   const totalwxHOPR =
-    balances.channels?.value && balances.safeHopr?.value
-      ? formatEther(BigInt(balances.channels?.value) + BigInt(balances.safeHopr?.value))
+    channelsOut.value && balances.safeHopr?.value
+      ? formatEther(BigInt(channelsOut.value) + BigInt(balances.safeHopr?.value))
       : '-';
 
   const isXdaiEnough = () => {
@@ -239,12 +242,8 @@ export default function Details(props: Props) {
           >
             <p>{balances.safeHopr?.formatted ?? '-'}</p>
           </Tooltip>
-          <Tooltip
-            title={
-              balances.channels?.formatted && balances.channels?.formatted !== '0' ? balances.channels?.formatted : null
-            }
-          >
-            <p className="double">{balances.channels?.formatted ?? '-'}</p>
+          <Tooltip title={channelsOut.formatted && channelsOut.formatted !== '0' ? channelsOut.formatted : null}>
+            <p className="double">{channelsOut.formatted ? channelsOut.formatted : '-'}</p>
           </Tooltip>
           <Tooltip title={totalwxHOPR && totalwxHOPR !== '0' ? totalwxHOPR : null}>
             <p className="double">{totalwxHOPR ?? '-'}</p>

@@ -18,7 +18,8 @@ import TextField from '../../future-hopr-lib-components/TextField';
 import { Paper, Switch } from '@mui/material';
 import styled from '@emotion/styled';
 import { appActions } from '../../store/slices/app';
-import { nodeActions } from '../../store/slices/node';
+import { blokliActions } from '../../store/slices/blokli';
+import { selectBlokliUrl } from '../../store/selectors/blokli';
 import { parseAndFormatUrl } from '../../utils/parseAndFormatUrl';
 import GetAppIcon from '@mui/icons-material/GetApp';
 
@@ -68,8 +69,8 @@ function SettingsPage() {
   const dispatch = useAppDispatch();
   const prevNotificationSettings = useAppSelector((store) => store.app.configuration.notifications);
   const aliasMergeMode = useAppSelector((store) => store.app.configuration.aliases.mergeMode);
-  const blokliUrl = useAppSelector((store) => store.node.blokliUrl);
-  const nodeProviderUrl = useAppSelector((store) => store.node.info.data?.providerUrl);
+  const blokliUrlOverride = useAppSelector((store) => store.blokli.url);
+  const effectiveBlokliUrl = useAppSelector(selectBlokliUrl) ?? '';
   const strategy = useAppSelector((store) => store.node.configuration.data?.strategy);
   const configuration = useAppSelector((store) => store.node.configuration.data);
   const ticketPrice = useAppSelector((store) => store.node.ticketPrice.data);
@@ -79,8 +80,6 @@ function SettingsPage() {
   const [localNotificationSettings, set_localNotificationSettings] = useState<typeof prevNotificationSettings>();
   const [localBlokliUrl, set_localBlokliUrl] = useState('');
   const [blokliUrlError, set_blokliUrlError] = useState<string | null>(null);
-  // the url the node reports is the default, blokliUrl is the override saved for this node
-  const effectiveBlokliUrl = blokliUrl ?? nodeProviderUrl ?? '';
   const canSaveBlokliUrl = localBlokliUrl !== effectiveBlokliUrl;
   const canSave = !(
     localNotificationSettings?.channels === prevNotificationSettings.channels &&
@@ -196,12 +195,17 @@ function SettingsPage() {
       return;
     }
     set_blokliUrlError(null);
-    dispatch(nodeActions.setBlokliUrl(formattedUrl));
+    dispatch(
+      blokliActions.setUrl({
+        nodeAddress: mypeerAddress,
+        url: formattedUrl,
+      }),
+    );
   }
 
   function handleResetBlokliUrl() {
     set_blokliUrlError(null);
-    dispatch(nodeActions.resetBlokliUrl());
+    dispatch(blokliActions.resetUrl(mypeerAddress));
   }
 
   // the 2 merge options are exclusive, turning the active one off means no merging at all
@@ -251,13 +255,15 @@ function SettingsPage() {
                       set_localBlokliUrl(event.target.value);
                     }}
                     error={!!blokliUrlError}
-                    helperText={blokliUrlError ?? (blokliUrl ? undefined : `Using the URL reported by the node`)}
+                    helperText={
+                      blokliUrlError ?? (blokliUrlOverride ? undefined : `Using the URL reported by the node`)
+                    }
                   />
                   <BlokliButtons>
                     <Button
                       outlined
                       onClick={handleResetBlokliUrl}
-                      disabled={!blokliUrl}
+                      disabled={!blokliUrlOverride}
                     >
                       Reset to node&apos;s
                     </Button>

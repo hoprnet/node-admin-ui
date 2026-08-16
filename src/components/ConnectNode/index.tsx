@@ -10,6 +10,7 @@ import Modal from './modal';
 import { useAppDispatch, useAppSelector } from '../../store';
 import { authActions } from '../../store/slices/auth';
 import { nodeActions } from '../../store/slices/node';
+import { blokliActions } from '../../store/slices/blokli';
 import { appActions } from '../../store/slices/app';
 
 //MUI
@@ -156,6 +157,7 @@ export default function ConnectNode() {
     abortAllPending();
     dispatch(authActions.resetState());
     dispatch(nodeActions.resetState());
+    dispatch(blokliActions.resetState());
     dispatch(appActions.resetNodeState());
     dispatch(appActions.clearNotifications());
     navigate('/');
