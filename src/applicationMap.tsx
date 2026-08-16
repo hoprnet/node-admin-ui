@@ -168,3 +168,15 @@ const createApplicationMap = () => {
 };
 
 export const applicationMap: ApplicationMapType = createApplicationMap();
+
+/**
+ * Paths of the routed subpages, built the same way the router builds them.
+ * Used to keep the user on the page they are on when they switch node.
+ */
+export const subpagePaths: string[] = applicationMap.flatMap((group) =>
+  group.items
+    .filter((item) => item.path && item.element)
+    .map((item) => `/${item.overwritePath ? item.overwritePath : `${group.path}/${item.path}`}`.replace('//', '/')),
+);
+
+export const isNodeSubpage = (pathname: string) => subpagePaths.includes(pathname);

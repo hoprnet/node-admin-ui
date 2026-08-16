@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../store';
 import { abortAllPending } from '../../store/abortRegistry';
 import styled from '@emotion/styled';
@@ -8,8 +8,10 @@ import { parseAndFormatUrl } from '../../utils/parseAndFormatUrl';
 
 // Stores
 import { authActions, authActionsAsync } from '../../store/slices/auth';
-import { nodeActionsAsync, nodeActions } from '../../store/slices/node';
+import { nodeActions } from '../../store/slices/node';
+import { fetchNodeData } from '../../store/slices/node/fetchNodeData';
 import { appActions } from '../../store/slices/app';
+import { isNodeSubpage } from '../../applicationMap';
 
 // HOPR Components
 import Select from '../../future-hopr-lib-components/Select';
@@ -138,6 +140,7 @@ function ConnectNodeModal({ open = false, handleClose }: ConnectNodeModalProps) 
   const props = { open, handleClose };
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
   const nodesSavedLocally = useAppSelector((store) => store.auth.nodes);
   const [nodesSavedLocallyParsed, set_nodesSavedLocallyParsed] = useState([] as ParsedNode[]);
   const errorMessage = useAppSelector((store) => store.auth.status.error?.data);
@@ -294,53 +297,18 @@ function ConnectNodeModal({ open = false, handleClose }: ConnectNodeModalProps) 
             jazzIcon,
           }),
         );
-        dispatch(
-          nodeActionsAsync.isNodeReadyThunk({
-            apiToken,
-            apiEndpoint: formattedApiEndpoint,
-          }),
-        );
-        dispatch(
-          nodeActionsAsync.getAddressesThunk({
-            apiToken,
-            apiEndpoint: formattedApiEndpoint,
-          }),
-        );
-        dispatch(
-          nodeActionsAsync.getConfigurationThunk({
-            apiToken,
-            apiEndpoint,
-          }),
-        );
-        dispatch(
-          nodeActionsAsync.getPrometheusMetricsThunk({
-            apiEndpoint,
-            apiToken: apiToken ? apiToken : '',
-          }),
-        );
-        dispatch(
-          nodeActionsAsync.getTicketPriceThunk({
-            apiToken,
-            apiEndpoint,
-          }),
-        );
-        dispatch(
-          nodeActionsAsync.getMinimumNetworkProbabilityThunk({
-            apiEndpoint,
-            apiToken: apiToken ? apiToken : '',
-          }),
-        );
-        dispatch(
-          nodeActionsAsync.getSessionsThunk({
-            apiEndpoint,
-            apiToken: apiToken ? apiToken : '',
-          }),
-        );
         dispatch(nodeActions.setInfo(loginInfo));
+        fetchNodeData({
+          apiEndpoint: formattedApiEndpoint,
+          apiToken,
+          dispatch,
+        });
+        // Switching node keeps you where you are, only a fresh login lands on info
+        const targetPath = isNodeSubpage(location.pathname) ? location.pathname : '/node/info';
         if (!apiToken || apiToken === '') {
-          navigate(`/node/info?apiEndpoint=${formattedApiEndpoint}`);
+          navigate(`${targetPath}?apiEndpoint=${formattedApiEndpoint}`);
         } else {
-          navigate(`/node/info?apiToken=${encodeURIComponent(apiToken)}&apiEndpoint=${formattedApiEndpoint}`);
+          navigate(`${targetPath}?apiToken=${encodeURIComponent(apiToken)}&apiEndpoint=${formattedApiEndpoint}`);
         }
         trackGoal('IZUWDE9K', 1);
         props.handleClose();
