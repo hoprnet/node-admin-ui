@@ -13,18 +13,12 @@ const appSlice = createSlice({
       ...state,
       previousStates: {
         ...state.previousStates,
+        prevApiEndpoint: null,
         prevOutgoingChannels: null,
         prevIncomingChannels: null,
-        prevMessage: null,
+        prevMessagesUuids: [],
         prevNodeBalances: null,
         prevNodeInfo: null,
-      },
-    }),
-    resetSafeState: (state) => ({
-      ...state,
-      previousStates: {
-        ...state.previousStates,
-        prevPendingSafeTransaction: null,
       },
     }),
     setNotificationSettings: (state, action: PayloadAction<typeof initialState.configuration.notifications>) => {
@@ -95,6 +89,9 @@ const appSlice = createSlice({
         ...notification,
         seen: true,
       }));
+    },
+    setPrevApiEndpoint: (state, action: PayloadAction<string | null>) => {
+      state.previousStates.prevApiEndpoint = action.payload;
     },
     setPrevOutgoingChannels: (state, action: PayloadAction<ChannelsOutgoingType | null>) => {
       state.previousStates.prevOutgoingChannels = action.payload;

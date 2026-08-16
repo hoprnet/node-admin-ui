@@ -25,10 +25,28 @@ export const useWatcher = ({ intervalDuration = 60_000 }: { intervalDuration?: n
   const activeNodeBalances = useAppSelector((store) => store.app.configuration.notifications.nodeBalances);
   const activeNodeInfo = useAppSelector((store) => store.app.configuration.notifications.nodeInfo);
   // redux previous states, this can be updated from anywhere in the app
+  const prevApiEndpoint = useAppSelector((store) => store.app.previousStates.prevApiEndpoint);
   const prevOutgoingChannels = useAppSelector((store) => store.app.previousStates.prevOutgoingChannels);
   const prevIncomingChannels = useAppSelector((store) => store.app.previousStates.prevIncomingChannels);
   const prevNodeBalances = useAppSelector((store) => store.app.previousStates.prevNodeBalances);
   const prevNodeInfo = useAppSelector((store) => store.app.previousStates.prevNodeInfo);
+
+  // The snapshots above only mean anything for the node they were taken from.
+  // If they belong to another node (node switch), treat them as absent so the
+  // next fetch re-seeds them silently instead of being diffed against them.
+  const snapshotMatchesNode = prevApiEndpoint === apiEndpoint;
+
+  // ==================================================================================
+  // The previousStates snapshots belong to a single node. Whenever the connected
+  // node changes, drop them and stamp the new one in the same batch, so nothing is
+  // ever compared across two different nodes. Kept out of the notification effects
+  // below on purpose: it has to run even when those notifications are turned off.
+  useEffect(() => {
+    if (!connected || !apiEndpoint) return;
+    if (prevApiEndpoint === apiEndpoint) return;
+    dispatch(appActions.resetNodeState());
+    dispatch(appActions.setPrevApiEndpoint(apiEndpoint));
+  }, [connected, apiEndpoint, prevApiEndpoint]);
 
   // ==================================================================================
   // node watchers
@@ -61,7 +79,7 @@ export const useWatcher = ({ intervalDuration = 60_000 }: { intervalDuration?: n
         apiToken,
         dispatch,
         active: activeNodeInfo,
-        previousState: prevNodeInfo,
+        previousState: snapshotMatchesNode ? prevNodeInfo : null,
         updatePreviousData: (newNodeInfo) => {
           dispatch(appActions.setPrevNodeInfo(newNodeInfo));
         },
@@ -80,7 +98,7 @@ export const useWatcher = ({ intervalDuration = 60_000 }: { intervalDuration?: n
           safeNative: '0',
           safeHoprAllowance: '0',
         },
-        previousState: prevNodeBalances,
+        previousState: snapshotMatchesNode ? prevNodeBalances : null,
         updatePreviousData: (newNodeBalances) => {
           dispatch(appActions.setPrevNodeBalances(newNodeBalances));
         },
@@ -116,7 +134,16 @@ export const useWatcher = ({ intervalDuration = 60_000 }: { intervalDuration?: n
       clearInterval(watchNodeBalancesInterval);
       clearInterval(watchSessionsInterval);
     };
-  }, [connected, apiEndpoint, apiToken, isNodeReady, prevNodeBalances, prevNodeInfo, prevOutgoingChannels]);
+  }, [
+    connected,
+    apiEndpoint,
+    apiToken,
+    isNodeReady,
+    prevApiEndpoint,
+    prevNodeBalances,
+    prevNodeInfo,
+    prevOutgoingChannels,
+  ]);
 
   // Messages
   // useEffect(() => {
@@ -151,7 +178,7 @@ export const useWatcher = ({ intervalDuration = 60_000 }: { intervalDuration?: n
     if (!activeChannels) return;
     if (!firstChannelsCallWasSuccesfull) return;
 
-    if (prevOutgoingChannels === null && prevIncomingChannels === null) {
+    if ((prevOutgoingChannels === null && prevIncomingChannels === null) || !snapshotMatchesNode) {
       const channelsOutgoingIds = Object.keys(channelsParsed.outgoing);
       if (
         channelsOutgoingIds.length !== 0 && //true
@@ -233,6 +260,8 @@ export const useWatcher = ({ intervalDuration = 60_000 }: { intervalDuration?: n
     activeChannels,
     firstChannelsCallWasSuccesfull,
     channelsParsed,
+    apiEndpoint,
+    prevApiEndpoint,
     prevOutgoingChannels,
     prevIncomingChannels,
   ]);
