@@ -22,6 +22,7 @@ type InitialState = {
     };
   };
   previousStates: {
+    prevApiEndpoint: string | null;
     prevOutgoingChannels: ChannelsOutgoingType | null;
     prevIncomingChannels: ChannelsIncomingType | null;
     prevNodeInfo: GetInfoResponseType | null;
@@ -45,6 +46,7 @@ export const initialState: InitialState = {
   },
   // previous states used to compare for notifications
   previousStates: {
+    prevApiEndpoint: null,
     prevOutgoingChannels: null,
     prevIncomingChannels: null,
     prevMessagesUuids: [],

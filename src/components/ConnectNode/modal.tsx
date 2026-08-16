@@ -260,6 +260,8 @@ function ConnectNodeModal({ open = false, handleClose }: ConnectNodeModalProps) 
     abortAllPending();
     dispatch(authActions.resetState());
     dispatch(nodeActions.resetState());
+    dispatch(appActions.resetNodeState());
+    dispatch(appActions.clearNotifications());
     try {
       console.log('Node Admin login from modal');
       const loginInfo = await dispatch(
