@@ -7,7 +7,8 @@ import { parseAndFormatUrl } from './utils/parseAndFormatUrl';
 
 import { useAppDispatch, useAppSelector } from './store';
 import { authActions, authActionsAsync } from './store/slices/auth';
-import { nodeActions, nodeActionsAsync } from './store/slices/node';
+import { nodeActions } from './store/slices/node';
+import { fetchNodeData } from './store/slices/node/fetchNodeData';
 
 import Layout from './future-hopr-lib-components/Layout';
 import ConnectNode from './components/ConnectNode';
@@ -54,6 +55,7 @@ const LayoutEnhanced = () => {
     if (!apiEndpoint) return;
     if (loginData.apiEndpoint === apiEndpoint && loginData.apiToken === apiToken) return;
     const formattedApiEndpoint = parseAndFormatUrl(apiEndpoint);
+    if (!formattedApiEndpoint) return;
     console.log('Node Admin login from url', formattedApiEndpoint);
     dispatch(
       authActions.useNodeData({
@@ -72,84 +74,11 @@ const LayoutEnhanced = () => {
         ).unwrap();
         if (loginInfo) {
           trackGoal('Y641EPNA', 1); // LOGIN_TO_NODE_BY_URL
-          dispatch(
-            nodeActionsAsync.isNodeReadyThunk({
-              apiEndpoint,
-              apiToken: apiToken ? apiToken : '',
-            }),
-          );
-          dispatch(
-            nodeActionsAsync.getInfoThunk({
-              apiEndpoint,
-              apiToken: apiToken ? apiToken : '',
-            }),
-          );
-          dispatch(
-            nodeActionsAsync.getAddressesThunk({
-              apiEndpoint,
-              apiToken: apiToken ? apiToken : '',
-            }),
-          );
-          dispatch(
-            nodeActionsAsync.getAnnouncedPeersThunk({
-              apiEndpoint,
-              apiToken: apiToken ? apiToken : '',
-            }),
-          );
-          dispatch(
-            nodeActionsAsync.getConnectedPeersThunk({
-              apiEndpoint,
-              apiToken: apiToken ? apiToken : '',
-            }),
-          );
-          dispatch(
-            nodeActionsAsync.getBalancesThunk({
-              apiEndpoint,
-              apiToken: apiToken ? apiToken : '',
-            }),
-          );
-          dispatch(
-            nodeActionsAsync.getChannelsThunk({
-              apiEndpoint,
-              apiToken: apiToken ? apiToken : '',
-            }),
-          );
-          dispatch(
-            nodeActionsAsync.getTicketStatisticsThunk({
-              apiEndpoint,
-              apiToken: apiToken ? apiToken : '',
-            }),
-          );
-          dispatch(
-            nodeActionsAsync.getConfigurationThunk({
-              apiEndpoint,
-              apiToken: apiToken ? apiToken : '',
-            }),
-          );
-          dispatch(
-            nodeActionsAsync.getPrometheusMetricsThunk({
-              apiEndpoint,
-              apiToken: apiToken ? apiToken : '',
-            }),
-          );
-          dispatch(
-            nodeActionsAsync.getTicketPriceThunk({
-              apiEndpoint,
-              apiToken: apiToken ? apiToken : '',
-            }),
-          );
-          dispatch(
-            nodeActionsAsync.getMinimumNetworkProbabilityThunk({
-              apiEndpoint,
-              apiToken: apiToken ? apiToken : '',
-            }),
-          );
-          dispatch(
-            nodeActionsAsync.getSessionsThunk({
-              apiEndpoint,
-              apiToken: apiToken ? apiToken : '',
-            }),
-          );
+          fetchNodeData({
+            apiEndpoint: formattedApiEndpoint,
+            apiToken,
+            dispatch,
+          });
         }
       } catch (e) {
         trackGoal('ZUIBL4M8', 1); // FAILED_CONNECT_TO_NODE_BY_URL

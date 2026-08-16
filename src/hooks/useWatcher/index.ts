@@ -19,6 +19,11 @@ export const useWatcher = ({ intervalDuration = 60_000 }: { intervalDuration?: n
   const connected = useAppSelector((store) => store.auth.status.connected);
   const peerAddress = useAppSelector((store) => store.node.addresses.data.native);
 
+  // inputs of the alias merge
+  const aliasMergeMode = useAppSelector((store) => store.app.configuration.aliases.mergeMode);
+  const savedNodes = useAppSelector((store) => store.auth.nodes);
+  const hoprNetworkName = useAppSelector((store) => store.node.info.data?.hoprNetworkName);
+
   // flags to activate notifications
   const activeChannels = useAppSelector((store) => store.app.configuration.notifications.channels);
   const activeMessage = useAppSelector((store) => store.app.configuration.notifications.message);
@@ -263,7 +268,14 @@ export const useWatcher = ({ intervalDuration = 60_000 }: { intervalDuration?: n
   ]);
 
   // Aliases
+  // Recompute whenever anything the merge depends on changes: the connected node,
+  // the merge mode, the saved node list (names, networks) or our own network name.
   useEffect(() => {
-    dispatch(nodeActions.loadAliasesFromLocalStorage(peerAddress));
+    dispatch(nodeActions.refreshAliases(peerAddress));
+  }, [peerAddress, aliasMergeMode, savedNodes, hoprNetworkName]);
+
+  // Blokli url saved for this node
+  useEffect(() => {
+    dispatch(nodeActions.loadBlokliUrlFromLocalStorage(peerAddress));
   }, [peerAddress]);
 };

@@ -11,6 +11,7 @@ import { parseEther } from 'viem';
 import { RootState, useAppSelector } from '../..';
 import { nodeActionsAsync } from '../node';
 import { initialState } from './initialState';
+import { parseAndFormatUrl } from '../../../utils/parseAndFormatUrl';
 const { sdkApiError } = utils;
 const { getInfo, getAddresses, getBalances, isNodeStarted } = api;
 
@@ -107,6 +108,17 @@ export const createAsyncReducer = (builder: ActionReducerMapBuilder<typeof initi
       state.status.connecting = false;
       state.status.connected = true;
       state.status.error = null;
+
+      // Keep the saved node's network name up to date. Runs for both login paths
+      // (connect modal and login by url), so it also picks up a network rename.
+      const network = 'hoprNetworkName' in action.payload ? action.payload.hoprNetworkName : null;
+      // login by url passes the raw endpoint while the node list holds the formatted one
+      const apiEndpoint = parseAndFormatUrl(action.meta.arg.apiEndpoint) ?? action.meta.arg.apiEndpoint;
+      const existingItem = state.nodes.findIndex((item) => item.apiEndpoint === apiEndpoint);
+      if (network && existingItem !== -1 && state.nodes[existingItem].network !== network) {
+        state.nodes[existingItem].network = network;
+        localStorage.setItem('admin-ui-node-list', JSON.stringify(state.nodes));
+      }
     }
   });
   builder.addCase(loginThunk.rejected, (state, meta) => {

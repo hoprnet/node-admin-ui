@@ -88,9 +88,21 @@ type InitialState = {
     data: AddressesType;
     isFetching: boolean;
   };
+  // aliases displayed across the app, merged from the other saved nodes
+  // depending on app.configuration.aliases.mergeMode
   aliases: {
     [peerAddress: string]: string;
   };
+  // aliases owned by the connected node, this is what gets saved to local storage
+  aliasesOwn: {
+    [peerAddress: string]: string;
+  };
+  // which node each displayed alias came from, needed to delete a merged in alias
+  aliasesSource: {
+    [peerAddress: string]: string;
+  };
+  // blokli url override saved for this node, null means use the one the node reports
+  blokliUrl: string | null;
   balances: {
     data: {
       hopr: {
@@ -291,6 +303,9 @@ export const initialState: InitialState = {
     isFetching: false,
   },
   aliases: {},
+  aliasesOwn: {},
+  aliasesSource: {},
+  blokliUrl: null,
   balances: {
     data: {
       hopr: {

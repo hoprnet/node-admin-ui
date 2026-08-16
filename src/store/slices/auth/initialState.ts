@@ -1,8 +1,20 @@
+import { isAddress } from 'viem';
 import { loadStateFromLocalStorage } from '../../../utils/localStorage';
 
-const ADMIN_UI_NODE_LIST = loadStateFromLocalStorage('admin-ui-node-list') as
-  | { apiEndpoint: string | null; apiToken: string | null; localName: string | null; jazzIcon?: string | null }[]
-  | null;
+type SavedNode = {
+  apiEndpoint: string | null;
+  apiToken: string | null;
+  localName: string | null;
+  jazzIcon?: string | null;
+  network?: string | null;
+  nodeAddress?: string | null;
+};
+
+export const loadSavedNodes = (): SavedNode[] =>
+  ((loadStateFromLocalStorage('admin-ui-node-list') as SavedNode[] | null) ?? []).map((node) =>
+    // nodes saved before nodeAddress existed still carry the node address in jazzIcon
+    !node.nodeAddress && node.jazzIcon && isAddress(node.jazzIcon) ? { ...node, nodeAddress: node.jazzIcon } : node,
+  );
 
 type InitialState = {
   status: {
@@ -20,12 +32,7 @@ type InitialState = {
     peerAddress: string | null;
     jazzIcon: string | null;
   };
-  nodes: {
-    apiEndpoint: string | null;
-    apiToken: string | null;
-    localName: string | null;
-    jazzIcon?: string | null;
-  }[];
+  nodes: SavedNode[];
   helper: {
     openLoginModalToNode: boolean;
   };
@@ -44,6 +51,6 @@ export const initialState: InitialState = {
     peerAddress: null,
     jazzIcon: null,
   },
-  nodes: ADMIN_UI_NODE_LIST ? ADMIN_UI_NODE_LIST : [],
+  nodes: loadSavedNodes(),
   helper: { openLoginModalToNode: false },
 };

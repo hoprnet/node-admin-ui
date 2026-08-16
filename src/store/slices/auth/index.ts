@@ -1,8 +1,8 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import { bubbleSortObject } from '../../../utils/functions';
-import { loadStateFromLocalStorage } from '../../../utils/localStorage';
+import { parseAndFormatUrl } from '../../../utils/parseAndFormatUrl';
 import { actionsAsync, createAsyncReducer } from './actionsAsync';
-import { initialState } from './initialState';
+import { initialState, loadSavedNodes } from './initialState';
 import { isAddress } from 'viem';
 
 const authSlice = createSlice({
@@ -11,8 +11,7 @@ const authSlice = createSlice({
   reducers: {
     resetState: () => {
       const state = JSON.parse(JSON.stringify(initialState));
-      const ADMIN_UI_NODE_LIST = loadStateFromLocalStorage('admin-ui-node-list');
-      if (ADMIN_UI_NODE_LIST) state.nodes = ADMIN_UI_NODE_LIST;
+      state.nodes = loadSavedNodes();
       return state;
     },
     useNodeData(
@@ -90,6 +89,23 @@ const authSlice = createSlice({
       } else {
         state.nodes[existingItem].jazzIcon = action.payload.jazzIcon;
       }
+
+      localStorage.setItem('admin-ui-node-list', JSON.stringify(state.nodes));
+    },
+    updateNodeMetadata(
+      state,
+      action: PayloadAction<{
+        apiEndpoint: string;
+        network?: string | null;
+        nodeAddress?: string | null;
+      }>,
+    ) {
+      // login by url passes the raw endpoint while the node list holds the formatted one
+      const apiEndpoint = parseAndFormatUrl(action.payload.apiEndpoint) ?? action.payload.apiEndpoint;
+      const existingItem = state.nodes.findIndex((item) => item.apiEndpoint === apiEndpoint);
+      if (existingItem === -1) return;
+      if (action.payload.network !== undefined) state.nodes[existingItem].network = action.payload.network;
+      if (action.payload.nodeAddress !== undefined) state.nodes[existingItem].nodeAddress = action.payload.nodeAddress;
 
       localStorage.setItem('admin-ui-node-list', JSON.stringify(state.nodes));
     },
