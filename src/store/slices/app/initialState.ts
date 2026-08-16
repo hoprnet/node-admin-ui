@@ -1,6 +1,7 @@
 import type { GetBalancesResponseType, GetInfoResponseType } from '@hoprnet/hopr-sdk';
 import { loadStateFromLocalStorage } from '../../../utils/localStorage';
 import { ChannelsOutgoingType, ChannelsIncomingType } from '../node/initialState';
+import { AliasMergeMode } from '../../../utils/aliases';
 
 type InitialState = {
   notifications: {
@@ -19,6 +20,9 @@ type InitialState = {
       nodeBalances: boolean;
       message: boolean;
       pendingSafeTransaction: boolean;
+    };
+    aliases: {
+      mergeMode: AliasMergeMode;
     };
   };
   previousStates: {
@@ -42,6 +46,11 @@ export const initialState: InitialState = {
       nodeBalances: true,
       nodeInfo: true,
       pendingSafeTransaction: true,
+    },
+    aliases: {
+      ...{ mergeMode: 'network' as AliasMergeMode },
+      ...((loadStateFromLocalStorage('app/configuration/aliases') as InitialState['configuration']['aliases'] | null) ??
+        {}),
     },
   },
   // previous states used to compare for notifications

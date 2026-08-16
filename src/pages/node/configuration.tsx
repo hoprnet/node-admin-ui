@@ -12,16 +12,31 @@ import Section from '../../future-hopr-lib-components/Section';
 import Button from '../../future-hopr-lib-components/Button';
 import CodeCopyBox from '../../components/Code/CodeCopyBox';
 import IconButton from '../../future-hopr-lib-components/Button/IconButton';
+import TextField from '../../future-hopr-lib-components/TextField';
 
 // Mui
 import { Paper, Switch } from '@mui/material';
 import styled from '@emotion/styled';
 import { appActions } from '../../store/slices/app';
+import { nodeActions } from '../../store/slices/node';
+import { parseAndFormatUrl } from '../../utils/parseAndFormatUrl';
 import GetAppIcon from '@mui/icons-material/GetApp';
 
 const NotificationsContainer = styled.div`
   display: flex;
   flex-direction: column;
+  gap: 1rem;
+`;
+
+const BlokliContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: flex-end;
+`;
+
+const BlokliButtons = styled.div`
+  display: flex;
   gap: 1rem;
 `;
 
@@ -52,6 +67,9 @@ const updateStrategyString = (originalString: string, key: string, value: string
 function SettingsPage() {
   const dispatch = useAppDispatch();
   const prevNotificationSettings = useAppSelector((store) => store.app.configuration.notifications);
+  const aliasMergeMode = useAppSelector((store) => store.app.configuration.aliases.mergeMode);
+  const blokliUrl = useAppSelector((store) => store.node.blokliUrl);
+  const nodeProviderUrl = useAppSelector((store) => store.node.info.data?.providerUrl);
   const strategy = useAppSelector((store) => store.node.configuration.data?.strategy);
   const configuration = useAppSelector((store) => store.node.configuration.data);
   const ticketPrice = useAppSelector((store) => store.node.ticketPrice.data);
@@ -59,6 +77,11 @@ function SettingsPage() {
   const [strategiesString, set_strategiesString] = useState<string | null>(null);
   const [configurationString, set_configurationString] = useState<string | null>(null);
   const [localNotificationSettings, set_localNotificationSettings] = useState<typeof prevNotificationSettings>();
+  const [localBlokliUrl, set_localBlokliUrl] = useState('');
+  const [blokliUrlError, set_blokliUrlError] = useState<string | null>(null);
+  // the url the node reports is the default, blokliUrl is the override saved for this node
+  const effectiveBlokliUrl = blokliUrl ?? nodeProviderUrl ?? '';
+  const canSaveBlokliUrl = localBlokliUrl !== effectiveBlokliUrl;
   const canSave = !(
     localNotificationSettings?.channels === prevNotificationSettings.channels &&
     localNotificationSettings?.message === prevNotificationSettings.message &&
@@ -79,6 +102,11 @@ function SettingsPage() {
       set_localNotificationSettings(prevNotificationSettings);
     }
   }, [prevNotificationSettings]);
+
+  useEffect(() => {
+    set_localBlokliUrl(effectiveBlokliUrl);
+    set_blokliUrlError(null);
+  }, [effectiveBlokliUrl]);
 
   // Usage in useEffect
   useEffect(() => {
@@ -161,6 +189,26 @@ function SettingsPage() {
     }
   }
 
+  function handleSaveBlokliUrl() {
+    const formattedUrl = parseAndFormatUrl(localBlokliUrl);
+    if (!formattedUrl) {
+      set_blokliUrlError('Blokli URL was incorrectly formatted');
+      return;
+    }
+    set_blokliUrlError(null);
+    dispatch(nodeActions.setBlokliUrl(formattedUrl));
+  }
+
+  function handleResetBlokliUrl() {
+    set_blokliUrlError(null);
+    dispatch(nodeActions.resetBlokliUrl());
+  }
+
+  // the 2 merge options are exclusive, turning the active one off means no merging at all
+  function handleAliasMergeToggle(mode: 'network' | 'all') {
+    dispatch(appActions.setAliasSettings({ mergeMode: aliasMergeMode === mode ? 'none' : mode }));
+  }
+
   function handleEnter(event: KeyboardEvent) {
     if (canSave && event.key === 'Enter') {
       handleSaveSettings();
@@ -192,6 +240,38 @@ function SettingsPage() {
           style={{ marginBottom: '32px' }}
         >
           <tbody>
+            <tr>
+              <th>Blokli URL</th>
+              <td>
+                <BlokliContainer>
+                  <TextField
+                    value={localBlokliUrl}
+                    placeholder="https://blokli.example/"
+                    onChange={(event) => {
+                      set_localBlokliUrl(event.target.value);
+                    }}
+                    error={!!blokliUrlError}
+                    helperText={blokliUrlError ?? (blokliUrl ? undefined : `Using the URL reported by the node`)}
+                  />
+                  <BlokliButtons>
+                    <Button
+                      outlined
+                      onClick={handleResetBlokliUrl}
+                      disabled={!blokliUrl}
+                    >
+                      Reset to node&apos;s
+                    </Button>
+                    <Button
+                      onClick={handleSaveBlokliUrl}
+                      disabled={!canSaveBlokliUrl}
+                    >
+                      Save
+                    </Button>
+                  </BlokliButtons>
+                </BlokliContainer>
+              </td>
+            </tr>
+
             <tr>
               <th>Notifications</th>
               <td>
@@ -272,6 +352,36 @@ function SettingsPage() {
                 >
                   Save
                 </Button>
+              </td>
+            </tr>
+
+            <tr>
+              <th>Aliases</th>
+              <td>
+                <NotificationsContainer>
+                  <div>
+                    Merge aliases between nodes on the same network: False
+                    <Switch
+                      checked={aliasMergeMode === 'network'}
+                      onChange={() => {
+                        handleAliasMergeToggle('network');
+                      }}
+                      color="primary"
+                    />{' '}
+                    True
+                  </div>
+                  <div>
+                    Merge aliases between all saved nodes: False
+                    <Switch
+                      checked={aliasMergeMode === 'all'}
+                      onChange={() => {
+                        handleAliasMergeToggle('all');
+                      }}
+                      color="primary"
+                    />{' '}
+                    True
+                  </div>
+                </NotificationsContainer>
               </td>
             </tr>
 

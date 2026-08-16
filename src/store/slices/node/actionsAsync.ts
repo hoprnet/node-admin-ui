@@ -131,6 +131,13 @@ const getAddressesThunk = createAsyncThunk<
             jazzIcon: addresses.native,
           }),
         );
+        // links the saved node to its `node/aliases/<nodeAddress>` entry
+        dispatch(
+          authActions.updateNodeMetadata({
+            apiEndpoint: payload.apiEndpoint as string,
+            nodeAddress: addresses.native,
+          }),
+        );
       }
       return addresses;
     } catch (e) {

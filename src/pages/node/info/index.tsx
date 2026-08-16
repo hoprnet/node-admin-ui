@@ -279,6 +279,17 @@ function InfoPage() {
                 <ColorStatus className={`status-${info?.connectivityStatus}`}>{info?.connectivityStatus}</ColorStatus>
               </td>
             </tr>
+            <tr>
+              <th>
+                <Tooltip
+                  title="The HOPR network your node is running on"
+                  notWide
+                >
+                  <span>Network name</span>
+                </Tooltip>
+              </th>
+              <td>{info?.hoprNetworkName ? info.hoprNetworkName : '-'}</td>
+            </tr>
             {/* <tr>
               <th>
                 <Tooltip
@@ -359,17 +370,6 @@ function InfoPage() {
               <td>{info?.listeningAddress}</td>
             </tr>
             {/* <tr>
-              <th>
-                <Tooltip
-                  title="The network/environment your node is running in"
-                  notWide
-                >
-                  <span>Hopr network</span>
-                </Tooltip>
-              </th>
-              <td>{info?.network}</td>
-            </tr>
-            <tr>
               <th>
                 <Tooltip
                   title="The blockchain network your node is using for on-chain transactions"

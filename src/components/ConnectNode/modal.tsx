@@ -143,6 +143,8 @@ function ConnectNodeModal({ open = false, handleClose }: ConnectNodeModalProps) 
   const errorMessage = useAppSelector((store) => store.auth.status.error?.data);
   const loginData = useAppSelector((store) => store.auth.loginData);
   const loginPending = useAppSelector((store) => store.auth.status.connecting);
+  const connectedNetwork = useAppSelector((store) => store.node.info.data?.hoprNetworkName);
+  const connectedNodeAddress = useAppSelector((store) => store.node.addresses.data.native);
   const [searchParams, set_searchParams] = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
   const [localName, set_localName] = useState(loginData.localName ? loginData.localName : '');
@@ -239,6 +241,17 @@ function ConnectNodeModal({ open = false, handleClose }: ConnectNodeModalProps) 
         localName: localName ? localName : '',
       }),
     );
+    // Saving happens after the login, so stamp what we already know about the node
+    // instead of waiting for the next login to fill it in.
+    if (loginData.apiEndpoint === formattedApiEndpoint) {
+      dispatch(
+        authActions.updateNodeMetadata({
+          apiEndpoint: formattedApiEndpoint,
+          network: connectedNetwork ?? null,
+          nodeAddress: connectedNodeAddress ?? null,
+        }),
+      );
+    }
   };
 
   const useNode = async ({ force }: { force?: boolean }) => {

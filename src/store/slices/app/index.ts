@@ -27,6 +27,12 @@ const appSlice = createSlice({
         saveStateToLocalStorage('app/configuration/notifications', action.payload);
       }
     },
+    setAliasSettings: (state, action: PayloadAction<typeof initialState.configuration.aliases>) => {
+      if (action.payload) {
+        state.configuration.aliases = action.payload;
+        saveStateToLocalStorage('app/configuration/aliases', action.payload);
+      }
+    },
     addNotification: (
       state,
       action: PayloadAction<{
