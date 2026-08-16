@@ -260,9 +260,6 @@ function ConnectNodeModal({ open = false, handleClose }: ConnectNodeModalProps) 
     abortAllPending();
     dispatch(authActions.resetState());
     dispatch(nodeActions.resetState());
-    // Drop the previous node's notification snapshots, otherwise the first
-    // channels/balances/info fetch for the new node is diffed against the old
-    // one and reports every old channel as closed.
     dispatch(appActions.resetNodeState());
     dispatch(appActions.clearNotifications());
     try {

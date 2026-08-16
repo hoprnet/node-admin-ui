@@ -22,8 +22,6 @@ type InitialState = {
     };
   };
   previousStates: {
-    // The node the snapshots below were taken from. Snapshots are only
-    // comparable against the same node, see resetNodeState / useWatcher.
     prevApiEndpoint: string | null;
     prevOutgoingChannels: ChannelsOutgoingType | null;
     prevIncomingChannels: ChannelsIncomingType | null;
