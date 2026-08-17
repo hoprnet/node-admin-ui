@@ -70,18 +70,18 @@ export const Table = styled.table`
   }
 `;
 
-export function TableExtended(props) {
-  const Content = styled.div`
+const Content = styled.div`
+  color: #414141;
+  width: 100%;
+  .title {
     color: #414141;
-    width: 100%;
-    .title {
-      color: #414141;
-      margin-bottom: 8px;
-      font-size: 18px;
-      font-weight: 700;
-    }
-  `;
+    margin-bottom: 8px;
+    font-size: 18px;
+    font-weight: 700;
+  }
+`;
 
+export function TableExtended(props) {
   return (
     <Content style={props.style}>
       {props.title && <div className="title">{props.title}</div>}
