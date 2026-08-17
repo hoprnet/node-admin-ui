@@ -487,9 +487,7 @@ function InfoPage() {
                   <span>wxHOPR: Node channels OUT</span>
                 </Tooltip>
               </th>
-              <td>
-                {balances.channels?.formatted ? `${balances.channels.formatted} wxHOPR` : '-'}
-              </td>
+              <td>{balances.channels?.formatted ? `${balances.channels.formatted} wxHOPR` : '-'}</td>
             </tr>
             <tr>
               <th>
