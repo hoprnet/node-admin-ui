@@ -134,6 +134,17 @@ export const useWatcher = ({ intervalDuration = 60_000 }: { intervalDuration?: n
       );
     }, 20_000);
 
+    // keeps the last-seen / online figures fresh even when no page fetches peers
+    const watchPeersInterval = setInterval(() => {
+      if (!apiEndpoint) return;
+      return dispatch(
+        nodeActionsAsync.getConnectedPeersThunk({
+          apiEndpoint,
+          apiToken: apiToken ? apiToken : '',
+        }),
+      );
+    }, intervalDuration);
+
     return () => {
       clearInterval(watchIsNodeReadyInterval);
       clearInterval(watchChannelsInterval);
@@ -141,6 +152,7 @@ export const useWatcher = ({ intervalDuration = 60_000 }: { intervalDuration?: n
       clearInterval(watchNodeInfoInterval);
       clearInterval(watchNodeBalancesInterval);
       clearInterval(watchSessionsInterval);
+      clearInterval(watchPeersInterval);
     };
   }, [
     connected,

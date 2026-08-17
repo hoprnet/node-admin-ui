@@ -14,6 +14,7 @@ import IconButton from '../../future-hopr-lib-components/Button/IconButton';
 import TablePro from '../../future-hopr-lib-components/Table/table-pro';
 import ProgressBar from '../../future-hopr-lib-components/Progressbar';
 import PeersInfo from '../../future-hopr-lib-components/PeerInfo';
+import { LastSeen } from '../../components/LastSeen';
 
 //  Modals
 import { PingModal } from '../../components/Modal/node/PingModal';
@@ -136,27 +137,13 @@ function PeersPage() {
   const peersSorted = [...peersWithAliasesSorted, ...peersWithoutAliasesSorted];
 
   const parsedTableData = peersSorted.map((peer, index) => {
-    const lastUpdate =
-      peer.lastUpdate > 0
-        ? new Date(peer.lastUpdate)
-            .toLocaleString('en-US', {
-              year: 'numeric',
-              month: '2-digit',
-              day: '2-digit',
-              hour: '2-digit',
-              minute: '2-digit',
-              timeZoneName: 'short',
-            })
-            .replace(', ', '\n')
-        : 'Not seen';
-
     return {
       id: index + 1,
       node: <PeersInfo peerAddress={peer.address} />,
       address: getAliasByAddress(peer.address),
       peerAddress: peer.address,
       score: <ProgressBar value={peer.score} />,
-      lastUpdate: <span style={{ whiteSpace: 'break-spaces' }}>{lastUpdate}</span>,
+      lastUpdate: <LastSeen timestamp={peer.lastUpdate} />,
       actions: (
         <>
           <PingModal address={peer.address} />

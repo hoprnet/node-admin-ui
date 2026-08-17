@@ -36,4 +36,11 @@ export const fetchBlokliData = ({
       safeAddress,
     }),
   );
+  dispatch(
+    blokliActionsAsync.getSafeNodesThunk({
+      blokliUrl,
+      nodeAddress,
+      safeAddress,
+    }),
+  );
 };

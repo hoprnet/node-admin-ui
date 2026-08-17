@@ -106,3 +106,20 @@ export const unwrapUnion = <T>(
   }
   return result as T;
 };
+
+/**
+ * Lenient variant of unwrapUnion for batched per-node root fields: one node's
+ * error member should null that node's cell, not fail the whole query.
+ */
+export const tryUnwrapUnion = <T>(
+  result: { __typename?: string; code?: string; message?: string } | null | undefined,
+  expected: string,
+): T | null => {
+  if (!result || result.__typename !== expected) {
+    if (result) {
+      console.warn(`Blokli returned ${result.__typename} instead of ${expected}`, result.code, result.message);
+    }
+    return null;
+  }
+  return result as T;
+};
