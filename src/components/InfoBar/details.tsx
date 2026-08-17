@@ -212,10 +212,6 @@ export default function Details(props: Props) {
           </IconContainer>
           <Text>wxHOPR: Total</Text>
         </IconAndText>
-        <IconAndText>
-          <IconContainer></IconContainer>
-          <Text>Redeemed wxHOPR</Text>
-        </IconAndText>
       </TitleColumn>
       <DataColumn>
         <Data className="nodeOnly">
@@ -247,9 +243,6 @@ export default function Details(props: Props) {
           </Tooltip>
           <Tooltip title={totalwxHOPR && totalwxHOPR !== '0' ? totalwxHOPR : null}>
             <p className="double">{totalwxHOPR ?? '-'}</p>
-          </Tooltip>
-          <Tooltip title={redeemed && redeemed !== '0' ? redeemed : null}>
-            <p className="double">{redeemed ? redeemed : '-'}</p>
           </Tooltip>
         </Data>
       </DataColumn>

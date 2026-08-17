@@ -1,10 +1,10 @@
 import { ActionReducerMapBuilder, createAsyncThunk } from '@reduxjs/toolkit';
-import { api, utils, type ChannelStatsType, type TicketRedemptionType } from '../../../blokli';
+import { api, utils, type ChannelStatsType, type SafeNodeType, type TicketRedemptionType } from '../../../blokli';
 import { initialState } from './initialState';
 import { RootState } from '../..';
 
 const { blokliApiError } = utils;
-const { getChannelStats, getTicketRedemptionStats } = api;
+const { getChannelStats, getSafeNodes, getTicketRedemptionStats } = api;
 
 /**
  * nodeAddress and blokliUrl are carried on every payload so the fulfilled reducers
@@ -82,6 +82,39 @@ const getTicketRedemptionStatsThunk = createAsyncThunk<
   },
 );
 
+const getSafeNodesThunk = createAsyncThunk<
+  SafeNodeType[] | undefined,
+  BlokliThunkPayload & { safeAddress: string },
+  { state: RootState }
+>(
+  'blokli/getSafeNodes',
+  async (payload, { rejectWithValue }) => {
+    try {
+      const safeNodes = await getSafeNodes({
+        blokliUrl: payload.blokliUrl,
+        safeAddress: payload.safeAddress,
+      });
+      return safeNodes;
+    } catch (e) {
+      if (e instanceof blokliApiError) {
+        return rejectWithValue({
+          code: e.code,
+          message: e.message,
+        });
+      }
+      return rejectWithValue({ message: JSON.stringify(e) });
+    }
+  },
+  {
+    condition: (_payload, { getState }) => {
+      const isFetching = getState().blokli.safeNodes.isFetching;
+      if (isFetching) {
+        return false;
+      }
+    },
+  },
+);
+
 export const createAsyncReducer = (builder: ActionReducerMapBuilder<typeof initialState>) => {
   // getChannelStats
   builder.addCase(getChannelStatsThunk.pending, (state) => {
@@ -114,9 +147,26 @@ export const createAsyncReducer = (builder: ActionReducerMapBuilder<typeof initi
   builder.addCase(getTicketRedemptionStatsThunk.rejected, (state) => {
     state.ticketRedemption.isFetching = false;
   });
+
+  // getSafeNodes
+  builder.addCase(getSafeNodesThunk.pending, (state) => {
+    state.safeNodes.isFetching = true;
+  });
+  builder.addCase(getSafeNodesThunk.fulfilled, (state, action) => {
+    if (action.meta.arg.nodeAddress !== state.nodeAddress) return;
+    if (action.meta.arg.blokliUrl !== state.urlInUse) return;
+    if (action.payload) {
+      state.safeNodes.data = action.payload;
+    }
+    state.safeNodes.isFetching = false;
+  });
+  builder.addCase(getSafeNodesThunk.rejected, (state) => {
+    state.safeNodes.isFetching = false;
+  });
 };
 
 export const actionsAsync = {
   getChannelStatsThunk,
+  getSafeNodesThunk,
   getTicketRedemptionStatsThunk,
 };

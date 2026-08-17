@@ -25,6 +25,17 @@ export type TicketRedemptionType = {
 };
 
 /**
+ * One node registered to the safe. Null fields mean blokli could not answer for
+ * that node - rendered as '-', never filled in from node data.
+ */
+export type SafeNodeType = {
+  nodeAddress: string;
+  xDai: TokenValueType | null;
+  channels: ChannelStatsType | null;
+  redeemed: TokenValueType | null;
+};
+
+/**
  * Splits a TokenValueString into the same { value, formatted } shape the node slice
  * uses for every balance. 18 decimals overflows float64, so the wei value goes
  * through viem's parseUnits and never through Number().

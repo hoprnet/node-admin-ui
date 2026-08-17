@@ -9,6 +9,7 @@ import ChannelsPageIncoming from './pages/node/channelsIncoming';
 import ChannelsPageOutgoing from './pages/node/channelsOutgoing';
 import ConfigurationPage from './pages/node/configuration';
 import SessionsPage from './pages/node/sessions';
+import SafeNodesPage from './pages/safe/nodes';
 
 // Icons
 import InfoIcon from '@mui/icons-material/Info';
@@ -26,6 +27,8 @@ import TelegramIcon from '@mui/icons-material/Telegram';
 import IncomingChannelsIcon from './future-hopr-lib-components/Icons/channelsIn';
 import OutgoingChannelsIcon from './future-hopr-lib-components/Icons/channelsOut';
 import SettingsPhoneIcon from '@mui/icons-material/SettingsPhone';
+import SafeIcon from '@mui/icons-material/Shield';
+import SafeNodesIcon from '@mui/icons-material/Dns';
 
 export type ApplicationMapType = {
   groupName: string;
@@ -124,6 +127,22 @@ export const applicationMapNode: ApplicationMapType = [
         loginNeeded: 'node',
         numberKey: 'numberOfSessions',
         fetchingKey: 'fetchingSessions',
+      },
+    ],
+  },
+  {
+    groupName: 'SAFE',
+    path: 'safe',
+    icon: <SafeIcon />,
+    items: [
+      {
+        name: 'NODES',
+        path: 'nodes',
+        icon: <SafeNodesIcon />,
+        element: <SafeNodesPage />,
+        loginNeeded: 'node',
+        numberKey: 'numberOfSafeNodes',
+        fetchingKey: 'fetchingSafeNodes',
       },
     ],
   },

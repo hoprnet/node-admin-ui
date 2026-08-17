@@ -1,40 +1,49 @@
-import React, { useCallback, useEffect, useState, useRef } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import styled from '@emotion/styled';
 import _debounce from 'lodash/debounce';
-import { loadStateFromLocalStorage, saveStateToLocalStorage } from '../../utils/localStorage';
+import { TableVirtuoso, TableComponents } from 'react-virtuoso';
 
 // HOPR
 import Tooltip from '../../future-hopr-lib-components/Tooltip/tooltip-fixed-width';
+import { navBarHeight } from '../Navbar/navBar';
 
 // Mui
-import { useTheme } from '@mui/material/styles';
-import Box from '@mui/material/Box';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
-import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
-import IconButton from '@mui/material/IconButton';
-import FirstPageIcon from '@mui/icons-material/FirstPage';
-import KeyboardArrowLeft from '@mui/icons-material/KeyboardArrowLeft';
-import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
-import LastPageIcon from '@mui/icons-material/LastPage';
 import TextField from '@mui/material/TextField';
-
-interface TablePaginationActionsProps {
-  count: number;
-  page: number;
-  rowsPerPage: number;
-  onPageChange: (event: React.MouseEvent<HTMLButtonElement>, newPage: number) => void;
-}
 
 const STable = styled(Table)`
   tr.onRowClick {
     cursor: pointer;
   }
 `;
+
+/*
+ * overflow-x: unset keeps the window as the scroll container so the sticky
+ * table header can stick below the navbar; on narrow screens horizontal
+ * scrolling wins over stickiness.
+ */
+const STableContainer = styled(TableContainer)`
+  overflow-x: unset;
+  @media (max-width: 850px) {
+    overflow-x: auto;
+  }
+
+  /*
+   * In window-scroll mode virtuoso sets an inline pixel height on its scroller
+   * from summed row measurements; fractional row heights (browser zoom, OS
+   * scaling) make that drift from the table's real layout height and cut off
+   * the last row. height: auto keeps the scroll range equal to the actual
+   * rendered table height.
+   */
+  div[data-virtuoso-scroller] {
+    height: auto !important;
+  }
+` as typeof TableContainer;
 
 const STableCell = styled(TableCell)`
   max-width: 0;
@@ -53,77 +62,22 @@ const STableCell = styled(TableCell)`
   }
 `;
 
-function TablePaginationActions(props: TablePaginationActionsProps) {
-  const theme = useTheme();
-  const { count, page, rowsPerPage, onPageChange } = props;
-
-  const handleFirstPageButtonClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    onPageChange(event, 0);
-  };
-
-  const handleBackButtonClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    onPageChange(event, page - 1);
-  };
-
-  const handleNextButtonClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    onPageChange(event, page + 1);
-  };
-
-  const handleLastPageButtonClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    onPageChange(event, Math.max(0, Math.ceil(count / rowsPerPage) - 1));
-  };
-
-  return (
-    <Box
-      sx={{
-        flexShrink: 0,
-        ml: 2.5,
-      }}
-    >
-      <IconButton
-        onClick={handleFirstPageButtonClick}
-        disabled={page === 0}
-        aria-label="first page"
-      >
-        {theme.direction === 'rtl' ? <LastPageIcon /> : <FirstPageIcon />}
-      </IconButton>
-      <IconButton
-        onClick={handleBackButtonClick}
-        disabled={page === 0}
-        aria-label="previous page"
-      >
-        {theme.direction === 'rtl' ? <KeyboardArrowRight /> : <KeyboardArrowLeft />}
-      </IconButton>
-      <IconButton
-        onClick={handleNextButtonClick}
-        disabled={page >= Math.ceil(count / rowsPerPage) - 1}
-        aria-label="next page"
-      >
-        {theme.direction === 'rtl' ? <KeyboardArrowLeft /> : <KeyboardArrowRight />}
-      </IconButton>
-      <IconButton
-        onClick={handleLastPageButtonClick}
-        disabled={page >= Math.ceil(count / rowsPerPage) - 1}
-        aria-label="last page"
-      >
-        {theme.direction === 'rtl' ? <FirstPageIcon /> : <LastPageIcon />}
-      </IconButton>
-    </Box>
-  );
-}
-
 const OverTable = styled.div`
   width: 100%;
   display: flex;
-  justify-content: flex-end;
-  &.searchIncluded {
-    justify-content: space-between;
-  }
 `;
 
 const STextField = styled(TextField)`
   flex-grow: 1;
   margin: 0px 16px;
+`;
+
+const EmptyState = styled.div`
+  padding: 8px 16px;
+  height: 57px;
+  display: flex;
+  align-items: center;
+  font-size: 0.875rem;
 `;
 
 interface Props {
@@ -150,6 +104,14 @@ interface Props {
   onRowClick?: Function;
   orderByDefault?: string;
 }
+
+type RowData = Props['data'][0];
+
+type TableContext = {
+  tableId?: string;
+  header: Props['header'];
+  onRowClick?: Function;
+};
 
 type Order = 'asc' | 'desc';
 
@@ -188,44 +150,63 @@ function getComparator<Key extends keyof any>(
     : (a, b) => -descendingComparator(a, b, orderBy);
 }
 
+const virtuosoComponents: TableComponents<RowData, TableContext> = {
+  Table: ({ context, ...tableProps }) => (
+    <STable
+      {...tableProps}
+      aria-label="custom table"
+    />
+  ),
+  TableHead: React.forwardRef<HTMLTableSectionElement>(function VirtuosoTableHead(
+    { context, ...headProps }: { context?: TableContext; style?: React.CSSProperties },
+    ref,
+  ) {
+    return (
+      <thead
+        {...headProps}
+        style={{
+          ...headProps.style,
+          top: navBarHeight,
+          background: '#fff',
+        }}
+        ref={ref}
+      />
+    );
+  }),
+  TableRow: ({ item, context, ...rowProps }) => (
+    <TableRow
+      {...rowProps}
+      id={context?.tableId ? `${context.tableId}_row_${item.id}` : undefined}
+      onClick={() => {
+        context?.onRowClick && context.onRowClick(item);
+      }}
+      className={`${context?.onRowClick ? 'onRowClick' : ''}`}
+    />
+  ),
+  TableBody: React.forwardRef<HTMLTableSectionElement>(function VirtuosoTableBody(props, ref) {
+    return (
+      <TableBody
+        {...props}
+        ref={ref}
+      />
+    );
+  }),
+};
+
 export default function CustomPaginationActionsTable(props: Props) {
-  const rowsPerPageFromLocalStorage = loadStateFromLocalStorage(`pro-table_rows-per-page_${props.id}`) as number | null;
-  const [page, set_Page] = React.useState(0);
-  const [rowsPerPage, set_RowsPerPage] = React.useState(
-    props.id && rowsPerPageFromLocalStorage ? rowsPerPageFromLocalStorage : 10,
-  );
   const [order, setOrder] = React.useState<Order>('asc');
   const [orderBy, setOrderBy] = React.useState<string>(props.orderByDefault || props.header[0].key || 'id');
   const [searchPhrase, set_searchPhrase] = React.useState('');
   const [filteredData, set_filteredData] = React.useState<typeof props.data>([]);
 
-  const ref = useRef(null);
-
   useEffect(() => {
     filterData(searchPhrase);
   }, [props.data]);
-
-  // Avoid a layout jump when reaching the last page with empty rows.
-  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - filteredData.length) : 0;
-
-  const handleChangePage = (event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
-    set_Page(newPage);
-  };
-
-  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const newRowsPerPage = parseInt(event.target.value, 10);
-    set_RowsPerPage(newRowsPerPage);
-    if (props.id) saveStateToLocalStorage(`pro-table_rows-per-page_${props.id}`, newRowsPerPage);
-    set_Page(0);
-  };
 
   const debounceFn = useCallback(_debounce(filterData, 150), [props.data]);
 
   function handleSearchChange(event: { target: { value: string } }) {
     const search: string = event.target.value;
-    if (search !== searchPhrase) {
-      set_Page(0);
-    }
     set_searchPhrase(search);
     debounceFn(search);
   }
@@ -252,54 +233,39 @@ export default function CustomPaginationActionsTable(props: Props) {
     return;
   }
 
-  const visibleRows = React.useMemo(
+  const sortedRows = React.useMemo(
     () =>
       [...filteredData]
         //@ts-expect-error as we can input JSX into the data, but we will not sort by it
-        .sort(getComparator(order, orderBy))
-        .slice(page * rowsPerPage, rowsPerPage !== -1 ? page * rowsPerPage + rowsPerPage : filteredData.length),
-    [rowsPerPage, filteredData, order, orderBy, page, rowsPerPage],
+        .sort(getComparator(order, orderBy)),
+    [filteredData, order, orderBy],
   );
 
   return (
-    <TableContainer
-      component={Paper}
-      ref={ref}
-    >
-      <OverTable className={`OverTable ${props.search ? 'searchIncluded' : ''}`}>
-        {props.search && (
+    <STableContainer component={Paper}>
+      {props.search && (
+        <OverTable className={`OverTable`}>
           <STextField
             label="Search"
             variant="standard"
             value={searchPhrase}
             onChange={handleSearchChange}
           />
-        )}
-        <TablePagination
-          rowsPerPageOptions={[
-            10,
-            50,
-            {
-              label: 'All',
-              value: -1,
-            },
-          ]}
-          colSpan={props.header.length - 1}
-          count={filteredData.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          SelectProps={{
-            inputProps: { 'aria-label': 'rows per page' },
-            native: true,
-          }}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-          ActionsComponent={TablePaginationActions}
-          component={'div'}
-        />
-      </OverTable>
-      <STable aria-label="custom pagination table">
-        <thead>
+        </OverTable>
+      )}
+      <TableVirtuoso
+        useWindowScroll
+        data={sortedRows}
+        overscan={{ main: 1200, reverse: 1200 }}
+        increaseViewportBy={{ top: 600, bottom: 600 }}
+        computeItemKey={(_index, row) => `${props.id}_row_${row.id}`}
+        context={{
+          tableId: props.id,
+          header: props.header,
+          onRowClick: props.onRowClick,
+        }}
+        components={virtuosoComponents}
+        fixedHeaderContent={() => (
           <TableRow>
             {props.header.map(
               (headElem, idx) =>
@@ -319,50 +285,20 @@ export default function CustomPaginationActionsTable(props: Props) {
                 ),
             )}
           </TableRow>
-        </thead>
-        <TableBody>
-          {visibleRows.map((row) => (
-            <CustomTableRow
-              row={row}
-              header={props.header}
-              id={`${props.id}_row_${row.id}`}
-              key={`${props.id}_row_${row.id}`}
-              onRowClick={props.onRowClick}
-            />
-          ))}
-          {!props.data ||
-            (props.data.length === 0 && (
-              <>
-                <TableRow style={{ height: 57 }}>
-                  <STableCell colSpan={props.header.length}>{props.loading ? 'Loading...' : 'No entries'}</STableCell>
-                </TableRow>
-                <TableRow style={{ height: 57 * (rowsPerPage - 1) }}>
-                  <STableCell colSpan={props.header.length} />
-                </TableRow>
-              </>
-            ))}
-          {emptyRows > 0 && (
-            <TableRow style={{ height: 57 * emptyRows }}>
-              <STableCell colSpan={props.header.length} />
-            </TableRow>
-          )}
-        </TableBody>
-      </STable>
-    </TableContainer>
+        )}
+        itemContent={(_index, row) => (
+          <RowCells
+            row={row}
+            header={props.header}
+          />
+        )}
+      />
+      {sortedRows.length === 0 && <EmptyState>{props.loading ? 'Loading...' : 'No entries'}</EmptyState>}
+    </STableContainer>
   );
 }
 
-const CustomTableRow = ({
-  id,
-  row,
-  header,
-  onRowClick,
-}: {
-  id: string;
-  row: Props['data'][0];
-  header: Props['header'];
-  onRowClick?: Function;
-}) => {
+const RowCells = ({ row, header }: { row: RowData; header: Props['header'] }) => {
   const [tooltip, set_tooltip] = useState<string>();
 
   const onDoubleClick = (event: React.MouseEvent<HTMLTableCellElement, MouseEvent>, value: string) => {
@@ -377,14 +313,7 @@ const CustomTableRow = ({
   };
 
   return (
-    <TableRow
-      key={row.id}
-      id={id}
-      onClick={() => {
-        onRowClick && onRowClick(row);
-      }}
-      className={`${onRowClick ? 'onRowClick' : ''}`}
-    >
+    <>
       {header.map(
         (headElem) =>
           !headElem.hidden && (
@@ -409,6 +338,6 @@ const CustomTableRow = ({
             </STableCell>
           ),
       )}
-    </TableRow>
+    </>
   );
 };

@@ -35,6 +35,8 @@ const LayoutEnhanced = () => {
   const fetchingChannels = useAppSelector((store) => store.node.channels.isFetching);
   const numberOfSessions = useAppSelector((store) => store.node.sessions.data?.length);
   const fetchingSessions = useAppSelector((store) => store.node.sessions.isFetching);
+  const numberOfSafeNodes = useAppSelector((store) => store.blokli.safeNodes.data?.length);
+  const fetchingSafeNodes = useAppSelector((store) => store.blokli.safeNodes.isFetching);
 
   const numberForDrawer = {
     numberOfPeers,
@@ -43,12 +45,14 @@ const LayoutEnhanced = () => {
     numberOfChannelsIn,
     numberOfChannelsOut,
     numberOfSessions,
+    numberOfSafeNodes,
   };
 
   const drawerNumbersLoading = {
     fetchingPeers,
     fetchingChannels,
     fetchingSessions,
+    fetchingSafeNodes,
   };
 
   useEffect(() => {
