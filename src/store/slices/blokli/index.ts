@@ -30,6 +30,16 @@ const blokliSlice = createSlice({
       if (!nodeAddress || !isAddress(nodeAddress)) return;
       localStorage.removeItem(urlKey(nodeAddress));
     },
+    // the effective url changed: drop figures fetched with the previous url and
+    // record the new one. isFetching goes back to false so the refetch is not
+    // swallowed by the thunks' in-flight guards while an old request is pending.
+    resetData(state, action: PayloadAction<string | null>) {
+      state.urlInUse = action.payload;
+      state.channelStats.data = null;
+      state.channelStats.isFetching = false;
+      state.ticketRedemption.data = null;
+      state.ticketRedemption.isFetching = false;
+    },
   },
   extraReducers: (builder) => createAsyncReducer(builder),
 });

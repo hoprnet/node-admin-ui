@@ -7,9 +7,9 @@ const { blokliApiError } = utils;
 const { getChannelStats, getTicketRedemptionStats } = api;
 
 /**
- * nodeAddress is carried on every payload so the fulfilled reducers can drop results
- * that belong to a node we are no longer connected to, the same way the node slice
- * guards on apiEndpoint.
+ * nodeAddress and blokliUrl are carried on every payload so the fulfilled reducers
+ * can drop results that belong to a node we are no longer connected to or to a
+ * previous blokli url, the same way the node slice guards on apiEndpoint.
  */
 type BlokliThunkPayload = {
   blokliUrl: string;
@@ -89,6 +89,7 @@ export const createAsyncReducer = (builder: ActionReducerMapBuilder<typeof initi
   });
   builder.addCase(getChannelStatsThunk.fulfilled, (state, action) => {
     if (action.meta.arg.nodeAddress !== state.nodeAddress) return;
+    if (action.meta.arg.blokliUrl !== state.urlInUse) return;
     if (action.payload) {
       state.channelStats.data = action.payload;
     }
@@ -104,6 +105,7 @@ export const createAsyncReducer = (builder: ActionReducerMapBuilder<typeof initi
   });
   builder.addCase(getTicketRedemptionStatsThunk.fulfilled, (state, action) => {
     if (action.meta.arg.nodeAddress !== state.nodeAddress) return;
+    if (action.meta.arg.blokliUrl !== state.urlInUse) return;
     if (action.payload) {
       state.ticketRedemption.data = action.payload;
     }

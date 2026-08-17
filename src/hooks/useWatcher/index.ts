@@ -286,6 +286,12 @@ export const useWatcher = ({ intervalDuration = 60_000 }: { intervalDuration?: n
     dispatch(blokliActions.loadUrlFromLocalStorage(peerAddress));
   }, [peerAddress]);
 
+  // Effective blokli url changed: drop figures fetched with the previous url,
+  // record the new one, and let the fetch effect below repopulate them.
+  useEffect(() => {
+    dispatch(blokliActions.resetData(blokliUrl));
+  }, [blokliUrl]);
+
   // Blokli data. The url, the node address and the safe all arrive asynchronously
   // after a node switch, so this keys on all 3 rather than firing once, then keeps
   // the figures fresh alongside the balances and channels above.
