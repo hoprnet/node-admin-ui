@@ -198,7 +198,7 @@ function TicketsPage() {
                   <span>Redemptions</span>
                 </Tooltip>
               </th>
-              <td>{ticketRedemption ? ticketRedemption.redemptionCount : '-'}</td>
+              <td>{ticketRedemption ? `${ticketRedemption.redemptionCount} tickets` : '-'}</td>
             </tr>
           </tbody>
         </TableExtended>

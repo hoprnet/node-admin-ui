@@ -155,6 +155,8 @@ export default function Details(props: Props) {
   const statistics = useAppSelector((store) => store.node.statistics.data);
   // same source as the info page's Channels OUT row, so the 2 cannot disagree
   const channelsOut = useAppSelector(selectChannelsOutBalance);
+  // on chain redemptions, same source as the info and tickets pages
+  const redeemed = useAppSelector((store) => store.blokli.ticketRedemption.data?.redeemed.formatted);
 
   const totalwxHOPR =
     channelsOut.value && balances.safeHopr?.value
@@ -199,7 +201,7 @@ export default function Details(props: Props) {
               alt="xDai Icon"
             />
           </IconContainer>
-          <Text>wxHOPR: Channels OUT</Text>
+          <Text>wxHOPR: Safe channels OUT</Text>
         </IconAndText>
         <IconAndText>
           <IconContainer>
@@ -209,10 +211,6 @@ export default function Details(props: Props) {
             />
           </IconContainer>
           <Text>wxHOPR: Total</Text>
-        </IconAndText>
-        <IconAndText>
-          <IconContainer></IconContainer>
-          <Text>Unredeemed wxHOPR</Text>
         </IconAndText>
         <IconAndText>
           <IconContainer></IconContainer>
@@ -248,17 +246,8 @@ export default function Details(props: Props) {
           <Tooltip title={totalwxHOPR && totalwxHOPR !== '0' ? totalwxHOPR : null}>
             <p className="double">{totalwxHOPR ?? '-'}</p>
           </Tooltip>
-          <Tooltip
-            title={
-              statistics?.unredeemedValue && statistics?.unredeemedValue !== '0' ? statistics?.unredeemedValue : null
-            }
-          >
-            <p className="double">{statistics?.unredeemedValue ? statistics?.unredeemedValue : '-'}</p>
-          </Tooltip>
-          <Tooltip
-            title={statistics?.redeemedValue && statistics?.redeemedValue !== '0' ? statistics?.redeemedValue : null}
-          >
-            <p className="double">{statistics?.redeemedValue ? statistics?.redeemedValue : '-'}</p>
+          <Tooltip title={redeemed && redeemed !== '0' ? redeemed : null}>
+            <p className="double">{redeemed ? redeemed : '-'}</p>
           </Tooltip>
         </Data>
       </DataColumn>
