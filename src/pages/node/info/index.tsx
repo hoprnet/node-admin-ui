@@ -484,23 +484,25 @@ function InfoPage() {
                   title="The amount of wxHOPR tokens staked in the open outgoing channels of every Node registered to your Safe. Read from blokli."
                   notWide
                 >
-                  <span>wxHOPR: Channels OUT</span>
+                  <span>wxHOPR: Node channels OUT</span>
                 </Tooltip>
               </th>
               <td>
-                {safeChannelsOut ? `${safeChannelsOut.formatted} wxHOPR (${safeChannelsOut.count} channels)` : '-'}
+                {balances.channels?.formatted ? `${balances.channels.formatted} wxHOPR` : '-'}
               </td>
             </tr>
             <tr>
               <th>
                 <Tooltip
-                  title="The amount of wxHOPR set as allowance for Node to use"
+                  title="The amount of wxHOPR tokens staked in the open outgoing channels of every Node registered to your Safe. Read from blokli."
                   notWide
                 >
-                  <span>wxHOPR: Allowance</span>
+                  <span>wxHOPR: Safe channels OUT</span>
                 </Tooltip>
               </th>
-              <td>{balances.safeHoprAllowance?.formatted} wxHOPR</td>
+              <td>
+                {safeChannelsOut ? `${safeChannelsOut.formatted} wxHOPR (${safeChannelsOut.count} channels)` : '-'}
+              </td>
             </tr>
             <tr>
               <th>
@@ -520,13 +522,13 @@ function InfoPage() {
             <tr>
               <th>
                 <Tooltip
-                  title="The total value of the tickets this Node has redeemed on chain, all time. Read from blokli, so unlike the Node's own ticket statistics it survives a database reset."
+                  title="The amount of wxHOPR set as allowance for Node to use"
                   notWide
                 >
-                  <span>Redeemed wxHOPR</span>
+                  <span>wxHOPR: Allowance</span>
                 </Tooltip>
               </th>
-              <td>{ticketRedemption ? `${ticketRedemption.redeemed.formatted} wxHOPR` : '-'}</td>
+              <td>{balances.safeHoprAllowance?.formatted} wxHOPR</td>
             </tr>
           </tbody>
         </TableExtended>
@@ -789,28 +791,6 @@ function InfoPage() {
                 </Tooltip>
               </th>
               <td>{channels?.outgoing.length}</td>
-            </tr>
-            <tr>
-              <th>
-                <Tooltip
-                  title="The amount of wxHOPR staked in the outgoing channels this Node has opened"
-                  notWide
-                >
-                  <span>Outgoing (this node)</span>
-                </Tooltip>
-              </th>
-              <td>{balances.channels?.formatted ? `${balances.channels.formatted} wxHOPR` : '-'}</td>
-            </tr>
-            <tr>
-              <th>
-                <Tooltip
-                  title="The amount of wxHOPR staked in the open outgoing channels of every Node registered to your Safe. Read from blokli."
-                  notWide
-                >
-                  <span>Outgoing (safe nodes)</span>
-                </Tooltip>
-              </th>
-              <td>{safeChannelsOut ? `${safeChannelsOut.formatted} wxHOPR` : '-'}</td>
             </tr>
           </tbody>
         </TableExtended>
