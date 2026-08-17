@@ -6,6 +6,9 @@ import { observeNodeBalances } from './balances';
 import { observeNodeInfo } from './info';
 import { sendNotification } from '../../hooks/useWatcher/notifications';
 import { nodeActions, nodeActionsAsync } from '../../store/slices/node';
+import { blokliActions } from '../../store/slices/blokli';
+import { fetchBlokliData } from '../../store/slices/blokli/fetchBlokliData';
+import { selectBlokliUrl } from '../../store/selectors/blokli';
 import { checkHowChannelsHaveChanged } from './channels';
 import { isAddress } from 'viem';
 
@@ -23,6 +26,10 @@ export const useWatcher = ({ intervalDuration = 60_000 }: { intervalDuration?: n
   const aliasMergeMode = useAppSelector((store) => store.app.configuration.aliases.mergeMode);
   const savedNodes = useAppSelector((store) => store.auth.nodes);
   const hoprNetworkName = useAppSelector((store) => store.node.info.data?.hoprNetworkName);
+
+  // inputs of the blokli queries
+  const blokliUrl = useAppSelector(selectBlokliUrl);
+  const hoprNodeSafe = useAppSelector((store) => store.node.info.data?.hoprNodeSafe);
 
   // flags to activate notifications
   const activeChannels = useAppSelector((store) => store.app.configuration.notifications.channels);
@@ -276,6 +283,30 @@ export const useWatcher = ({ intervalDuration = 60_000 }: { intervalDuration?: n
 
   // Blokli url saved for this node
   useEffect(() => {
-    dispatch(nodeActions.loadBlokliUrlFromLocalStorage(peerAddress));
+    dispatch(blokliActions.loadUrlFromLocalStorage(peerAddress));
   }, [peerAddress]);
+
+  // Effective blokli url changed: drop figures fetched with the previous url,
+  // record the new one, and let the fetch effect below repopulate them.
+  useEffect(() => {
+    dispatch(blokliActions.resetData(blokliUrl));
+  }, [blokliUrl]);
+
+  // Blokli data. The url, the node address and the safe all arrive asynchronously
+  // after a node switch, so this keys on all 3 rather than firing once, then keeps
+  // the figures fresh alongside the balances and channels above.
+  useEffect(() => {
+    const fetch = () =>
+      fetchBlokliData({
+        blokliUrl,
+        nodeAddress: peerAddress,
+        safeAddress: hoprNodeSafe,
+        dispatch,
+      });
+    fetch();
+    const watchBlokliInterval = setInterval(fetch, intervalDuration);
+    return () => {
+      clearInterval(watchBlokliInterval);
+    };
+  }, [blokliUrl, peerAddress, hoprNodeSafe, intervalDuration]);
 };

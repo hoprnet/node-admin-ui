@@ -4,6 +4,7 @@ import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import authSlice from './slices/auth';
 import nodeSlice from './slices/node';
 import appSlice from './slices/app';
+import blokliSlice from './slices/blokli';
 import { trackAbortable } from './abortRegistry';
 //import { websocketMiddleware } from './slices/node/websocketMiddleware';
 
@@ -25,6 +26,7 @@ const store = configureStore({
     auth: authSlice,
     node: nodeSlice,
     app: appSlice,
+    blokli: blokliSlice,
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware().prepend(abortTrackingMiddleware),
   devTools: import.meta.env.PROD ? false : { maxAge: 5000 },

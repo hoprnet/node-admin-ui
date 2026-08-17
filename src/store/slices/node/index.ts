@@ -2,10 +2,7 @@ import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import { actionsAsync, createAsyncReducer } from './actionsAsync';
 import { initialState } from './initialState';
 import { isAddress, getAddress } from 'viem';
-import { loadStateFromLocalStorage, saveStateToLocalStorage } from '../../../utils/localStorage';
 import { computeMergedAliases, loadNodeAliases, saveNodeAliases } from '../../../utils/aliases';
-
-const blokliUrlKey = (nodeAddress: string) => `node/blokliUrl/${getAddress(nodeAddress)}`;
 
 /**
  * Rebuilds the displayed aliases (own + merged in from the other saved nodes) and the
@@ -127,24 +124,6 @@ const nodeSlice = createSlice({
         saveNodeAliases(sourceAddress, sourceAliases);
       }
       recomputeAliases(state);
-    },
-    // handle blokli url
-    loadBlokliUrlFromLocalStorage(state, action: PayloadAction<string | null>) {
-      const peerAddress = action.payload;
-      if (!peerAddress || !isAddress(peerAddress)) return;
-      state.blokliUrl = (loadStateFromLocalStorage(blokliUrlKey(peerAddress)) as string | null) ?? null;
-    },
-    setBlokliUrl(state, action: PayloadAction<string>) {
-      const peerAddress = state.addresses.data.native;
-      if (!peerAddress || !isAddress(peerAddress)) return;
-      state.blokliUrl = action.payload;
-      saveStateToLocalStorage(blokliUrlKey(peerAddress), action.payload);
-    },
-    resetBlokliUrl(state) {
-      const peerAddress = state.addresses.data.native;
-      state.blokliUrl = null;
-      if (!peerAddress || !isAddress(peerAddress)) return;
-      localStorage.removeItem(blokliUrlKey(peerAddress));
     },
     // handle ws state
     updateMessagesWebsocketStatus(state, action: PayloadAction<typeof initialState.messagesWebsocketStatus>) {

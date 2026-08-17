@@ -3,6 +3,70 @@ import React, { useState, useEffect, Fragment } from 'react';
 import styled from '@emotion/styled';
 import { chains } from '../../shared/chains.js';
 
+const Location = styled.div`
+  width: 100%;
+  font-family: 'Source Code Pro';
+  font-style: normal;
+  font-size: 14px;
+
+  th {
+    font-size: 16px;
+  }
+  th,
+  td {
+    padding: 8px;
+  }
+  pre {
+    max-width: 440px;
+  }
+
+  .hopr-table-header {
+    background: linear-gradient(180deg, #0000b4 0.5%, #000050 100%);
+    color: white;
+
+    @media (min-width: 1040px) {
+      .hopr-table-header-Location {
+        width: 170px;
+      }
+
+      .hopr-table-header-IP {
+        width: 160px;
+      }
+
+      .hopr-table-header-Status {
+        width: 190px;
+      }
+
+      .hopr-table-header-MetaMask {
+        //width: 76px;
+      }
+
+      .hopr-table-header-type {
+        width: 76px;
+      }
+
+      .hopr-table-header-Timestamp {
+        width: 157px;
+      }
+
+      .hopr-table-header-User-Agent {
+        width: 208px;
+      }
+
+      .hopr-table-header-Method {
+        width: 188px;
+      }
+
+      .hopr-table-header-Params {
+      }
+    }
+  }
+
+  .hopr-table-content-IP {
+    overflow-wrap: anywhere;
+  }
+`;
+
 function App() {
   const [log, setLog] = useState([]);
   const [ip, setIp] = useState('-');
@@ -138,70 +202,6 @@ function App() {
     join();
     //eslint-disable-next-line
   }, []);
-
-  const Location = styled.div`
-    width: 100%;
-    font-family: 'Source Code Pro';
-    font-style: normal;
-    font-size: 14px;
-
-    th {
-      font-size: 16px;
-    }
-    th,
-    td {
-      padding: 8px;
-    }
-    pre {
-      max-width: 440px;
-    }
-
-    .hopr-table-header {
-      background: linear-gradient(180deg, #0000b4 0.5%, #000050 100%);
-      color: white;
-
-      @media (min-width: 1040px) {
-        .hopr-table-header-Location {
-          width: 170px;
-        }
-
-        .hopr-table-header-IP {
-          width: 160px;
-        }
-
-        .hopr-table-header-Status {
-          width: 190px;
-        }
-
-        .hopr-table-header-MetaMask {
-          //width: 76px;
-        }
-
-        .hopr-table-header-type {
-          width: 76px;
-        }
-
-        .hopr-table-header-Timestamp {
-          width: 157px;
-        }
-
-        .hopr-table-header-User-Agent {
-          width: 208px;
-        }
-
-        .hopr-table-header-Method {
-          width: 188px;
-        }
-
-        .hopr-table-header-Params {
-        }
-      }
-    }
-
-    .hopr-table-content-IP {
-      overflow-wrap: anywhere;
-    }
-  `;
 
   return (
     <Fragment>

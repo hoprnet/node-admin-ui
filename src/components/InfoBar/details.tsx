@@ -152,10 +152,15 @@ export default function Details(props: Props) {
   const balances = useAppSelector((store) => store.node.balances.data);
   const info = useAppSelector((store) => store.node.info.data);
   const statistics = useAppSelector((store) => store.node.statistics.data);
+  // safe wide channel stake, same source as the info page. Blokli only, no fallback
+  // to this node's own channels, so it stays honest about what it is showing.
+  const safeChannelsOut = useAppSelector((store) => store.blokli.channelStats.data);
+  // on chain redemptions, same source as the info and tickets pages
+  const redeemed = useAppSelector((store) => store.blokli.ticketRedemption.data?.redeemed.formatted);
 
   const totalwxHOPR =
-    balances.channels?.value && balances.safeHopr?.value
-      ? formatEther(BigInt(balances.channels?.value) + BigInt(balances.safeHopr?.value))
+    safeChannelsOut?.value && balances.safeHopr?.value
+      ? formatEther(BigInt(safeChannelsOut.value) + BigInt(balances.safeHopr?.value))
       : '-';
 
   const isXdaiEnough = () => {
@@ -196,7 +201,7 @@ export default function Details(props: Props) {
               alt="xDai Icon"
             />
           </IconContainer>
-          <Text>wxHOPR: Channels OUT</Text>
+          <Text>wxHOPR: Safe channels OUT</Text>
         </IconAndText>
         <IconAndText>
           <IconContainer>
@@ -206,10 +211,6 @@ export default function Details(props: Props) {
             />
           </IconContainer>
           <Text>wxHOPR: Total</Text>
-        </IconAndText>
-        <IconAndText>
-          <IconContainer></IconContainer>
-          <Text>Unredeemed wxHOPR</Text>
         </IconAndText>
         <IconAndText>
           <IconContainer></IconContainer>
@@ -240,26 +241,15 @@ export default function Details(props: Props) {
             <p>{balances.safeHopr?.formatted ?? '-'}</p>
           </Tooltip>
           <Tooltip
-            title={
-              balances.channels?.formatted && balances.channels?.formatted !== '0' ? balances.channels?.formatted : null
-            }
+            title={safeChannelsOut?.formatted && safeChannelsOut.formatted !== '0' ? safeChannelsOut.formatted : null}
           >
-            <p className="double">{balances.channels?.formatted ?? '-'}</p>
+            <p className="double">{safeChannelsOut?.formatted ? safeChannelsOut.formatted : '-'}</p>
           </Tooltip>
           <Tooltip title={totalwxHOPR && totalwxHOPR !== '0' ? totalwxHOPR : null}>
             <p className="double">{totalwxHOPR ?? '-'}</p>
           </Tooltip>
-          <Tooltip
-            title={
-              statistics?.unredeemedValue && statistics?.unredeemedValue !== '0' ? statistics?.unredeemedValue : null
-            }
-          >
-            <p className="double">{statistics?.unredeemedValue ? statistics?.unredeemedValue : '-'}</p>
-          </Tooltip>
-          <Tooltip
-            title={statistics?.redeemedValue && statistics?.redeemedValue !== '0' ? statistics?.redeemedValue : null}
-          >
-            <p className="double">{statistics?.redeemedValue ? statistics?.redeemedValue : '-'}</p>
+          <Tooltip title={redeemed && redeemed !== '0' ? redeemed : null}>
+            <p className="double">{redeemed ? redeemed : '-'}</p>
           </Tooltip>
         </Data>
       </DataColumn>

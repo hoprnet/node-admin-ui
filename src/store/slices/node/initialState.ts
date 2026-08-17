@@ -101,8 +101,6 @@ type InitialState = {
   aliasesSource: {
     [peerAddress: string]: string;
   };
-  // blokli url override saved for this node, null means use the one the node reports
-  blokliUrl: string | null;
   balances: {
     data: {
       hopr: {
@@ -305,7 +303,6 @@ export const initialState: InitialState = {
   aliases: {},
   aliasesOwn: {},
   aliasesSource: {},
-  blokliUrl: null,
   balances: {
     data: {
       hopr: {

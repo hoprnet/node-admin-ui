@@ -13,6 +13,8 @@ import Visibility from '@mui/icons-material/Visibility';
 // HOPR Components
 import Section from '../../../future-hopr-lib-components/Section';
 import { actionsAsync as nodeActionsAsync } from '../../../store/slices/node/actionsAsync';
+import { fetchBlokliData } from '../../../store/slices/blokli/fetchBlokliData';
+import { selectBlokliUrl } from '../../../store/selectors/blokli';
 import { TableExtended } from '../../../future-hopr-lib-components/Table/columed-data';
 import { SubpageTitle } from '../../../components/SubpageTitle';
 import Tooltip from '../../../future-hopr-lib-components/Tooltip/tooltip-fixed-width';
@@ -65,6 +67,12 @@ function InfoPage() {
   const nodeSync = useAppSelector((store) => store.node.metricsParsed.nodeSync);
   const ticketPrice = useAppSelector((store) => store.node.ticketPrice.data);
   const minimumNetworkProbability = useAppSelector((store) => store.node.probability.data);
+  // blokli: safe wide channel stake and this node's on chain ticket redemptions
+  const blokliUrl = useAppSelector(selectBlokliUrl);
+  const safeChannelsOut = useAppSelector((store) => store.blokli.channelStats.data);
+  const channelStatsFetching = useAppSelector((store) => store.blokli.channelStats.isFetching);
+  const ticketRedemption = useAppSelector((store) => store.blokli.ticketRedemption.data);
+  const ticketRedemptionFetching = useAppSelector((store) => store.blokli.ticketRedemption.isFetching);
   const [showWholeProvider, set_showWholeProvider] = useState(false);
   const [providerShort, set_providerShort] = useState('');
   const [providerContainsSecret, set_providerContainsSecret] = useState(true);
@@ -158,6 +166,12 @@ function InfoPage() {
         apiToken: apiToken ? apiToken : '',
       }),
     );
+    fetchBlokliData({
+      blokliUrl,
+      nodeAddress: addresses?.native,
+      safeAddress: info?.hoprNodeSafe,
+      dispatch,
+    });
   };
 
   // This will allow us to improve readability on the reloading prop for SubpageTitle
@@ -169,6 +183,8 @@ function InfoPage() {
     infoFetching,
     peersConnectedFetching,
     peersAnnouncedFetching,
+    channelStatsFetching,
+    ticketRedemptionFetching,
   ].includes(true);
 
   const noCopyPaste = !(
@@ -465,13 +481,41 @@ function InfoPage() {
             <tr>
               <th>
                 <Tooltip
-                  title="The amount of wxHOPR tokens staked in the channels your Node has opened with counterparties"
+                  title="The amount of wxHOPR tokens staked in the open outgoing channels of every Node registered to your Safe. Read from blokli."
                   notWide
                 >
-                  <span>wxHOPR: Channels OUT</span>
+                  <span>wxHOPR: Node channels OUT</span>
                 </Tooltip>
               </th>
-              <td>{balances.channels?.formatted} wxHOPR</td>
+              <td>{balances.channels?.formatted ? `${balances.channels.formatted} wxHOPR` : '-'}</td>
+            </tr>
+            <tr>
+              <th>
+                <Tooltip
+                  title="The amount of wxHOPR tokens staked in the open outgoing channels of every Node registered to your Safe. Read from blokli."
+                  notWide
+                >
+                  <span>wxHOPR: Safe channels OUT</span>
+                </Tooltip>
+              </th>
+              <td>
+                {safeChannelsOut ? `${safeChannelsOut.formatted} wxHOPR (${safeChannelsOut.count} channels)` : '-'}
+              </td>
+            </tr>
+            <tr>
+              <th>
+                <Tooltip
+                  title="The total amount of wxHOPR staked in your Safe and in the outgoing Channels of every Node registered to it. The channels part is read from blokli."
+                  notWide
+                >
+                  <span>wxHOPR: Total Staked</span>
+                </Tooltip>
+              </th>
+              <td>
+                {safeChannelsOut?.value && balances.safeHopr?.value
+                  ? `${formatEther(BigInt(safeChannelsOut.value) + BigInt(balances.safeHopr.value))} wxHOPR`
+                  : '-'}
+              </td>
             </tr>
             <tr>
               <th>
@@ -483,22 +527,6 @@ function InfoPage() {
                 </Tooltip>
               </th>
               <td>{balances.safeHoprAllowance?.formatted} wxHOPR</td>
-            </tr>
-            <tr>
-              <th>
-                <Tooltip
-                  title="The total amount of wxHOPR staked in Safe and outgoing Channels"
-                  notWide
-                >
-                  <span>wxHOPR: Total Staked</span>
-                </Tooltip>
-              </th>
-              <td>
-                {balances.channels?.value && balances.safeHopr?.value
-                  ? formatEther(BigInt(balances.channels?.value) + BigInt(balances.safeHopr?.value))
-                  : '-'}{' '}
-                wxHOPR
-              </td>
             </tr>
           </tbody>
         </TableExtended>

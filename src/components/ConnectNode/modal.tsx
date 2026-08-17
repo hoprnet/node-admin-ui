@@ -10,6 +10,7 @@ import { parseAndFormatUrl } from '../../utils/parseAndFormatUrl';
 import { authActions, authActionsAsync } from '../../store/slices/auth';
 import { nodeActions } from '../../store/slices/node';
 import { fetchNodeData } from '../../store/slices/node/fetchNodeData';
+import { blokliActions } from '../../store/slices/blokli';
 import { appActions } from '../../store/slices/app';
 import { isNodeSubpage } from '../../applicationMap';
 
@@ -276,6 +277,7 @@ function ConnectNodeModal({ open = false, handleClose }: ConnectNodeModalProps) 
     abortAllPending();
     dispatch(authActions.resetState());
     dispatch(nodeActions.resetState());
+    dispatch(blokliActions.resetState());
     dispatch(appActions.resetNodeState());
     dispatch(appActions.clearNotifications());
     try {
