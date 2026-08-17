@@ -14,7 +14,7 @@ import Visibility from '@mui/icons-material/Visibility';
 import Section from '../../../future-hopr-lib-components/Section';
 import { actionsAsync as nodeActionsAsync } from '../../../store/slices/node/actionsAsync';
 import { fetchBlokliData } from '../../../store/slices/blokli/fetchBlokliData';
-import { selectBlokliUrl, selectChannelsOutBalance } from '../../../store/selectors/blokli';
+import { selectBlokliUrl } from '../../../store/selectors/blokli';
 import { TableExtended } from '../../../future-hopr-lib-components/Table/columed-data';
 import { SubpageTitle } from '../../../components/SubpageTitle';
 import Tooltip from '../../../future-hopr-lib-components/Tooltip/tooltip-fixed-width';
@@ -69,7 +69,7 @@ function InfoPage() {
   const minimumNetworkProbability = useAppSelector((store) => store.node.probability.data);
   // blokli: safe wide channel stake and this node's on chain ticket redemptions
   const blokliUrl = useAppSelector(selectBlokliUrl);
-  const channelsOut = useAppSelector(selectChannelsOutBalance);
+  const safeChannelsOut = useAppSelector((store) => store.blokli.channelStats.data);
   const channelStatsFetching = useAppSelector((store) => store.blokli.channelStats.isFetching);
   const ticketRedemption = useAppSelector((store) => store.blokli.ticketRedemption.data);
   const ticketRedemptionFetching = useAppSelector((store) => store.blokli.ticketRedemption.isFetching);
@@ -481,19 +481,14 @@ function InfoPage() {
             <tr>
               <th>
                 <Tooltip
-                  title={
-                    channelsOut.fromBlokli
-                      ? 'The amount of wxHOPR tokens staked in the outgoing channels of every Node registered to your Safe. Read from blokli.'
-                      : 'The amount of wxHOPR tokens staked in the channels your Node has opened with counterparties. Blokli is unavailable, so this covers only this Node.'
-                  }
+                  title="The amount of wxHOPR tokens staked in the open outgoing channels of every Node registered to your Safe. Read from blokli."
                   notWide
                 >
                   <span>wxHOPR: Channels OUT</span>
                 </Tooltip>
               </th>
               <td>
-                {channelsOut.formatted ? channelsOut.formatted : '-'} wxHOPR
-                {channelsOut.count !== null && ` (${channelsOut.count} channels)`}
+                {safeChannelsOut ? `${safeChannelsOut.formatted} wxHOPR (${safeChannelsOut.count} channels)` : '-'}
               </td>
             </tr>
             <tr>
@@ -510,17 +505,16 @@ function InfoPage() {
             <tr>
               <th>
                 <Tooltip
-                  title="The total amount of wxHOPR staked in Safe and outgoing Channels"
+                  title="The total amount of wxHOPR staked in your Safe and in the outgoing Channels of every Node registered to it. The channels part is read from blokli."
                   notWide
                 >
                   <span>wxHOPR: Total Staked</span>
                 </Tooltip>
               </th>
               <td>
-                {channelsOut.value && balances.safeHopr?.value
-                  ? formatEther(BigInt(channelsOut.value) + BigInt(balances.safeHopr?.value))
-                  : '-'}{' '}
-                wxHOPR
+                {safeChannelsOut?.value && balances.safeHopr?.value
+                  ? `${formatEther(BigInt(safeChannelsOut.value) + BigInt(balances.safeHopr.value))} wxHOPR`
+                  : '-'}
               </td>
             </tr>
             <tr>
@@ -795,6 +789,28 @@ function InfoPage() {
                 </Tooltip>
               </th>
               <td>{channels?.outgoing.length}</td>
+            </tr>
+            <tr>
+              <th>
+                <Tooltip
+                  title="The amount of wxHOPR staked in the outgoing channels this Node has opened"
+                  notWide
+                >
+                  <span>Outgoing (this node)</span>
+                </Tooltip>
+              </th>
+              <td>{balances.channels?.formatted ? `${balances.channels.formatted} wxHOPR` : '-'}</td>
+            </tr>
+            <tr>
+              <th>
+                <Tooltip
+                  title="The amount of wxHOPR staked in the open outgoing channels of every Node registered to your Safe. Read from blokli."
+                  notWide
+                >
+                  <span>Outgoing (safe nodes)</span>
+                </Tooltip>
+              </th>
+              <td>{safeChannelsOut ? `${safeChannelsOut.formatted} wxHOPR` : '-'}</td>
             </tr>
           </tbody>
         </TableExtended>

@@ -1,5 +1,4 @@
 import { useAppSelector } from '../../store';
-import { selectChannelsOutBalance } from '../../store/selectors/blokli';
 import styled from '@emotion/styled';
 import { formatEther } from 'viem';
 import Tooltip from '@mui/material/Tooltip';
@@ -153,14 +152,15 @@ export default function Details(props: Props) {
   const balances = useAppSelector((store) => store.node.balances.data);
   const info = useAppSelector((store) => store.node.info.data);
   const statistics = useAppSelector((store) => store.node.statistics.data);
-  // same source as the info page's Channels OUT row, so the 2 cannot disagree
-  const channelsOut = useAppSelector(selectChannelsOutBalance);
+  // safe wide channel stake, same source as the info page. Blokli only, no fallback
+  // to this node's own channels, so it stays honest about what it is showing.
+  const safeChannelsOut = useAppSelector((store) => store.blokli.channelStats.data);
   // on chain redemptions, same source as the info and tickets pages
   const redeemed = useAppSelector((store) => store.blokli.ticketRedemption.data?.redeemed.formatted);
 
   const totalwxHOPR =
-    channelsOut.value && balances.safeHopr?.value
-      ? formatEther(BigInt(channelsOut.value) + BigInt(balances.safeHopr?.value))
+    safeChannelsOut?.value && balances.safeHopr?.value
+      ? formatEther(BigInt(safeChannelsOut.value) + BigInt(balances.safeHopr?.value))
       : '-';
 
   const isXdaiEnough = () => {
@@ -240,8 +240,10 @@ export default function Details(props: Props) {
           >
             <p>{balances.safeHopr?.formatted ?? '-'}</p>
           </Tooltip>
-          <Tooltip title={channelsOut.formatted && channelsOut.formatted !== '0' ? channelsOut.formatted : null}>
-            <p className="double">{channelsOut.formatted ? channelsOut.formatted : '-'}</p>
+          <Tooltip
+            title={safeChannelsOut?.formatted && safeChannelsOut.formatted !== '0' ? safeChannelsOut.formatted : null}
+          >
+            <p className="double">{safeChannelsOut?.formatted ? safeChannelsOut.formatted : '-'}</p>
           </Tooltip>
           <Tooltip title={totalwxHOPR && totalwxHOPR !== '0' ? totalwxHOPR : null}>
             <p className="double">{totalwxHOPR ?? '-'}</p>
