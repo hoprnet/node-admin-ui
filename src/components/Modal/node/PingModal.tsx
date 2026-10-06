@@ -126,17 +126,7 @@ export const PingModal = (props: PingModalProps) => {
     <>
       <IconButton
         iconComponent={<RssFeedIcon />}
-        tooltipText={
-          props.tooltip ? (
-            props.tooltip
-          ) : (
-            <span>
-              PING
-              <br />
-              node
-            </span>
-          )
-        }
+        tooltipText={props.tooltip ? props.tooltip : <span>Ping node</span>}
         onClick={address ? handlePing : handleOpenModal}
         disabled={props.disabled}
         pending={disableButton}

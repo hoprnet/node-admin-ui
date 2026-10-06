@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from '@emotion/styled';
+import { v } from '../../theme';
 
 //mui
 import InputLabel from '@mui/material/InputLabel';
@@ -7,20 +8,14 @@ import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import SelectMui, { SelectProps as SelectMuiProps } from '@mui/material/Select';
 import { Tooltip, IconButton } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
+import DeleteIcon from '@mui/icons-material/DeleteOutline';
 import { toHexMD5, generateBase64Jazz } from '../../utils/functions';
 
 const SFormControl = styled(FormControl)`
   margin-bottom: 16px;
-  margin-top: 24px;
-  label {
-    font-size: 17px;
-  }
-  .MuiOutlinedInput-root {
-    font-size: 17px;
-  }
+  margin-top: 16px;
   .MuiFormLabel-root.MuiInputLabel-shrink {
-    color: #000030;
+    color: ${v.text2};
   }
   .MuiInputBase-root {
     button.removeValue {

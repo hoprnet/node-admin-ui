@@ -320,10 +320,15 @@
   resolved "https://registry.npmjs.org/@eslint/js/-/js-8.57.1.tgz"
   integrity sha512-d9zaMRSTIKDLhctzH12MtXvJKSSUhaHcjV+2Z+GK+EEY7XKpP5yR4x+N3TAcHTcu963nIr+TMcCb4DBCYX1z6Q==
 
-"@fontsource/roboto@^5.0.0":
-  version "5.2.6"
-  resolved "https://registry.npmjs.org/@fontsource/roboto/-/roboto-5.2.6.tgz"
-  integrity sha512-hzarG7yAhMoP418smNgfY4fO7UmuUEm5JUtbxCoCcFHT0hOJB+d/qAEyoNjz7YkPU5OjM2LM8rJnW8hfm0JLaA==
+"@fontsource-variable/ibm-plex-sans@5.3.0":
+  version "5.3.0"
+  resolved "https://registry.yarnpkg.com/@fontsource-variable/ibm-plex-sans/-/ibm-plex-sans-5.3.0.tgz#61ed443b8f904720fb28049370dc201e152f3ed5"
+  integrity sha512-agG8tXFEo0hD9+J7npa4vbbWult52eMLVaQ6WQRlhs/iCAojrMAoejru85W9HTVXHfyUj96KM7gp/KGAS87XaQ==
+
+"@fontsource/ibm-plex-mono@5.3.0":
+  version "5.3.0"
+  resolved "https://registry.yarnpkg.com/@fontsource/ibm-plex-mono/-/ibm-plex-mono-5.3.0.tgz#1879699d104602d5331e28e103f33c3b1b766b17"
+  integrity sha512-eTgnZjZEGk1QtD3ZstF+Vclo2HLAni8YMy34/DxllwZvyz1lR/1RF/xTiAquOBO7MvqBx8D2Ig2WCPMVfdZu7Q==
 
 "@hoprnet/hopr-sdk@4.0.0-rc.0-pr.159":
   version "4.0.0-rc.0-pr.159"

@@ -15,84 +15,102 @@ import { appActions } from '../../store/slices/app';
 
 //MUI
 import { Button, Menu, MenuItem, CircularProgress } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { abortAllPending } from '../../store/abortRegistry';
+import { v } from '../../theme';
 
 const Container = styled(Button)`
-  align-items: center;
-  border-left: 1px lightgray solid;
-  cursor: pointer;
-  color: black;
   display: flex;
-  flex-direction: row;
-  gap: 10px;
-  height: 42px;
-  width: 240px;
-  border-radius: 0;
-  div {
-    align-items: center;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    justify-content: center;
-    width: 100%;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  max-width: 260px;
+  padding: 0 8px 0 6px;
+  margin-left: 6px;
+  border: 1px solid ${v.border};
+  border-radius: 6px;
+  background: ${v.surface};
+  color: ${v.text};
+  &:hover {
+    background: ${v.surface2};
+    border-color: ${v.borderStrong};
+  }
+  &.disconnected {
+    padding: 0 12px;
+    background: ${v.accent};
+    border-color: ${v.accent};
+    color: ${v.accentContrast};
+    &:hover {
+      background: ${v.accentHover};
+    }
   }
   .image-container {
-    height: 48px;
-    margin-left: 8px;
-    width: 50px;
+    display: flex;
     img {
-      height: 34px;
-      width: 34px;
-      border-radius: 50px;
+      height: 22px;
+      width: 22px;
+      border-radius: 50%;
     }
   }
 `;
 
 const NodeButton = styled.div`
-  font-family: 'Source Code Pro';
-  min-width: 150px;
   display: flex;
-  flex-direction: row !important;
   align-items: center;
-  color: #414141;
-  gap: 10px;
+  gap: 6px;
+  min-width: 0;
   text-align: left;
+  .labels {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
   p {
     margin: 0;
-    font-size: 12px;
   }
   .node-info {
-    color: #414141;
-    line-height: 12px;
-    height: 12px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 15px;
+    color: ${v.text2};
     white-space: nowrap;
   }
   .node-info-localname {
-    font-weight: 700;
-    color: #000050;
-    height: 12px;
-    line-height: 12px;
+    font-family: var(--font-sans);
+    font-size: 12.5px;
+    font-weight: 600;
+    line-height: 15px;
+    color: ${v.text};
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
-`;
-
-const DropdownArrow = styled.img`
-  align-self: center;
+  .dropdown-icon {
+    display: flex;
+    color: ${v.text3};
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+  }
+  &.connect {
+    font-size: 13.5px;
+    font-weight: 500;
+  }
 `;
 
 const Overlay = styled.div`
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   display: flex;
   flex-direction: column;
-  color: #000050;
-  gap: 32px;
+  gap: 16px;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.78);
+  font-size: 13.5px;
+  color: ${v.text2};
+  background: color-mix(in srgb, ${v.bg} 80%, transparent);
+  backdrop-filter: blur(4px);
   z-index: 10000;
 `;
 
@@ -198,33 +216,35 @@ export default function ConnectNode() {
       <Container
         onClick={handleContainerClick}
         ref={containerRef}
+        className={connected ? 'connected' : 'disconnected'}
       >
-        <div
-          className="image-container"
-          id="jazz-icon-node"
-        >
-          <img
-            className={`${peerAddressIcon && 'node-jazz-icon-present'}`}
-            src={peerAddressIcon ?? '/assets/hopr_logo.svg'}
-          />
-        </div>
+        {connected && (
+          <div
+            className="image-container"
+            id="jazz-icon-node"
+          >
+            <img
+              className={`${peerAddressIcon && 'node-jazz-icon-present'}`}
+              src={peerAddressIcon ?? '/assets/hopr_logo.svg'}
+              alt=""
+            />
+          </div>
+        )}
         {connected ? (
           <>
             <NodeButton>
-              <span>
+              <span className="labels">
                 {localNameToDisplay && <p className="node-info node-info-localname">{localNameToDisplay}</p>}
                 <p className="node-info">
                   {peerAddress && (
                     <>
-                      <span style={{ textTransform: 'lowercase' }}>0x</span>
-                      {peerAddress.substring(2, 6).toUpperCase()}...
-                      {peerAddress.substring(peerAddress.length - 7, peerAddress.length).toUpperCase()}
+                      0x{peerAddress.substring(2, 6)}…{peerAddress.substring(peerAddress.length - 4)}
                     </>
                   )}
                 </p>
               </span>
               <div className="dropdown-icon">
-                <DropdownArrow src="/assets/dropdown-arrow.svg" />
+                <ExpandMoreIcon />
               </div>
             </NodeButton>
             <Menu
@@ -242,9 +262,7 @@ export default function ConnectNode() {
             </Menu>
           </>
         ) : (
-          <div>
-            <NodeButton>Connect to Node</NodeButton>
-          </div>
+          <NodeButton className="connect">Connect node</NodeButton>
         )}
       </Container>
       <Modal
@@ -253,8 +271,8 @@ export default function ConnectNode() {
       />
       {connecting && (
         <Overlay>
-          <CircularProgress />
-          Connecting to Node
+          <CircularProgress size={24} />
+          Connecting to node…
         </Overlay>
       )}
     </>

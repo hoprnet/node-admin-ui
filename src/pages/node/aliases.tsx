@@ -105,13 +105,7 @@ function AliasesPage() {
           <IconButton
             iconComponent={<RemoveAliasIcon />}
             aria-label="delete alias"
-            tooltipText={
-              <span>
-                DELETE
-                <br />
-                alias
-              </span>
-            }
+            tooltipText={<span>Delete alias</span>}
             onClick={() => {
               dispatch(nodeActions.removeAlias(peerAddress));
             }}
@@ -162,7 +156,8 @@ function AliasesPage() {
       yellow
     >
       <SubpageTitle
-        title={`ALIASES (${parsedTableData.length})`}
+        title="Aliases"
+        count={parsedTableData.length}
         //  refreshFunction={handleRefresh}
         actions={
           <>
@@ -170,13 +165,7 @@ function AliasesPage() {
             <CSVUploader onParse={handleCSVUpload} />
             <IconButton
               iconComponent={<GetAppIcon />}
-              tooltipText={
-                <span>
-                  EXPORT
-                  <br />
-                  aliases as a CSV
-                </span>
-              }
+              tooltipText={<span>Export aliases as a CSV</span>}
               disabled={aliases !== null && Object.keys(aliases).length === 0}
               onClick={handleExport}
             />
@@ -335,13 +324,7 @@ function CSVUploader<T extends ParsedData>({ onParse }: CSVUploaderProps<T>) {
     <div>
       <IconButton
         iconComponent={<DriveFolderUploadIcon />}
-        tooltipText={
-          <span>
-            IMPORT
-            <br />
-            aliases from a CSV
-          </span>
-        }
+        tooltipText={<span>Import aliases from a CSV</span>}
         onClick={handleImportClick}
       />
 

@@ -31,10 +31,7 @@ function Packets() {
   const forwarded = useAppSelector((store) => store.node.metricsParsed.packets.forwarded);
 
   return (
-    <TableExtended
-      title="Packets"
-      style={{ marginBottom: '42px' }}
-    >
+    <TableExtended title="Packets">
       <tbody>
         <tr>
           <th>

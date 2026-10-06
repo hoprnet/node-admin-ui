@@ -150,13 +150,7 @@ export const FundChannelModal = ({ ...props }: FundChannelModalModalProps) => {
       <IconButton
         iconComponent={<FundChannelIcon />}
         disabled={props.disabled}
-        tooltipText={
-          <span>
-            FUND
-            <br />
-            outgoing channel
-          </span>
-        }
+        tooltipText={<span>Fund outgoing channel</span>}
         onClick={handleOpenChannelDialog}
       />
       <SDialog

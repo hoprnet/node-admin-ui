@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef, KeyboardEvent, Key } from 'react';
 import styled from '@emotion/styled';
+import { v } from '../../../theme';
 import { HOPR_TOKEN_USED } from '../../../../config';
 import { useAppDispatch, useAppSelector } from '../../../store';
 import { DialogTitle, InputAdornment, MenuItem, Button as MuiButton, TextField } from '@mui/material';
@@ -44,15 +45,18 @@ const TextFieldWithoutArrows = styled(TextField)`
 `;
 
 const MaxButton = styled(MuiButton)`
-  background-color: #ffffa0;
-  border-radius: 2px;
-  border: none;
-  color: #444;
-  font-weight: 600;
-  padding: 0.2rem 1rem;
+  background-color: ${v.surface2};
+  border: 1px solid ${v.border};
+  color: ${v.text};
+  font-size: 12px;
+  font-weight: 500;
+  min-height: 28px;
+  padding: 2px 10px;
+  &:hover {
+    background-color: ${v.surface3};
+  }
   &:disabled {
-    background-color: #e0e0e0;
-    color: #a6a6a6;
+    color: ${v.text3};
   }
 `;
 
@@ -194,13 +198,7 @@ const WithdrawModal = ({ initialCurrency }: WithdrawModalProps) => {
     <>
       <IconButton
         iconComponent={<WithdrawIcon />}
-        tooltipText={
-          <span>
-            WITHDRAW
-            <br />
-            tokens
-          </span>
-        }
+        tooltipText={<span>Withdraw tokens</span>}
         onClick={handleOpenModal}
       />
       <SDialog

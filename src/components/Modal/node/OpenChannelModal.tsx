@@ -142,17 +142,7 @@ export const OpenChannelModal = ({ ...props }: OpenChannelModalProps) => {
         iconComponent={<AddChannelIcon />}
         disabled={props.disabled}
         pending={channelIsBeingOpened}
-        tooltipText={
-          props.tooltip ? (
-            props.tooltip
-          ) : (
-            <span>
-              OPEN
-              <br />
-              outgoing channel
-            </span>
-          )
-        }
+        tooltipText={props.tooltip ? props.tooltip : <span>Open outgoing channel</span>}
         onClick={handleOpenChannelDialog}
       />
       <SDialog

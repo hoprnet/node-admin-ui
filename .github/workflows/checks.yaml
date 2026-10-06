@@ -1,0 +1,78 @@
+---
+name: Checks
+on:
+  workflow_call:
+permissions: {}
+jobs:
+  build:
+    name: Build (node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [22, 24]
+    defaults:
+      run:
+        # Every tool comes from the flake's CI dev shell.
+        shell: nix develop .#ci-node${{ matrix.node }} --command bash -eo pipefail {0}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24 # v31.11.1
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Cache yarn packages
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/yarn
+          key: yarn-${{ runner.os }}-node${{ matrix.node }}-${{ hashFiles('yarn.lock') }}
+          restore-keys: yarn-${{ runner.os }}-node${{ matrix.node }}-
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build
+        run: yarn build
+
+      - name: Lint
+        run: yarn lint:ci
+
+      - name: Formatting
+        run: yarn format:ci
+
+      - name: Test
+        run: yarn test
+
+  workflows:
+    name: Lint workflows
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    defaults:
+      run:
+        shell: nix develop .#ci --command bash -eo pipefail {0}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24 # v31.11.1
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: actionlint
+        run: actionlint
+
+      - name: zizmor
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: zizmor --format github .github/workflows

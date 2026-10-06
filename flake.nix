@@ -76,6 +76,19 @@
           };
           tools = pkgs;
         };
+
+        # CI shells: the Node toolchain plus the workflow linters, without the
+        # interactive pre-commit hook installation.
+        ciShell =
+          nodejs:
+          pkgs.mkShell {
+            inputsFrom = [ (import ./shell.nix { inherit pkgs nodejs; }) ];
+            nativeBuildInputs = [
+              pkgs.zizmor
+              pkgs.actionlint
+              pkgs.gh
+            ];
+          };
       in
       {
         devShells.default = pkgs.mkShell {
@@ -86,11 +99,27 @@
             ${pre-commit-check.shellHook}
           '';
         };
-        devShells.ci = pkgs.mkShell {
+        # UI shell: the default toolchain plus a headless Chromium (Playwright)
+        # for screenshots and visual checks of the dashboard.
+        devShells.ui = pkgs.mkShell {
+          inputsFrom = [ (import ./shell.nix { inherit pkgs; }) ];
           nativeBuildInputs = [
-            pkgs.zizmor
+            (pkgs.python3.withPackages (ps: [ ps.playwright ]))
           ];
+          PLAYWRIGHT_BROWSERS_PATH = pkgs.playwright-driver.browsers;
+          PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS = "true";
+          # The nix Chromium sees no system fonts otherwise and renders no text.
+          FONTCONFIG_FILE = pkgs.makeFontsConf {
+            fontDirectories = [
+              pkgs.dejavu_fonts
+              pkgs.liberation_ttf
+              pkgs.noto-fonts-color-emoji
+            ];
+          };
         };
+        devShells.ci = ciShell pkgs.nodejs_22;
+        devShells.ci-node22 = ciShell pkgs.nodejs_22;
+        devShells.ci-node24 = ciShell pkgs.nodejs_24;
 
         # Expose as flake as app
         apps = {

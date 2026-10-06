@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import styled from '@emotion/styled';
 import { css } from '@emotion/react';
 import {
-  Divider,
   List,
   ListItemButton,
   ListItemIcon,
@@ -17,21 +16,24 @@ import { ApplicationMapType } from '../../applicationMap';
 import Details from '../../components/InfoBar/details';
 import { rounder2 } from '../../utils/functions';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import packageJson from '../../../package.json';
+import { layout, v } from '../../theme';
 
-export const drawerWidth = 200;
-export const minDrawerWidth = 50;
+export const drawerWidth = layout.drawerWidth;
+export const minDrawerWidth = layout.minDrawerWidth;
 
 const StyledDrawer = styled(MuiDrawer)`
   .MuiDrawer-paper {
     box-sizing: border-box;
-    padding-top: 43px;
-    transition: width 0.4s ease-out;
+    padding-top: ${layout.navBarHeight}px;
+    transition: width 0.2s ease;
     overflow-x: hidden;
     scrollbar-width: none;
+    display: flex;
+    flex-direction: column;
     &::-webkit-scrollbar {
       display: none;
     }
-    width: ${drawerWidth}px;
     width: ${(props) => (props.open ? `${drawerWidth}px` : `${minDrawerWidth}px`)};
 
     ${(props) =>
@@ -40,112 +42,126 @@ const StyledDrawer = styled(MuiDrawer)`
         width: ${drawerWidth}px;
       `}
   }
+`;
 
-  &.type-blue {
-    .MuiDrawer-paper {
-      background: #000050;
-      color: white;
-    }
-    hr {
-      border-color: rgb(255 255 255 / 50%);
-    }
-    .StyledListSubheader {
-      background: #000050;
-      color: white;
-    }
-    .StyledListItemButton {
-      color: white;
-      &.Mui-selected {
-        .MuiListItemText-root {
-          text-decoration: underline 2px rgb(255, 255, 255);
-        }
-        background-color: rgba(255, 255, 255, 0.2);
-        .MuiSvgIcon-root {
-          color: #b4f0ff;
-          fill: #b4f0ff;
-        }
-        &:hover {
-          background-color: rgba(255, 255, 255, 0.3);
-        }
-      }
-      &:hover {
-        background-color: rgba(255, 255, 255, 0.3);
-      }
-    }
-    .MuiSvgIcon-root {
-      color: white;
-      fill: white;
-    }
+const Group = styled.div`
+  padding: 12px 8px 4px;
+  & + & {
+    padding-top: 8px;
+  }
+  .MuiList-root {
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
   }
 `;
 
 const StyledListSubheader = styled(ListSubheader)`
-  align-items: center;
   display: flex;
-  height: 48px;
-  letter-spacing: 0.2px;
+  align-items: center;
+  height: 28px;
+  padding: 0 10px;
+  font-size: 11.5px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: ${v.text3};
+  background: transparent;
   user-select: none;
-  color: #777;
+  white-space: nowrap;
+  position: static;
+  &.collapsed {
+    padding: 0;
+    justify-content: center;
+    &::after {
+      content: '';
+      width: 16px;
+      height: 1px;
+      background: ${v.borderStrong};
+    }
+  }
 `;
 
 const StyledListItemButton = styled(ListItemButton)`
-  height: 48px;
-  fill: rgba(0, 0, 0, 0.54);
-  width: 100%;
-  padding-right: 7px;
-  padding-left: 14px;
+  height: 34px;
+  border-radius: 6px;
+  padding: 0 8px 0 10px;
+  color: ${v.text2};
+  transition: background-color 100ms ease, color 100ms ease;
   .MuiListItemIcon-root {
-    min-width: 38px;
+    min-width: 30px;
+    color: ${v.text3};
     svg {
-      width: 24px;
-      height: 24px;
+      width: 18px;
+      height: 18px;
     }
   }
   .MuiTypography-root {
-    font-size: 14px;
+    font-size: 13.5px;
+    font-weight: 450;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
-  &.Mui-selected {
-    color: #0000b4;
-    fill: #0000b4;
-    background-color: rgba(255, 255, 255, 0.45);
-    .MuiListItemText-root {
-      text-decoration: underline 2px #0000b4;
-      text-underline-offset: 4px;
-    }
-    .MuiTypography-root {
-      font-weight: bold;
-    }
-    .MuiSvgIcon-root,
+  &:hover {
+    background-color: ${v.surface2};
+    color: ${v.text};
     .MuiListItemIcon-root {
-      color: #0000b4;
-      fill: #0000b4;
+      color: ${v.text2};
     }
+  }
+  &.Mui-selected,
+  &.Mui-selected:hover {
+    background-color: ${v.accentSoft};
+    color: ${v.accentText};
+    .MuiTypography-root {
+      font-weight: 550;
+    }
+    .MuiListItemIcon-root {
+      color: ${v.accentText};
+    }
+  }
+  &.Mui-disabled {
+    opacity: 0.45;
+  }
+  &.Mui-focusVisible {
+    box-shadow: 0 0 0 2px ${v.focus};
   }
 ` as typeof ListItemButton;
 
-const SListItemIcon = styled(ListItemIcon)`
-  &.GroupIcon {
-    color: rgba(0, 0, 0, 0.2);
-  }
-`;
+const SListItemIcon = styled(ListItemIcon)``;
 
 const Numbers = styled.div`
+  font-family: var(--font-mono);
   font-size: 11px;
-  background-color: #ddeaff;
-  padding: 3px;
+  font-variant-numeric: tabular-nums;
+  color: ${v.text3};
+  min-width: 20px;
+  text-align: right;
+  .Mui-selected & {
+    color: ${v.accentText};
+  }
 `;
 
 const NumbersLoading = styled.div`
-  height: 18px;
-  width: 18px;
-  background-color: #ddeaff;
-  padding: 2px;
+  display: flex;
+  color: ${v.text3};
   svg {
-    animation: rotation 2s infinite linear;
-    height: 16px;
-    width: 16px;
+    animation: rotation 1.2s infinite linear;
+    height: 14px !important;
+    width: 14px !important;
   }
+`;
+
+const Footer = styled.div`
+  margin-top: auto;
+  padding: 12px 18px 14px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: ${v.text3};
+  white-space: nowrap;
+  overflow: hidden;
 `;
 
 type DrawerProps = {
@@ -213,26 +229,17 @@ const Drawer = ({
       variant={drawerVariant}
       open={openedNavigationDrawer}
       onClose={() => set_openedNavigationDrawer(false)}
-      className={drawerType === 'blue' ? 'type-blue' : 'type-white'}
     >
       {allItems.map(
         (group) =>
           ((group.mobileOnly === true && isMobile) || !group.mobileOnly) && (
-            <div key={group.groupName}>
-              <Divider />
+            <Group key={group.groupName}>
               <List
                 subheader={
                   openedNavigationDrawer ? (
                     <StyledListSubheader className="StyledListSubheader">{group.groupName}</StyledListSubheader>
                   ) : (
-                    <Tooltip
-                      title={`Group: ${group.groupName.toLowerCase()}`}
-                      placement="right"
-                    >
-                      <StyledListSubheader className="StyledListSubheader">
-                        <SListItemIcon className="SListItemIcon GroupIcon">{group.icon}</SListItemIcon>
-                      </StyledListSubheader>
-                    </Tooltip>
+                    <StyledListSubheader className="StyledListSubheader collapsed" />
                   )
                 }
               >
@@ -242,7 +249,7 @@ const Drawer = ({
                     ((item.mobileOnly === true && isMobile) || !item.mobileOnly) && (
                       <Tooltip
                         key={item.name}
-                        title={!openedNavigationDrawer && item.name}
+                        title={!openedNavigationDrawer ? item.name : ''}
                         placement="right"
                       >
                         <StyledListItemButton
@@ -296,10 +303,11 @@ const Drawer = ({
                     ),
                 )}
               </List>
-            </div>
+            </Group>
           ),
       )}
-      {drawerVariant === 'temporary' && <Details style={{ margin: '0 auto 16px' }} />}
+      {drawerVariant === 'temporary' && <Details style={{ margin: '16px 8px 0' }} />}
+      <Footer>{openedNavigationDrawer ? `UI v${packageJson.version}` : `v${packageJson.version.split('.')[0]}`}</Footer>
     </StyledDrawer>
   );
 };

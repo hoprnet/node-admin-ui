@@ -1,46 +1,39 @@
 import styled from '@emotion/styled';
 import Section from '../future-hopr-lib-components/Section';
+import { v } from '../theme';
 
 const StyledContainer = styled.div`
-  align-items: center;
-  text-align: justify;
   display: flex;
   flex-direction: column;
-  gap: 4rem;
-  max-width: 1080px;
-  padding: 2rem;
+  gap: 20px;
+  max-width: 72ch;
+  padding: 8px 0 32px;
 `;
 
-const BigTitle = styled.h2`
-  color: #414141;
-  font-size: 80px;
-  font-weight: 400;
-  margin-block: 0rem;
-  text-transform: uppercase;
-  padding-top: 2rem;
-  text-align: center;
+const BigTitle = styled.h1`
+  margin: 0 0 8px;
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: ${v.text};
 `;
 
 const Title = styled.h2`
-  color: #414141;
-  font-size: 60px;
-  font-weight: 400;
-  margin-block: 0rem;
-  text-transform: uppercase;
-  text-align: left;
-  width: 100%;
-  /* padding-top: 2rem; */
+  margin: 16px 0 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: ${v.text};
 `;
 
 const Description = styled.p`
-  color: #414141;
-  font-size: 18px;
-  font-weight: 600;
   margin: 0;
-  max-width: 74ch;
+  font-size: 14px;
+  line-height: 1.7;
+  color: ${v.text2};
   a {
-    color: #007bff; /* Set the desired color for links */
+    color: ${v.accentText};
     text-decoration: underline;
+    text-underline-offset: 2px;
   }
 `;
 

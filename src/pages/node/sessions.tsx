@@ -223,13 +223,7 @@ function SessionsPage() {
           <IconButton
             iconComponent={<PhoneDisabledIcon />}
             //  pending={channelsOutgoingObject[id]?.isClosing} //to be added when sessions will get targets
-            tooltipText={
-              <span>
-                CLOSE
-                <br />
-                session
-              </span>
-            }
+            tooltipText={<span>Close session</span>}
             onClick={() => handleCloseSession(session.protocol, session.ip, session.port)}
           />
         </>
@@ -245,20 +239,15 @@ function SessionsPage() {
       yellow
     >
       <SubpageTitle
-        title={`SESSIONS (${sessions ? sessions.length : '-'})`}
+        title="Sessions"
+        count={sessions ? sessions.length : null}
         refreshFunction={handleRefresh}
         reloading={sessionsFetching}
         actions={
           <>
             <IconButton
               iconComponent={<GetAppIcon />}
-              tooltipText={
-                <span>
-                  EXPORT
-                  <br />
-                  sessions channels as a CSV
-                </span>
-              }
+              tooltipText={<span>Export sessions channels as a CSV</span>}
               disabled={!sessions || Object.keys(sessions).length === 0}
               onClick={handleExport}
             />

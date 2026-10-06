@@ -7,14 +7,13 @@ import { exportToFile } from '../../utils/helpers';
 import { formatEther } from 'viem';
 
 // HOPR Components
-import { TableExtended } from '../../future-hopr-lib-components/Table/columed-data';
+import { CardStack, TableExtended } from '../../future-hopr-lib-components/Table/columed-data';
 import { SubpageTitle } from '../../components/SubpageTitle';
 import Section from '../../future-hopr-lib-components/Section';
 import IconButton from '../../future-hopr-lib-components/Button/IconButton';
 import Tooltip from '../../future-hopr-lib-components/Tooltip/tooltip-fixed-width';
 
 // Mui
-import { Paper } from '@mui/material';
 
 // Icons
 import RotateLeftIcon from '@mui/icons-material/RotateLeft';
@@ -101,20 +100,14 @@ function TicketsPage() {
       yellow
     >
       <SubpageTitle
-        title="TICKETS"
+        title="Tickets"
         refreshFunction={handleRefresh}
         reloading={statisticsFetching}
         actions={
           <>
             <IconButton
               iconComponent={<ExitToAppIcon />}
-              tooltipText={
-                <span>
-                  REDEEM
-                  <br />
-                  all tickets
-                </span>
-              }
+              tooltipText={<span>Redeem all tickets</span>}
               reloading={redeemAllTicketsFetching}
               onClick={handleRedeemAllTickets}
             />
@@ -134,16 +127,8 @@ function TicketsPage() {
           </>
         }
       />
-      <Paper
-        style={{
-          padding: '24px',
-          width: 'calc( 100% - 48px )',
-        }}
-      >
-        <TableExtended
-          title="Ticket statistics"
-          style={{ marginBottom: '32px' }}
-        >
+      <CardStack>
+        <TableExtended title="Ticket statistics">
           <tbody>
             <tr>
               <th>
@@ -203,10 +188,7 @@ function TicketsPage() {
           </tbody>
         </TableExtended>
 
-        <TableExtended
-          title="Ticket properties"
-          style={{ marginBottom: '42px' }}
-        >
+        <TableExtended title="Ticket properties">
           <tbody>
             <tr>
               <th>
@@ -233,7 +215,7 @@ function TicketsPage() {
             </tr>
           </tbody>
         </TableExtended>
-      </Paper>
+      </CardStack>
     </Section>
   );
 }

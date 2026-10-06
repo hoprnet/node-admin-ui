@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import styled from '@emotion/styled';
+import { v } from '../../../theme';
 import { sendNotification } from '../../../hooks/useWatcher/notifications';
 
 // HOPRd SDK
@@ -73,7 +74,7 @@ const StatusContainer = styled.div`
   width: calc(100% - 32px);
   height: 100%;
   width: 100%;
-  background: rgba(255, 255, 255, 0.9);
+  background: color-mix(in srgb, ${v.surface} 92%, transparent);
   z-index: 100;
 `;
 
@@ -381,17 +382,7 @@ export const OpenSessionModal = (props: OpenSessionModalProps) => {
     <>
       <IconButton
         iconComponent={<AddIcCallIcon />}
-        tooltipText={
-          props.tooltip ? (
-            props.tooltip
-          ) : (
-            <span>
-              OPEN
-              <br />
-              session listener
-            </span>
-          )
-        }
+        tooltipText={props.tooltip ? props.tooltip : <span>Open session listener</span>}
         onClick={handleOpenModal}
         disabled={props.disabled}
       />

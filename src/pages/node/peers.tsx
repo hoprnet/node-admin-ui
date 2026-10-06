@@ -165,7 +165,8 @@ function PeersPage() {
       yellow
     >
       <SubpageTitle
-        title={`PEERS (${peersConnected?.length || '-'})`}
+        title="Peers"
+        count={peersConnected?.length || null}
         refreshFunction={handleRefresh}
         reloading={peersFetching}
         actions={
@@ -173,13 +174,7 @@ function PeersPage() {
             <PingModal />
             <IconButton
               iconComponent={<GetAppIcon />}
-              tooltipText={
-                <span>
-                  EXPORT
-                  <br />
-                  seen peers as a CSV
-                </span>
-              }
+              tooltipText={<span>Export seen peers as a CSV</span>}
               disabled={!peersConnected || peersConnected.length === 0}
               onClick={handleExport}
             />

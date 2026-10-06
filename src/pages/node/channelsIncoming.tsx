@@ -239,7 +239,7 @@ function ChannelsPage() {
               tooltip={
                 !peerAddress ? (
                   <span>
-                    DISABLED
+                    Disabled
                     <br />
                     Unable to find
                     <br />
@@ -257,13 +257,7 @@ function ChannelsPage() {
             <IconButton
               iconComponent={<CloseChannelIcon />}
               pending={channelsIncomingObject[id]?.isClosing}
-              tooltipText={
-                <span>
-                  CLOSE
-                  <br />
-                  incoming channel
-                </span>
-              }
+              tooltipText={<span>Close incoming channel</span>}
               onClick={() => handleCloseChannel(id)}
             />
             <OpenSessionModal destination={peerAddress} />
@@ -273,7 +267,7 @@ function ChannelsPage() {
               tooltip={
                 !peerAddress ? (
                   <span>
-                    DISABLED
+                    Disabled
                     <br />
                     Unable to find
                     <br />
@@ -304,7 +298,8 @@ function ChannelsPage() {
       yellow
     >
       <SubpageTitle
-        title={`INCOMING CHANNELS (${channelsData ? channelsData.length : '-'})`}
+        title="Incoming channels"
+        count={channelsData ? channelsData.length : null}
         refreshFunction={handleRefresh}
         reloading={channelsFetching}
         actions={
@@ -313,8 +308,7 @@ function ChannelsPage() {
               iconComponent={<GetAppIcon />}
               tooltipText={
                 <span>
-                  EXPORT
-                  <br />
+                  Export
                   {tabLabel} channels as a CSV
                 </span>
               }

@@ -1,4 +1,7 @@
-{ pkgs ? import <nixpkgs> { } }:
+{
+  pkgs ? import <nixpkgs> { },
+  nodejs ? pkgs.nodejs_22,
+}:
 let
   linuxPkgs = with pkgs; lib.optional stdenv.isLinux (
     inotify-tools
@@ -7,10 +10,9 @@ in
 with pkgs;
 mkShell {
   nativeBuildInputs = [
-    nodejs_22
-    (yarn.override { nodejs = nodejs_22; })
-
-    # custom pkg groups
-    linuxPkgs
-  ];
+    nodejs
+    (yarn.override { inherit nodejs; })
+  ]
+  # custom pkg groups
+  ++ linuxPkgs;
 }

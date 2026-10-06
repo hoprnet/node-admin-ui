@@ -1,83 +1,97 @@
-name: Close release
+---
+name: Release
 on:
   workflow_dispatch:
-    inputs:
-      release_type:
-        description: Version type after release
-        required: true
-        type: choice
-        default: patch
-        options:
-          - rc
-          - patch
-          - minor
-          - major
+
 concurrency:
   group: release
   cancel-in-progress: false
+
+permissions: {}
+
 jobs:
-  build-docker:
-    name: Docker
-    uses: hoprnet/hopr-workflows/.github/workflows/build-docker.yaml@fa71078959cf9f892185e8df16551720693a2cd1 # 0.9.3
+  version:
+    name: Resolve version
+    runs-on: ubuntu-latest
     permissions:
       contents: read
-      pull-requests: write
-      id-token: write
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    defaults:
+      run:
+        shell: nix develop .#ci --command bash -eo pipefail {0}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24 # v31.11.1
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Read version from package.json
+        id: version
+        run: |
+          version=$(node -p "require('./package.json').version")
+          if git rev-parse -q --verify "refs/tags/v$version" >/dev/null; then
+            echo "::error::Tag v$version already exists. Bump the version in package.json first."
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+  checks:
+    name: Checks
+    needs: version
+    uses: ./.github/workflows/checks.yaml
+    permissions:
+      contents: read
+
+  docker:
+    name: Docker
+    needs: [version, checks]
+    uses: ./.github/workflows/docker.yaml
+    permissions:
+      contents: read
+      packages: write
     with:
-      source_branch: ${{ github.ref_name }}
-      version_type: release
-      build_matrix: >-
-        [
-          {
-            "runner": "depot-ubuntu-24.04-4",
-            "architecture": "x86_64-linux",
-            "build_command": "nix run .#docker-x86_64-linux"
-          }
-        ]
-      build_file: package.json
-      docker_image_name: ${{ vars.DOCKER_IMAGE_NAME }}
-      docker_image_format: docker
-      fail_on_scan_vulnerabilities: ${{ vars.FAIL_ON_SCAN_VULNERABILITIES }}
-    secrets:
-      cachix_auth_token: ${{ secrets.CACHIX_AUTH_TOKEN }}
+      push: true
+      version: ${{ needs.version.outputs.version }}
+      cache: false
+
   release:
-    name: Close release
-    needs:
-      - build-docker
-    runs-on: depot-ubuntu-24.04
+    name: GitHub release
+    needs: [version, docker]
+    runs-on: ubuntu-latest
     permissions:
       contents: write
-      id-token: write
-    outputs:
-      released_version: ${{ steps.release.outputs.current_version }}
+    defaults:
+      run:
+        shell: nix develop .#ci --command bash -eo pipefail {0}
     steps:
-      - name: Release version
-        id: release
-        uses: hoprnet/hopr-workflows/actions/release-version@fd29bf3c58b72faacc300e068a05b59eb3b180bc # 0.9.4
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          source_branch: ${{ github.ref_name }}
-          file: package.json
-          release_type: ${{ inputs.release_type }}
-          cachix_auth_token: ${{ secrets.CACHIX_AUTH_TOKEN }}
-          zulip_api_key: ${{ secrets.ZULIP_API_KEY }}
-          zulip_email: ${{ secrets.ZULIP_EMAIL }}
-          zulip_channel: Products
-          zulip_topic: Releases
-          github_app_private_key: ${{ secrets.GH_APP_HOPRNET_BOT_PRIVATE_KEY }}
-  post-release:
-    name: Post Release
-    runs-on: depot-ubuntu-24.04
-    needs: release
-    permissions:
-      contents: read
-    steps:
-      - name: Bump dappnode testnet package
-        uses: peter-evans/repository-dispatch@28959ce8df70de7be546dd1250a005dd32156697 # v4.0.1
+          persist-credentials: false
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24 # v31.11.1
         with:
-          token: ${{ secrets.GNOSIS_GITHUB_WORKFLOW_TOKEN }}
-          repository: dappnode/DAppNodePackage-Hopr-testnet
-          event-type: bump
-          client-payload: |-
-            {
-              "node_admin_version": "${{ needs.release.outputs.released_version }}"
-            }
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create tag and release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.version.outputs.version }}
+          IMAGE: ghcr.io/${{ github.repository }}
+        run: |
+          prerelease=()
+          [[ "$VERSION" == *-* ]] && prerelease=(--prerelease)
+          gh release create "v$VERSION" \
+            --target "$GITHUB_SHA" \
+            --title "v$VERSION" \
+            --generate-notes \
+            "${prerelease[@]}" \
+            --notes "Docker image: \`$IMAGE:$VERSION\`"

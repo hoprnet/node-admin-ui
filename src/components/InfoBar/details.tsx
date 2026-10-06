@@ -1,162 +1,142 @@
+import { ReactNode } from 'react';
 import { useAppSelector } from '../../store';
 import styled from '@emotion/styled';
 import { formatEther } from 'viem';
 import Tooltip from '@mui/material/Tooltip';
+import { v } from '../../theme';
 
 interface Props {
   style?: object;
 }
 
-const Web3Container = styled.div`
-  background-color: #cadeff;
-  border-radius: 1rem;
-  display: flex;
-  gap: 8px;
-  width: calc(190px + 2 * 8px);
-  padding: 8px;
-  font-size: 12px;
-  /* margin-right: 8px; */
-  box-shadow: 0px 2px 1px -1px rgba(0, 0, 0, 0.2), 0px 1px 1px 0px rgba(0, 0, 0, 0.14),
-    0px 1px 3px 0px rgba(0, 0, 0, 0.12);
-`;
-
-const IconContainer = styled.div`
-  height: 1rem;
-  width: 1rem;
-`;
-
-const TitleColumn = styled.div`
+const Container = styled.section`
   display: flex;
   flex-direction: column;
-  margin-top: 38px;
-  width: 100%;
-  max-width: 78px;
-  &.node {
-    max-width: 112px;
-  }
+  background: ${v.surface};
+  border: 1px solid ${v.border};
+  border-radius: 8px;
+  font-size: 12.5px;
 `;
 
-const IconAndText = styled.div`
+const Header = styled.div`
+  display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid ${v.border};
+  .label {
+    font-size: 13px;
+    font-weight: 600;
+    color: ${v.text};
+  }
+`;
+
+const Rows = styled.dl`
+  margin: 0;
+  padding: 4px 0;
+`;
+
+const Row = styled.div`
   display: flex;
-  gap: 0.5rem;
-`;
-
-const Icon = styled.img`
-  display: block;
-  height: 1rem;
-  width: 1rem;
-`;
-
-const Text = styled.p`
-  font-weight: 600;
-  &.noWrap {
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 12px;
+  dt {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: ${v.text2};
     white-space: nowrap;
+    min-width: 0;
   }
-`;
-
-const DataColumn = styled.div<{ show?: boolean }>`
-  visibility: ${(props) => (props.show === false ? 'hidden' : 'visible')};
-  display: flex;
-  flex-direction: column;
-  width: 56px;
-`;
-
-const DataTitle = styled.p`
-  text-transform: uppercase;
-  font-weight: 600;
-  margin-right: 5px;
-  margin-bottom: 4px;
-  margin-top: 20px;
-`;
-
-const Data = styled.div`
-  display: flex;
-  flex-direction: column;
-  background-color: #ddeaff;
-  text-align: right;
-  padding: 0 8px;
-  width: calc(56px - 2 * 8px);
-  border-radius: 1rem 1rem 1rem 1rem;
-  flex-grow: 1;
-  &.nodeOnly {
-    width: 72px;
-    margin-top: 40px;
+  dt img {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
   }
-  p.double {
-    line-height: 2.5;
+  dt .unit {
+    color: ${v.text3};
   }
-  p {
-    text-overflow: ellipsis;
+  dd {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    color: ${v.text};
+    white-space: nowrap;
     overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: right;
   }
-
-  a {
-    color: #007bff; /* Set the desired color for links */
-    text-decoration: underline;
+  dd.status-Orange {
+    color: ${v.warning};
+  }
+  dd.status-Red {
+    color: ${v.danger};
   }
 `;
 
-export const ColorStatus = styled.span`
-  &.status-Green {
-    color: #218520;
-    font-weight: 700;
+const Pill = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  background: ${v.surface2};
+  color: ${v.text2};
+  &::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
   }
+  &.status-Green {
+    background: ${v.successSoft};
+    color: ${v.success};
+  }
+  &.status-Yellow,
   &.status-Orange {
-    color: #ff8f00;
-    font-weight: 700;
+    background: ${v.warningSoft};
+    color: ${v.warning};
   }
   &.status-Red {
-    color: #ff0000;
-    font-weight: 700;
+    background: ${v.dangerSoft};
+    color: ${v.danger};
   }
 `;
 
-// TODO: make batter to work with balances
-const truncateBalanceto5charsWhenNoDecimals = (value: string | number | undefined | null) => {
-  try {
-    if (value && BigInt(value)) {
-      if (typeof value === 'string') value = parseInt(value);
-      if (BigInt(value) > BigInt(1e9)) {
-        return '1e9+';
-      } else if (BigInt(value) >= BigInt(1e6)) {
-        const tmp = (value / 1e6).toString();
-        if (tmp.includes('.')) {
-          const [before, after] = tmp.split('.');
-          if (before.length === 3) return before + 'm';
-          return `${before}.${after.substring(0, 1)}m`;
-        } else {
-          if (tmp.length === 3) return `${tmp}3m`;
-          return `${tmp}.0m`;
-        }
-      } else if (BigInt(value) > BigInt(99999)) {
-        const tmp = (value / 1e3).toString();
-        if (tmp.includes('.')) {
-          const [before, after] = tmp.split('.');
-          if (before.length === 3) return before + 'k';
-          return `${before}.${after.substring(0, 1)}k`;
-        } else {
-          if (tmp.length === 3) return `${tmp}k`;
-          return `${tmp}.0k`;
-        }
-      }
-      return value;
-    }
-  } catch (e) {
-    console.warn('Error while paring data to BigInt for InfoBar');
-  }
-  return value;
+// Connectivity status as a pill with a coloured dot (Green / Yellow / Orange / Red / Unknown).
+export const ColorStatus = ({ className, children }: { className?: string; children?: ReactNode }) =>
+  children ? <Pill className={className}>{children}</Pill> : <>-</>;
+
+// Up to 4 decimals for display; the full value stays available in the tooltip.
+const short = (value?: string | null) => {
+  if (!value || value === '-') return '-';
+  const n = Number(value);
+  if (!Number.isFinite(n)) return value;
+  return n.toLocaleString('en-US', { maximumFractionDigits: n !== 0 && Math.abs(n) < 0.0001 ? 8 : 4 });
 };
+
+const Value = ({ value, className }: { value?: string | null; className?: string }) => (
+  <Tooltip title={value && value !== '-' && value !== '0' ? value : null}>
+    <dd className={className}>{short(value)}</dd>
+  </Tooltip>
+);
 
 export default function Details(props: Props) {
   const balances = useAppSelector((store) => store.node.balances.data);
   const info = useAppSelector((store) => store.node.info.data);
-  const statistics = useAppSelector((store) => store.node.statistics.data);
   // safe wide channel stake, same source as the info page. Blokli only, no fallback
   // to this node's own channels, so it stays honest about what it is showing.
   const safeChannelsOut = useAppSelector((store) => store.blokli.channelStats.data);
-  // on chain redemptions, same source as the info and tickets pages
-  const redeemed = useAppSelector((store) => store.blokli.ticketRedemption.data?.redeemed.formatted);
 
   const totalwxHOPR =
     safeChannelsOut?.value && balances.safeHopr?.value
@@ -164,88 +144,62 @@ export default function Details(props: Props) {
       : '-';
 
   const isXdaiEnough = () => {
+    if (balances.native.value && BigInt(balances.native.value) < BigInt('1000000000000000')) return 'Red';
     if (balances.native.value && BigInt(balances.native.value) < BigInt('50000000000000000')) return 'Orange';
-    else if (balances.native.value && BigInt(balances.native.value) < BigInt('1000000000000000')) return 'Red';
     return '';
   };
 
   return (
-    <Web3Container style={props.style}>
-      <TitleColumn className="node">
-        <IconAndText>
-          <IconContainer></IconContainer>
-          <Text>Status</Text>
-        </IconAndText>
-        <IconAndText>
-          <IconContainer>
-            <Icon
+    <Container style={props.style}>
+      <Header>
+        <span className="label">Node</span>
+        <ColorStatus className={`status-${info?.connectivityStatus}`}>{info?.connectivityStatus}</ColorStatus>
+      </Header>
+      <Rows>
+        <Row>
+          <dt>
+            <img
               src="/assets/xDaiIcon.svg"
-              alt="xDai Icon"
+              alt=""
             />
-          </IconContainer>
-          <Text>xDAI: Node</Text>
-        </IconAndText>
-        <IconAndText>
-          <IconContainer>
-            <Icon
+            Node <span className="unit">xDAI</span>
+          </dt>
+          <Value
+            value={balances.native?.formatted}
+            className={`status-${isXdaiEnough()}`}
+          />
+        </Row>
+        <Row>
+          <dt>
+            <img
               src="/assets/wxHoprIcon.svg"
-              alt="xDai Icon"
+              alt=""
             />
-          </IconContainer>
-          <Text className="noWrap">wxHOPR: Safe</Text>
-        </IconAndText>
-        <IconAndText>
-          <IconContainer>
-            <Icon
+            Safe <span className="unit">wxHOPR</span>
+          </dt>
+          <Value value={balances.safeHopr?.formatted} />
+        </Row>
+        <Row>
+          <dt>
+            <img
               src="/assets/wxHoprIcon.svg"
-              alt="xDai Icon"
+              alt=""
             />
-          </IconContainer>
-          <Text>wxHOPR: Safe channels OUT</Text>
-        </IconAndText>
-        <IconAndText>
-          <IconContainer>
-            <Icon
+            Channels <span className="unit">wxHOPR</span>
+          </dt>
+          <Value value={safeChannelsOut?.formatted} />
+        </Row>
+        <Row>
+          <dt>
+            <img
               src="/assets/wxHoprIcon.svg"
-              alt="xDai Icon"
+              alt=""
             />
-          </IconContainer>
-          <Text>wxHOPR: Total</Text>
-        </IconAndText>
-      </TitleColumn>
-      <DataColumn>
-        <Data className="nodeOnly">
-          <p>
-            <ColorStatus className={`status-${info?.connectivityStatus}`}>
-              {info?.connectivityStatus ? info?.connectivityStatus : '-'}
-            </ColorStatus>
-          </p>
-          <ColorStatus className={`status-${isXdaiEnough()}`}>
-            <Tooltip
-              title={
-                balances.native?.formatted && balances.native?.formatted !== '0' ? balances.native?.formatted : null
-              }
-            >
-              <p>{balances.native?.formatted ?? '-'}</p>
-            </Tooltip>
-          </ColorStatus>
-          <Tooltip
-            title={
-              balances.safeHopr?.formatted && balances.safeHopr?.formatted !== '0' ? balances.safeHopr?.formatted : null
-            }
-          >
-            <p>{balances.safeHopr?.formatted ?? '-'}</p>
-          </Tooltip>
-          <Tooltip
-            title={safeChannelsOut?.formatted && safeChannelsOut.formatted !== '0' ? safeChannelsOut.formatted : null}
-          >
-            <p className="double">{safeChannelsOut?.formatted ? safeChannelsOut.formatted : '-'}</p>
-          </Tooltip>
-          <Tooltip title={totalwxHOPR && totalwxHOPR !== '0' ? totalwxHOPR : null}>
-            <p className="double">{totalwxHOPR ?? '-'}</p>
-          </Tooltip>
-        </Data>
-      </DataColumn>
-    </Web3Container>
+            Total <span className="unit">wxHOPR</span>
+          </dt>
+          <Value value={totalwxHOPR} />
+        </Row>
+      </Rows>
+    </Container>
   );
 }

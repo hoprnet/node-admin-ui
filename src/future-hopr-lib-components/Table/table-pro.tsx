@@ -14,11 +14,16 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
-import TextField from '@mui/material/TextField';
+import CircularProgress from '@mui/material/CircularProgress';
+import SearchIcon from '@mui/icons-material/Search';
+import { v } from '../../theme';
 
 const STable = styled(Table)`
   tr.onRowClick {
     cursor: pointer;
+  }
+  thead th {
+    border-bottom: 1px solid ${v.border};
   }
 `;
 
@@ -29,6 +34,9 @@ const STable = styled(Table)`
  */
 const STableContainer = styled(TableContainer)`
   overflow-x: unset;
+  border: 1px solid ${v.border};
+  border-radius: 8px;
+  background: ${v.surface};
   @media (max-width: 850px) {
     overflow-x: auto;
   }
@@ -50,34 +58,90 @@ const STableCell = styled(TableCell)`
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  padding: 8px 16px;
   max-width: calc(100% - 168px);
   &.actions {
     overflow: unset;
+    padding-top: 4px;
+    padding-bottom: 4px;
   }
   &.wrap {
     overflow-wrap: anywhere;
     text-overflow: unset;
     white-space: unset;
   }
+  /* row index */
+  &.id {
+    min-width: 40px;
+    text-overflow: clip;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    color: ${v.text3};
+  }
+  &.TableCellHeader.id {
+    font-family: inherit;
+  }
+  /* node / address cells */
+  &:has(.node-jazz-icon) {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    letter-spacing: -0.01em;
+  }
 `;
 
 const OverTable = styled.div`
-  width: 100%;
   display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  border-bottom: 1px solid ${v.border};
 `;
 
-const STextField = styled(TextField)`
-  flex-grow: 1;
-  margin: 0px 16px;
+const SearchInput = styled.label`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  width: 100%;
+  max-width: 340px;
+  padding: 0 10px;
+  box-sizing: border-box;
+  border: 1px solid ${v.border};
+  border-radius: 6px;
+  background: ${v.surface2};
+  color: ${v.text3};
+  transition: border-color 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
+  &:focus-within {
+    border-color: ${v.accent};
+    background: ${v.surface};
+    box-shadow: 0 0 0 3px ${v.focus};
+  }
+  svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+  input {
+    flex-grow: 1;
+    min-width: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    font-size: 13px;
+    color: ${v.text};
+    &::placeholder {
+      color: ${v.text3};
+    }
+  }
 `;
 
 const EmptyState = styled.div`
-  padding: 8px 16px;
-  height: 57px;
+  padding: 32px 16px;
   display: flex;
   align-items: center;
-  font-size: 0.875rem;
+  justify-content: center;
+  gap: 10px;
+  font-size: 13px;
+  color: ${v.text3};
 `;
 
 interface Props {
@@ -167,7 +231,7 @@ const virtuosoComponents: TableComponents<RowData, TableContext> = {
         style={{
           ...headProps.style,
           top: navBarHeight,
-          background: '#fff',
+          zIndex: 2,
         }}
         ref={ref}
       />
@@ -245,12 +309,16 @@ export default function CustomPaginationActionsTable(props: Props) {
     <STableContainer component={Paper}>
       {props.search && (
         <OverTable className={`OverTable`}>
-          <STextField
-            label="Search"
-            variant="standard"
-            value={searchPhrase}
-            onChange={handleSearchChange}
-          />
+          <SearchInput>
+            <SearchIcon />
+            <input
+              type="search"
+              placeholder="Search"
+              aria-label="Search table"
+              value={searchPhrase}
+              onChange={handleSearchChange}
+            />
+          </SearchInput>
         </OverTable>
       )}
       <TableVirtuoso
@@ -272,7 +340,7 @@ export default function CustomPaginationActionsTable(props: Props) {
                 !headElem.hidden && (
                   <STableCell
                     key={idx}
-                    className={`TableCell TableCellHeader`}
+                    className={`TableCell TableCellHeader ${headElem.key}`}
                     width={headElem?.width ?? ''}
                   >
                     <Tooltip
@@ -293,7 +361,20 @@ export default function CustomPaginationActionsTable(props: Props) {
           />
         )}
       />
-      {sortedRows.length === 0 && <EmptyState>{props.loading ? 'Loading...' : 'No entries'}</EmptyState>}
+      {sortedRows.length === 0 && (
+        <EmptyState>
+          {props.loading ? (
+            <>
+              <CircularProgress size={14} />
+              Loading
+            </>
+          ) : searchPhrase ? (
+            'No matching entries'
+          ) : (
+            'No entries'
+          )}
+        </EmptyState>
+      )}
     </STableContainer>
   );
 }

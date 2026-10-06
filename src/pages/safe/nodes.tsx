@@ -147,7 +147,8 @@ function SafeNodesPage() {
       yellow
     >
       <SubpageTitle
-        title={safeNodes.data ? `NODES (${parsedTableData.length})` : 'NODES'}
+        title="Safe nodes"
+        count={safeNodes.data ? parsedTableData.length : null}
         refreshFunction={handleRefresh}
         reloading={safeNodes.isFetching}
       />

@@ -189,13 +189,7 @@ export const OpenMultipleChannelsModal = () => {
     <>
       <IconButton
         iconComponent={<AddChannelsIcon />}
-        tooltipText={
-          <span>
-            OPEN
-            <br />
-            multiple outgoing channels by csv
-          </span>
-        }
+        tooltipText={<span>Open multiple outgoing channels by csv</span>}
         onClick={handleImportClick}
       />
       <input

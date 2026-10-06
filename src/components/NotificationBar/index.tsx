@@ -9,7 +9,7 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Badge from '@mui/material/Badge';
 import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
-import DeleteIcon from '@mui/icons-material/Delete';
+import DeleteIcon from '@mui/icons-material/DeleteOutline';
 
 // HOPR Components
 import IconButton from '../../future-hopr-lib-components/Button/IconButton';
@@ -17,65 +17,67 @@ import IconButton from '../../future-hopr-lib-components/Button/IconButton';
 // Store
 import { useAppDispatch, useAppSelector } from '../../store';
 import { appActions } from '../../store/slices/app';
+import { v } from '../../theme';
 
 const Container = styled.div`
-  height: 42px;
-  width: 42px;
-  border-left: 1px lightgray solid;
-  border-right: 1px lightgray solid;
+  display: flex;
+  align-items: center;
 `;
 
 const SBadge = styled(Badge)`
-  width: 100%;
-  height: 100%;
   .MuiBadge-badge {
-    transform: scale(0.9) translate(-11%, 27%);
-    background-color: #0000b4;
+    top: 7px;
+    right: 7px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    font-size: 10px;
+    font-weight: 600;
+    background-color: ${v.accent};
+    color: ${v.accentContrast};
+    box-shadow: 0 0 0 2px ${v.surface};
   }
 `;
 
-const SIconButton = styled(MuiIconButton)`
-  width: 100%;
-  height: 100%;
-  border-radius: 0;
-  svg {
-    width: 38px;
-    height: 38px;
-  }
-`;
+const SIconButton = styled(MuiIconButton)``;
 
 const SMenuItem = styled(MenuItem)`
   width: 100%;
-  max-width: 350px;
-  padding-right: 21px;
+  max-width: 360px;
+  min-width: 280px;
+  padding: 10px 28px 10px 12px;
   white-space: break-spaces;
   overflow-wrap: anywhere;
-  font-size: 14px;
-  &:not(:last-child) {
-    border-bottom: 1px solid #8f8f8f;
-  }
+  font-size: 13px;
+  line-height: 1.45;
+  color: ${v.text};
+  position: relative;
   &.unreadMenuItem {
-    background-color: rgba(25, 118, 210, 0.15);
-    opacity: 90%;
+    font-weight: 500;
     &:after {
       content: '';
       display: block;
       position: absolute;
-      width: 8px;
-      height: 8px;
-      right: 11px;
-      -moz-border-radius: 7.5px;
-      -webkit-border-radius: 7.5px;
-      border-radius: 7.5px;
-      background-color: rgb(56, 88, 152);
+      width: 6px;
+      height: 6px;
+      right: 12px;
+      top: 50%;
+      margin-top: -3px;
+      border-radius: 50%;
+      background-color: ${v.accent};
     }
   }
   &.informational {
     font-size: 12px;
-    background-color: rgb(255 143 143 / 39%);
+    color: ${v.text3};
     cursor: default;
     pointer-events: none;
     justify-content: space-between;
+    gap: 12px;
+    border-bottom: 1px solid ${v.border};
+    border-radius: 0;
+    margin-bottom: 4px;
+    padding-right: 6px;
     button {
       pointer-events: all;
     }
@@ -113,7 +115,7 @@ export default function NotificationBar() {
         aria-expanded={open ? 'true' : undefined}
         onClick={handleClick}
       >
-        <SIconButton>
+        <SIconButton aria-label="Notifications">
           <NotificationsNoneIcon />
         </SIconButton>
       </SBadge>
@@ -142,12 +144,10 @@ export default function NotificationBar() {
             //            style={{ maxWidth: 'calc(100% - 17px)'}} //TODO: Fix notification drodown styling if we have more notifications than fit can on the screen
             // https://github.com/hoprnet/hopr-admin/issues/567
           >
-            Notifications are stored locally.
-            <br />
-            They will delete on refresh.
+            Stored locally, cleared on refresh.
             <IconButton
               iconComponent={<DeleteIcon />}
-              tooltipText="CLEAR"
+              tooltipText="Clear all"
               onClick={() => {
                 dispatch(appActions.clearNotifications());
               }}

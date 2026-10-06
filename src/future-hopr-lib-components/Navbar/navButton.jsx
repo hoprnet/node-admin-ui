@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from '@emotion/styled';
+import { v } from '../../theme';
 //import { useRouter } from 'next/router';
 
 import MuiButton from '@mui/material/Button';
@@ -9,7 +10,7 @@ import MuiMenuItem from '@mui/material/MenuItem';
 
 const SButton = styled(MuiButton)`
   text-transform: none;
-  color: #000050;
+  color: ${v.text2};
   font-size: 14px;
   font-weight: 500;
   min-width: unset;
@@ -24,20 +25,19 @@ const SButton = styled(MuiButton)`
     }
   }
   &:hover {
-    background-color: rgba(25, 118, 210, 0.2);
+    background-color: ${v.surface2};
+    color: ${v.text};
   }
 `;
 
 const SMenu = styled(MuiMenu)`
   .MuiPaper-root {
-    border-radius: 10px;
+    border-radius: 8px;
   }
-  color: #000050;
 `;
 
 const SMuiMenuItem = styled(MuiMenuItem)`
-  color: #000050;
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 500;
 `;
 

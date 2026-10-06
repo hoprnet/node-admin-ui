@@ -1,0 +1,76 @@
+---
+name: Docker
+on:
+  workflow_call:
+    inputs:
+      push:
+        description: Push the image to ghcr.io (otherwise only build it)
+        type: boolean
+        default: false
+      version:
+        description: Explicit release version to tag the image with
+        type: string
+        default: ''
+      cache:
+        description: Use the GitHub Actions build cache (disable for releases)
+        type: boolean
+        default: true
+permissions: {}
+jobs:
+  image:
+    name: Build image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - name: Log in to GitHub Container Registry
+        if: inputs.push
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Compute tags
+        id: meta
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=ref,event=pr
+            type=ref,event=branch
+            type=sha,format=short
+            type=raw,value=latest,enable=${{ github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
+            type=raw,value=${{ inputs.version }},enable=${{ inputs.version != '' }}
+
+      - name: Build and push
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          platforms: linux/amd64
+          push: ${{ inputs.push }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: ${{ inputs.cache && 'type=gha' || '' }}
+          cache-to: ${{ inputs.cache && 'type=gha,mode=max' || '' }}
+
+      - name: Summary
+        env:
+          TAGS: ${{ steps.meta.outputs.tags }}
+          PUSHED: ${{ inputs.push }}
+        run: |
+          {
+            if [ "$PUSHED" = "true" ]; then echo "### Pushed image"; else echo "### Built image (not pushed)"; fi
+            echo '```'
+            echo "$TAGS"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

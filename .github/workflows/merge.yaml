@@ -1,59 +1,29 @@
-name: Merge
+---
+name: Main
 on:
-  pull_request:
-    types:
-      - closed
+  push:
     branches:
       - main
-      # - synchronize
+
 concurrency:
-  group: merge-${{ github.event.pull_request.base.ref }}
+  group: main
   cancel-in-progress: false
-permissions:
-  contents: read
-  pull-requests: write
-  id-token: write
+
+permissions: {}
+
 jobs:
-  build-docker:
-    name: Docker
-    if: github.event.pull_request.merged == true
-    uses: hoprnet/hopr-workflows/.github/workflows/build-docker.yaml@fa71078959cf9f892185e8df16551720693a2cd1 # 0.9.3
+  checks:
+    name: Checks
+    uses: ./.github/workflows/checks.yaml
     permissions:
       contents: read
-      pull-requests: write
-      id-token: write
+
+  docker:
+    name: Docker
+    needs: checks
+    uses: ./.github/workflows/docker.yaml
+    permissions:
+      contents: read
+      packages: write
     with:
-      source_branch: ${{ github.event.pull_request.base.ref }}
-      version_type: pr
-      build_matrix: >-
-        [
-          {
-            "runner": "depot-ubuntu-24.04-4",
-            "architecture": "x86_64-linux",
-            "build_command": "nix run .#docker-x86_64-linux"
-          }
-        ]
-      build_file: package.json
-      docker_image_name: ${{ vars.DOCKER_IMAGE_NAME }}
-      docker_image_format: docker
-      fail_on_scan_vulnerabilities: ${{ vars.FAIL_ON_SCAN_VULNERABILITIES }}
-    secrets:
-      cachix_auth_token: ${{ secrets.CACHIX_AUTH_TOKEN }}
-  notify:
-    name: Notify failure
-    needs:
-      - build-docker
-    if: ${{ always() && failure() }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Notify failed merge pipeline
-        uses: zulip/github-actions-zulip/send-message@e4c8f27c732ba9bd98ac6be0583096dea82feea5 # v1.0.2
-        with:
-          api-key: ${{ secrets.ZULIP_API_KEY }}
-          email: ${{ secrets.ZULIP_EMAIL }}
-          organization-url: https://hopr.zulipchat.com
-          type: stream
-          to: Products
-          topic: main
-          content: |
-            The merge pipeline has failed for pull request [#${{ github.event.pull_request.number }}: ${{ github.event.pull_request.title }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+      push: true

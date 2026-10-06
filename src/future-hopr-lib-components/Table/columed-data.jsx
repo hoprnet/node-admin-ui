@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from '@emotion/styled';
+import { v } from '../../theme';
 
 export const Tables = styled.div`
   display: flex;
@@ -22,47 +23,51 @@ export const Tables = styled.div`
 `;
 
 export const Table = styled.table`
-  font-family: 'Source Code Pro';
   width: 100%;
-  font-size: 14px;
-  border-bottom: 0.1rem solid darkgray;
+  font-size: 13px;
   border-collapse: collapse;
+  color: ${v.text};
   th {
     text-align: left;
     vertical-align: top;
+    font-weight: 400;
+    color: ${v.text2};
+    overflow-wrap: break-word;
   }
-  tr {
-    border-top: 0.1rem solid darkgray;
+  tr + tr {
+    border-top: 1px solid ${v.border};
   }
   th,
   td {
-    padding: 8px;
+    padding: 9px 16px;
+    line-height: 20px;
   }
   td {
     overflow: hidden;
     overflow-wrap: anywhere;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
   }
-  th {
-    overflow-wrap: break-word;
+  td:has(input, button, textarea, .MuiSwitch-root) {
+    font-family: var(--font-sans);
+    font-size: 13.5px;
+    letter-spacing: 0;
+    color: ${v.text};
   }
   th:first-of-type {
-    width: ${(props) => (props.width1stColumn ? props.width1stColumn : '160')}px;
+    width: ${(props) => (props.width1stColumn ? props.width1stColumn : '180')}px;
   }
-  &.table-has-title {
-    tr:first-of-type {
-      border-top: 0.2rem solid darkgray;
-    }
-  }
-  ${(props) => props.noTopBorder && `tr:first-of-type { border-top: none; }`};
 
-  @media screen and (max-width: 992px) {
+  @media screen and (max-width: 640px) {
     tr {
       display: flex;
       flex-direction: column;
     }
     th:first-of-type {
-      padding-top: 12px;
-      padding-bottom: 0px;
+      width: auto;
+      padding-bottom: 0;
     }
     td {
       padding-top: 2px;
@@ -70,20 +75,40 @@ export const Table = styled.table`
   }
 `;
 
-const Content = styled.div`
-  color: #414141;
+// Vertical stack of TableExtended cards.
+export const CardStack = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
   width: 100%;
+`;
+
+const Content = styled.section`
+  width: 100%;
+  box-sizing: border-box;
+  background: ${v.surface};
+  border: 1px solid ${v.border};
+  border-radius: 8px;
+  overflow: hidden;
+  break-inside: avoid;
   .title {
-    color: #414141;
-    margin-bottom: 8px;
-    font-size: 18px;
-    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    border-bottom: 1px solid ${v.border};
+    font-size: 13.5px;
+    font-weight: 600;
+    color: ${v.text};
   }
 `;
 
 export function TableExtended(props) {
   return (
-    <Content style={props.style}>
+    <Content
+      className="TableExtended"
+      style={props.style}
+    >
       {props.title && <div className="title">{props.title}</div>}
       <Table
         className="table-has-title"

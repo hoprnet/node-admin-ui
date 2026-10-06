@@ -1,101 +1,56 @@
 import { useEffect, useState } from 'react';
-import { Accordion, AccordionDetails, AccordionSummary, Card, Chip } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import styled from '@emotion/styled';
+import { v } from '../../theme';
 
-const StyledCard = styled(Card)`
+const StyledCard = styled.section`
   display: flex;
   flex-direction: column;
-  width: 206px;
-  font-size: 12px;
-  border-radius: 1rem;
-  margin-right: 8px;
-  padding: 8px;
-  box-shadow: 0px 2px 1px -1px rgba(0, 0, 0, 0.2), 0px 1px 1px 0px rgba(0, 0, 0, 0.14),
-    0px 1px 3px 0px rgba(0, 0, 0, 0.12);
-  &.blue {
-    background-color: #daf8ff;
-  }
-  &.pink {
-    background-color: #ffe7e7;
-  }
+  font-size: 13px;
 `;
 
-const StyledChip = styled(Chip)`
-  align-self: flex-start;
-  font-weight: 700;
-  min-width: 7rem;
-  text-transform: uppercase;
-
-  &.blue {
-    background-color: #0000b2;
-    color: #fff;
-  }
-  &.pink {
-    background-color: #ffafa3;
-    color: #414141;
-  }
+const Header = styled.div`
+  font-size: 12px;
+  font-weight: 500;
+  color: ${v.text3};
+  padding-bottom: 4px;
+  border-bottom: 1px solid ${v.border};
 `;
 
 const StyledAccordion = styled(Accordion)`
-  box-shadow: none;
-  border: none;
-  margin: 0;
-
-  &::before {
-    display: none;
-  }
-
   &.Mui-expanded {
     margin: 0;
   }
 `;
 
 const SAccordionSummary = styled(AccordionSummary)`
-  border-bottom: 2px solid #414141;
-  padding: 0;
-  font-size: 11px;
-
   &.Mui-expanded {
-    min-height: 48px;
+    min-height: 40px;
   }
-  &.blue {
-    background-color: #daf8ff;
-  }
-  &.pink {
-    background-color: #ffe7e7;
-  }
-  .MuiAccordionSummary-content,
-  .MuiAccordionSummary-content.Mui-expanded {
-    margin: 4px 2px;
+  .MuiAccordionSummary-expandIconWrapper svg {
+    width: 18px;
+    height: 18px;
   }
 `;
 
 const Title = styled.h3`
-  color: #414141;
-  font-weight: 700;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: ${v.text};
   margin: 0;
+  padding-right: 8px;
 `;
 
-const AccordionContent = styled(AccordionDetails)`
-  margin: 0;
-  padding: 0.75rem 0;
-
-  &.blue {
-    background-color: #daf8ff;
-  }
-  &.pink {
-    background-color: #ffe7e7;
-  }
-`;
+const AccordionContent = styled(AccordionDetails)``;
 
 const Content = styled.div`
-  color: #414141;
   overflow-wrap: break-word;
-
   a {
-    color: #007bff; /* Set the desired color for links */
+    color: ${v.accentText};
     text-decoration: underline;
+    text-underline-offset: 2px;
   }
 `;
 
@@ -124,10 +79,7 @@ export default function FAQ({ variant, label, data }: FaqProps) {
 
   return (
     <StyledCard className={`Faq ${variant}`}>
-      <StyledChip
-        className={`Chip ${variant}`}
-        label={label}
-      />
+      <Header>Help</Header>
       {data.map((faqItem) => (
         <StyledAccordion
           key={faqItem.id}

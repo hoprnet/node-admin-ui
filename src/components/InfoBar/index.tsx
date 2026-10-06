@@ -1,6 +1,8 @@
 import { useAppSelector } from '../../store';
 import styled from '@emotion/styled';
 import { useLocation } from 'react-router-dom';
+import { layout, v } from '../../theme';
+import { infoBarBreakpoint } from '../../future-hopr-lib-components/Layout';
 
 // HOPR Components
 import Details from './details';
@@ -18,23 +20,17 @@ type InfoData = {
 
 interface Props {}
 
-const SInfoBar = styled.div`
+const SInfoBar = styled.aside`
   display: none;
-  width: 233px;
+  width: ${layout.infoBarWidth}px;
   position: fixed;
-  top: 0;
+  top: ${layout.navBarHeight}px;
   right: 0;
-  height: 100vh;
+  height: calc(100vh - ${layout.navBarHeight}px);
   box-sizing: border-box;
-  &.node {
-    background: #ffffa0;
-    border: 0;
-  }
-  &.web3 {
-    background: #edfbff;
-    border: 0;
-  }
-  @media (min-width: 740px) {
+  border-left: 1px solid ${v.border};
+  background: ${v.bg};
+  @media (min-width: ${infoBarBreakpoint}px) {
     display: block;
   }
 `;
@@ -47,22 +43,7 @@ const Scroll = styled.div`
     display: flex;
     flex-direction: column;
     gap: 24px;
-    margin-bottom: 40px;
-  }
-
-  &::-webkit-scrollbar {
-    width: 10px;
-  }
-  &::-webkit-scrollbar-track {
-    background: #ffffa0;
-  }
-  &::-webkit-scrollbar-thumb {
-    background: #3c64a5;
-    border-radius: 10px;
-    border: 3px solid #ffffa0;
-  }
-  &::-webkit-scrollbar-thumb:hover {
-    background: #000050;
+    padding: 28px 16px 40px;
   }
 `;
 

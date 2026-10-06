@@ -6,12 +6,12 @@ import { css } from '@emotion/react';
 import { Outlet } from 'react-router-dom';
 import { useMediaQuery } from '@mui/material';
 import { environment } from '../../../config';
+import { layout, v } from '../../theme';
 import { drawerWidth, minDrawerWidth } from './drawer';
 import { navBarHeight } from '../Navbar/navBar';
 
 // Components
 import NavBar from '../Navbar/navBar';
-import Footer from './footer';
 import Drawer from './drawer';
 
 // Types
@@ -19,12 +19,11 @@ import { ApplicationMapType } from '../../applicationMap';
 import { useAppSelector } from '../../store';
 import { loadStateFromLocalStorage, saveStateToLocalStorage } from '../../utils/localStorage';
 
+export const infoBarBreakpoint = 1200;
+
 const SLayout = styled.div`
-  &.webapp {
-    .Section.full-height-min {
-      min-height: calc(100vh - ${navBarHeight}px - 80px + 40px);
-    }
-  }
+  min-height: 100vh;
+  background: ${v.bg};
 `;
 
 type ContentType = {
@@ -34,10 +33,9 @@ type ContentType = {
 };
 
 const Content = styled.div<ContentType>`
-  margin-top: 43px;
+  margin-top: ${navBarHeight}px;
   margin-left: 0;
-
-  transition: margin-left 0.4s ease-out;
+  transition: margin-left 0.2s ease;
   @media (min-width: 500px) {
     margin-left: ${(props) => (props.openedNavigationDrawer ? `${drawerWidth}px` : `${minDrawerWidth}px`)};
   }
@@ -53,8 +51,8 @@ const Content = styled.div<ContentType>`
   ${(props) =>
     props.drawerRight &&
     css`
-      @media screen and (min-width: 740px) {
-        margin-right: 233px;
+      @media screen and (min-width: ${infoBarBreakpoint}px) {
+        margin-right: ${layout.infoBarWidth}px;
       }
     `}
 `;
@@ -156,10 +154,7 @@ const Layout: React.FC<{
         openedNavigationDrawer={isMobile ? openedNavigationDrawerMobile : openedNavigationDrawerPC}
         drawerRight={!!drawerRight}
       >
-        {' '}
-        <div>
-          <Outlet />
-        </div>
+        <Outlet />
         {/* {children} */}
       </Content>
       {drawerRight}

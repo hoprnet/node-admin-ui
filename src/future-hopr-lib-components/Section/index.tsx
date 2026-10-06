@@ -1,74 +1,39 @@
 import styled from '@emotion/styled';
+import { layout } from '../../theme';
 
+// Page container. The legacy colour variants (yellow, gradients, ...) are kept
+// as props for compatibility but all render on the app canvas now.
 const SSection = styled.section`
-  overflow: hidden;
-  &.section--gradient {
-    --section-background: linear-gradient(180deg, #0000b4 -110.52%, hsla(0, 0%, 85%, 0) 60.89%);
-  }
-  &.section--yellow {
-    --section-background: #ffffa0;
-  }
-  &.section--yellow-light {
-    --section-background: #ffffa059;
-  }
-  &.section--dark-gray {
-    --section-background: #414141;
-    color: #fff;
-  }
-  &.section--light-blue-gradient {
-    --section-background: linear-gradient(180deg, #1ad1ff -110.52%, hsla(0, 0%, 85%, 0) 105%);
-  }
-  &.section--light-blue {
-    --section-background: #edfbff;
-  }
-  &.section--dark-gradient {
-    --section-background: linear-gradient(180deg, #000050 0.5%, #0000b4 100%);
-  }
-  &.section--gray {
-    --section-background: #eeeeee;
-  }
-  &.section--light-gray {
-    --section-background: #e3e5e7;
-  }
   &.section--disabled {
-    filter: opacity(0.35);
+    filter: opacity(0.4);
     pointer-events: none;
   }
 
-  background: var(--section-background);
-
   &.full-height-min {
-    min-height: calc(100vh - 68px - 170px + 48px);
-    @media (max-width: 850px) {
-      min-height: calc(100vh - 68px - 294px + 48px);
-    }
+    min-height: calc(100vh - ${layout.navBarHeight}px);
   }
   &.full-height {
-    min-height: calc(100vh - 60px);
-    @media (max-width: 768px) {
-      min-height: -webkit-fill-available;
-    }
+    min-height: calc(100vh - ${layout.navBarHeight}px);
   }
   &.section--center {
     display: flex;
-    padding-left: 16px;
-    padding-right: 16px;
   }
-  padding-bottom: 40px;
-  //  padding-top: 40px;
+  padding: 28px 32px 56px;
+  @media (max-width: 700px) {
+    padding: 20px 16px 40px;
+  }
 `;
 
 const Content = styled.div`
-  max-width: 1500px;
-  margin: auto;
+  max-width: 1280px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  padding-left: 16px;
-  padding-right: 16px;
+  align-items: stretch;
+  gap: 20px;
+  width: 100%;
   &.content--center {
     align-items: center;
-    width: calc(100% - 32px);
   }
 `;
 

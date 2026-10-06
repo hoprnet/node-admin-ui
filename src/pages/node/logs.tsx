@@ -1,10 +1,10 @@
 // HOPR Components
 import LogLine from '../../components/LogLine';
 import Section from '../../future-hopr-lib-components/Section';
+import { CardStack } from '../../future-hopr-lib-components/Table/columed-data';
 import { SubpageTitle } from '../../components/SubpageTitle';
 
 // Mui
-import { Paper } from '@mui/material';
 
 function SectionLogs() {
   return (
@@ -14,13 +14,8 @@ function SectionLogs() {
       fullHeightMin
       yellow
     >
-      <SubpageTitle title="LOGS" />
-      <Paper
-        style={{
-          padding: '24px',
-          width: 'calc( 100% - 48px )',
-        }}
-      >
+      <SubpageTitle title="Logs" />
+      <CardStack>
         <LogLine
           log={{
             id: '',
@@ -29,7 +24,7 @@ function SectionLogs() {
           }}
           key={'test-log'}
         />
-      </Paper>
+      </CardStack>
     </Section>
   );
 }

@@ -3,7 +3,9 @@ import styled from '@emotion/styled';
 import NavButton from './navButton';
 
 const Content = styled.div`
+  display: flex;
   align-items: center;
+  gap: 4px;
   &.menu-right:not(.menu-webpapp) {
     margin-right: 8px;
     gap: 5px;

@@ -1,19 +1,24 @@
 import React from 'react';
 import styled from '@emotion/styled';
+import { v } from '../../theme';
 
 const Bar = styled.div`
-  border: 1px solid rgba(0, 0, 0, 0.12);
+  border: 1px solid ${v.border};
+  background: ${v.surface2};
   position: relative;
   overflow: hidden;
   width: 100%;
-  height: 26px;
-  border-radius: 2px;
-  //   width: 120px;
+  height: 22px;
+  border-radius: 4px;
 `;
 
 const Value = styled.div`
   position: absolute;
-  line-height: 24px;
+  line-height: 20px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: ${v.text};
+  z-index: 1;
   width: 100%;
   display: flex;
   -webkit-box-pack: center;
@@ -24,13 +29,16 @@ const Progress = styled.div`
   height: 100%;
   max-width: ${(props) => props.percentage};
   &.red {
-    background-color: rgb(244, 67, 54);
+    background-color: ${v.dangerSoft};
+    box-shadow: inset -2px 0 0 ${v.danger};
   }
   &.orange {
-    background-color: rgba(239, 187, 90, 0.64);
+    background-color: ${v.warningSoft};
+    box-shadow: inset -2px 0 0 ${v.warning};
   }
   &.green {
-    background-color: rgba(8, 130, 8, 0.64);
+    background-color: ${v.successSoft};
+    box-shadow: inset -2px 0 0 ${v.success};
   }
 `;
 

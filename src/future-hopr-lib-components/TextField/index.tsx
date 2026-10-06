@@ -1,14 +1,10 @@
 import MuiTextField, { TextFieldProps } from '@mui/material/TextField';
 import styled from '@emotion/styled';
+import { v } from '../../theme';
 
 const STextField = styled(MuiTextField)`
-  font-family: 'Source Code Pro', monospace;
   width: 100%;
   margin-bottom: 8px;
-  background: white;
-  * {
-    font-family: 'Source Code Pro', monospace !important;
-  }
   input::-webkit-outer-spin-button,
   input::-webkit-inner-spin-button {
     -webkit-appearance: none;
@@ -18,7 +14,10 @@ const STextField = styled(MuiTextField)`
     -moz-appearance: textfield;
   }
   .MuiFormLabel-root.MuiInputLabel-shrink {
-    color: #000030;
+    color: ${v.text2};
+  }
+  .MuiFormLabel-root.MuiInputLabel-shrink.Mui-focused {
+    color: ${v.accentText};
   }
   @media (max-width: 320px) {
     .MuiInputAdornment-root {

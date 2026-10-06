@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../store';
 import { abortAllPending } from '../../store/abortRegistry';
 import styled from '@emotion/styled';
+import { v } from '../../theme';
 import { trackGoal } from 'fathom-client';
 import { parseAndFormatUrl } from '../../utils/parseAndFormatUrl';
 
@@ -25,7 +26,7 @@ import StyledGrayButton from '../../future-hopr-lib-components/Button/gray';
 // MUI
 import { Tooltip, IconButton, InputAdornment, Autocomplete } from '@mui/material';
 import { SelectChangeEvent } from '@mui/material/Select';
-import DeleteIcon from '@mui/icons-material/Delete';
+import DeleteIcon from '@mui/icons-material/DeleteOutline';
 import CloseIcon from '@mui/icons-material/Close';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import Visibility from '@mui/icons-material/Visibility';
@@ -50,30 +51,48 @@ const SModal = styled(Modal)`
 
 const LocalNodesContainer = styled.div`
   display: flex;
-  gap: 8px;
+  gap: 4px;
   align-items: center;
-  margin-bottom: 48px;
-  button {
-    height: 48px;
-    width: 48px;
+  padding-bottom: 20px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid ${v.border};
+  .MuiFormControl-root {
+    margin: 8px 0 0;
   }
+  button {
+    margin-top: 8px;
+    height: 36px;
+    width: 36px;
+  }
+`;
+
+const SectionLabel = styled.p`
+  margin: 0 0 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: ${v.text3};
 `;
 
 const SaveTokenContainer = styled.div`
   display: flex;
   gap: 8px;
   align-items: center;
-  margin-bottom: 24px;
+  margin: 4px 0 20px;
   width: 100%;
-  justify-content: center;
+  justify-content: space-between;
+  .MuiFormControlLabel-label {
+    font-size: 13px;
+    color: ${v.text2};
+  }
 `;
 
 const ConnectContainer = styled.div`
   display: flex;
-  gap: 8px;
-  align-items: center;
   width: 100%;
-  justify-content: center;
+  .MuiButton-root {
+    width: 100%;
+    min-height: 38px;
+  }
 `;
 
 const SirenImage = styled.img`
@@ -91,11 +110,14 @@ const Overlay = styled.div`
   align-items: center;
   width: 100%;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.85);
+  background: color-mix(in srgb, ${v.surface} 88%, transparent);
+  color: ${v.text2};
+  font-size: 13.5px;
   z-index: 100;
   &.overlay-has-error {
     align-items: flex-start;
-    background: rgba(255, 255, 255, 1);
+    background: ${v.surface};
+    color: ${v.text};
     p {
       margin-top: 24px;
       font-weight: 600;
@@ -121,11 +143,9 @@ const ButtonGroupContainer = styled.div`
 
 const ForceLoginButton = styled(Button)`
   &.btn-hopr--v2:not(.Mui-disabled) {
-    background: #f67f2f;
-    color: #fff;
+    background: ${v.warning};
+    color: ${v.accentContrast};
   }
-
-  text-transform: uppercase;
 `;
 
 const CloseOverlayIconButton = styled(IconButton)`
@@ -365,7 +385,7 @@ function ConnectNodeModal({ open = false, handleClose }: ConnectNodeModalProps) 
       <SModal
         open={props.open}
         onClose={handleCloseLocal}
-        title="CONNECT NODE"
+        title="Connect node"
         maxWidth={'580px'}
         disableScrollLock={true}
       >
@@ -396,9 +416,7 @@ function ConnectNodeModal({ open = false, handleClose }: ConnectNodeModalProps) 
           </Tooltip>
         </LocalNodesContainer>
 
-        <p>
-          <strong>Node credentials:</strong>
-        </p>
+        <SectionLabel>Credentials</SectionLabel>
         <TextField
           label={'Local name (optional)'}
           value={localName}
@@ -454,7 +472,12 @@ function ConnectNodeModal({ open = false, handleClose }: ConnectNodeModalProps) 
             }}
           />
           <Tooltip title={'Save node credentials in browser local storage'}>
-            <Button onClick={saveNode}>Save</Button>
+            <Button
+              outlined
+              onClick={saveNode}
+            >
+              Save
+            </Button>
           </Tooltip>
         </SaveTokenContainer>
 
@@ -464,7 +487,7 @@ function ConnectNodeModal({ open = false, handleClose }: ConnectNodeModalProps) 
             disabled={!canConnectToNode}
             pending={loginPending}
           >
-            Connect to the node
+            Connect
           </Button>
         </ConnectContainer>
 
@@ -534,7 +557,7 @@ function ConnectNodeModal({ open = false, handleClose }: ConnectNodeModalProps) 
           set_forceLogin(false);
         }}
         disableScrollLock={true}
-        title="WARNING"
+        title="Warning"
       >
         <SirenImage src="/assets/police-siren-siren.gif" />
         <p>{loginAnywaysWarning}</p>

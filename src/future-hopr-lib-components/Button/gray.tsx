@@ -1,20 +1,13 @@
 import styled from '@emotion/styled';
 import MuiButton, { ButtonProps } from '@mui/material/Button';
+import { v } from '../../theme';
 
+// Secondary (outlined) button.
 const SButton = styled(MuiButton)`
-  background: #ffffff;
-  border-radius: 42.3px;
-  font-family: 'Source Code Pro';
-  font-style: normal;
-  font-weight: 700;
-  font-size: 18px;
-  line-height: 45px;
-  padding: 0.2rem 1.25rem;
-
+  background: ${v.surface};
+  color: ${v.text};
+  border: 1px solid ${v.borderStrong};
   text-align: center;
-  letter-spacing: 0.25px;
-
-  color: #414141;
 
   &.unifiedSize {
     width: 100%;
@@ -22,8 +15,8 @@ const SButton = styled(MuiButton)`
   }
 
   &:hover {
-    background-color: #dfdfdf;
-    color: #414141;
+    background-color: ${v.surface2};
+    color: ${v.text};
   }
 `;
 

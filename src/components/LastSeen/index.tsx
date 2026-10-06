@@ -1,6 +1,6 @@
 // a peer heard from within this window counts as online
 const ONLINE_WINDOW_MS = 5 * 60 * 1000;
-const ONLINE_GREEN = '#008a0d';
+const ONLINE_GREEN = 'var(--success)';
 
 /**
  * Last-seen table cell: green 'Online' when the peer was heard from within the
@@ -10,7 +10,7 @@ const ONLINE_GREEN = '#008a0d';
 export const LastSeen = ({ timestamp, self }: { timestamp: number; self?: boolean }) => {
   if (self) return <span>-</span>;
   if (timestamp > 0 && Date.now() - timestamp < ONLINE_WINDOW_MS) {
-    return <span style={{ color: ONLINE_GREEN, fontWeight: 600 }}>Online</span>;
+    return <span style={{ color: ONLINE_GREEN, fontWeight: 500 }}>Online</span>;
   }
   const lastSeen =
     timestamp > 0

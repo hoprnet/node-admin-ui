@@ -12,23 +12,23 @@ import SessionsPage from './pages/node/sessions';
 import SafeNodesPage from './pages/safe/nodes';
 
 // Icons
-import InfoIcon from '@mui/icons-material/Info';
-import LanIcon from '@mui/icons-material/Lan';
-import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
-import SettingsIcon from '@mui/icons-material/Settings';
-import ContactPhone from '@mui/icons-material/ContactPhone';
-import SavingsIcon from '@mui/icons-material/Savings';
-import NodeIcon from '@mui/icons-material/Router';
-import NetworkingIcon from '@mui/icons-material/Diversity3';
+import InfoIcon from '@mui/icons-material/InfoOutlined';
+import PeersIcon from '@mui/icons-material/HubOutlined';
+import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumberOutlined';
+import SettingsIcon from '@mui/icons-material/SettingsOutlined';
+import AliasesIcon from '@mui/icons-material/ContactsOutlined';
+import SavingsIcon from '@mui/icons-material/SavingsOutlined';
+import NodeIcon from '@mui/icons-material/RouterOutlined';
+import NetworkingIcon from '@mui/icons-material/LanOutlined';
 import DevelopIcon from '@mui/icons-material/Code';
 import LinkIcon from '@mui/icons-material/Link';
-import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
+import DocsIcon from '@mui/icons-material/MenuBookOutlined';
 import TelegramIcon from '@mui/icons-material/Telegram';
-import IncomingChannelsIcon from './future-hopr-lib-components/Icons/channelsIn';
-import OutgoingChannelsIcon from './future-hopr-lib-components/Icons/channelsOut';
-import SettingsPhoneIcon from '@mui/icons-material/SettingsPhone';
-import SafeIcon from '@mui/icons-material/Shield';
-import SafeNodesIcon from '@mui/icons-material/Dns';
+import IncomingChannelsIcon from '@mui/icons-material/CallReceived';
+import OutgoingChannelsIcon from '@mui/icons-material/CallMade';
+import SessionsIcon from '@mui/icons-material/CableOutlined';
+import SafeIcon from '@mui/icons-material/ShieldOutlined';
+import SafeNodesIcon from '@mui/icons-material/DnsOutlined';
 
 export type ApplicationMapType = {
   groupName: string;
@@ -52,26 +52,26 @@ export type ApplicationMapType = {
 
 export const applicationMapNode: ApplicationMapType = [
   {
-    groupName: 'NODE',
+    groupName: 'Node',
     path: 'node',
     icon: <NodeIcon />,
     items: [
       {
-        name: 'INFO',
+        name: 'Overview',
         path: 'info',
         icon: <InfoIcon />,
         element: <InfoPage />,
         loginNeeded: 'node',
       },
       {
-        name: 'TICKETS',
+        name: 'Tickets',
         path: 'tickets',
         icon: <ConfirmationNumberIcon />,
         element: <TicketsPage />,
         loginNeeded: 'node',
       },
       {
-        name: 'CONFIGURATION',
+        name: 'Configuration',
         path: 'configuration',
         icon: <SettingsIcon />,
         element: <ConfigurationPage />,
@@ -80,29 +80,29 @@ export const applicationMapNode: ApplicationMapType = [
     ],
   },
   {
-    groupName: 'NETWORKING',
+    groupName: 'Networking',
     path: 'networking',
     icon: <NetworkingIcon />,
     items: [
       {
-        name: 'PEERS',
+        name: 'Peers',
         path: 'peers',
-        icon: <LanIcon />,
+        icon: <PeersIcon />,
         element: <PeersPage />,
         loginNeeded: 'node',
         numberKey: 'numberOfPeers',
         fetchingKey: 'fetchingPeers',
       },
       {
-        name: 'ALIASES',
+        name: 'Aliases',
         path: 'aliases',
-        icon: <ContactPhone />,
+        icon: <AliasesIcon />,
         element: <AliasesPage />,
         loginNeeded: 'node',
         numberKey: 'numberOfAliases',
       },
       {
-        name: 'CHANNELS: IN',
+        name: 'Incoming channels',
         path: 'channels-INCOMING',
         icon: <IncomingChannelsIcon />,
         element: <ChannelsPageIncoming />,
@@ -111,7 +111,7 @@ export const applicationMapNode: ApplicationMapType = [
         fetchingKey: 'fetchingChannels',
       },
       {
-        name: 'CHANNELS: OUT',
+        name: 'Outgoing channels',
         path: 'channels-OUTGOING',
         icon: <OutgoingChannelsIcon />,
         element: <ChannelsPageOutgoing />,
@@ -120,9 +120,9 @@ export const applicationMapNode: ApplicationMapType = [
         fetchingKey: 'fetchingChannels',
       },
       {
-        name: 'SESSIONS',
+        name: 'Sessions',
         path: 'sessions',
-        icon: <SettingsPhoneIcon />,
+        icon: <SessionsIcon />,
         element: <SessionsPage />,
         loginNeeded: 'node',
         numberKey: 'numberOfSessions',
@@ -131,12 +131,12 @@ export const applicationMapNode: ApplicationMapType = [
     ],
   },
   {
-    groupName: 'SAFE',
+    groupName: 'Safe',
     path: 'safe',
     icon: <SafeIcon />,
     items: [
       {
-        name: 'NODES',
+        name: 'Nodes',
         path: 'nodes',
         icon: <SafeNodesIcon />,
         element: <SafeNodesPage />,
@@ -147,7 +147,7 @@ export const applicationMapNode: ApplicationMapType = [
     ],
   },
   {
-    groupName: 'LINKS',
+    groupName: 'Resources',
     path: 'links',
     icon: <LinkIcon />,
     items: [
@@ -159,7 +159,7 @@ export const applicationMapNode: ApplicationMapType = [
       {
         name: 'Docs',
         path: 'https://docs.hoprnet.org/',
-        icon: <LibraryBooksIcon />,
+        icon: <DocsIcon />,
       },
       {
         name: 'Telegram',
@@ -172,7 +172,7 @@ export const applicationMapNode: ApplicationMapType = [
 
 export const applicationMapDev: ApplicationMapType = [
   {
-    groupName: 'DEVELOP / Steps',
+    groupName: 'Develop',
     path: 'steps',
     icon: <DevelopIcon />,
     items: [],

@@ -1,33 +1,55 @@
-@font-face {
-  font-family: 'Source Code Pro';
-  font-style: normal;
-  font-weight: 1 999;
-  src: local('Source Code Pro Variable Font'), local('SourceCodePro-VariableFont_wght'),
-    url('./fonts/SourceCodePro-VariableFont_wght.ttf') format('truetype');
-}
-
-@font-face {
-  font-family: 'Source Code Pro';
-  font-style: italic;
-  font-weight: 1 999;
-  src: local('Source Code Pro Italic Variable Font'), local('SourceCodePro-Italic-VariableFont_wght'),
-    url('./fonts/SourceCodePro-Italic-VariableFont_wght.ttf') format('truetype');
-}
+@import '@fontsource-variable/ibm-plex-sans/wght.css';
+@import '@fontsource/ibm-plex-mono/400.css';
+@import '@fontsource/ibm-plex-mono/500.css';
 
 :root {
   --wcm-z-index: 100000 !important;
+  --font-sans: 'IBM Plex Sans Variable', 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+}
+
+/* Pre-paint background (before the theme's GlobalStyles mount), see index.html. */
+html[data-theme='light'] body {
+  background: #f6f6f8;
+}
+html[data-theme='dark'] body {
+  background: #0d0d11;
 }
 
 body {
   margin: 0;
-  font-family: 'Source Code Pro', monospace;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: 'ss02';
   overflow-y: scroll !important;
 }
 
-code {
-  font-family: 'Source Code Pro', monospace;
+code,
+pre,
+kbd,
+.mono {
+  font-family: var(--font-mono);
+  font-size: 0.93em;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* Hand-made icons (future-hopr-lib-components/Icons) reuse MUI's class but not its
+   generated styles: give them the same currentColor fill and box as MUI icons. */
+svg.MuiSvgIcon-root {
+  fill: currentColor;
+  width: 1em;
+  height: 1em;
+  flex-shrink: 0;
+  font-size: 1.25rem;
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
 }
 
 a {
@@ -36,20 +58,65 @@ a {
   text-decoration: unset;
 }
 
+a.link,
+p a,
+.MuiDialogContent-root a {
+  color: var(--accent-text);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--accent-text) 35%, transparent);
+  text-underline-offset: 3px;
+}
+
+a.link:hover,
+p a:hover,
+.MuiDialogContent-root a:hover {
+  text-decoration-color: var(--accent-text);
+}
+
 button,
-input {
+input,
+textarea,
+select {
   font-family: inherit;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+@keyframes rotation {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(1turn);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* Menus */
 ul.notification-menu-list,
 ul.connect-node-menu-list,
 ul.safe-menu-list {
-  padding: 0;
+  padding: 4px;
 }
 
 ul.connect-node-menu-list {
-  width: 200px;
+  width: 280px;
 }
 
 ul.safe-menu-list {
@@ -61,40 +128,8 @@ ul.safe-menu-list > li {
   justify-content: center;
 }
 
-body.menu-opened .InfoBar {
-  /* width: 250px;
-  padding-right: 17px; */
-}
-
-@media screen and (min-width: 740px) {
-  body.menu-opened .drawerRight {
-    /*   margin-right: 250px; */
-  }
-}
-
-/*
-body::-webkit-scrollbar {
-  width: 17px;
-}
-body::-webkit-scrollbar-track {
-  background: #ffffa0;
-
-}
-body::-webkit-scrollbar-thumb {
-  background: #3c64a5;
-  border-radius: 10px;
-  border: 3px solid #ffffa0;
-}
-body::-webkit-scrollbar-thumb:hover {
-  background: #000050;
-}
-*/
-
-/* Safe-selector list*/
-
 li.selected-safe {
-  background-color: rgba(0, 0, 0, 0.24);
-  background-color: #edf2f7;
+  background-color: var(--surface-2);
 }
 
 /* Tooltips */
@@ -113,15 +148,35 @@ li.selected-safe {
 
 img.node-jazz-icon {
   margin-right: 10px;
-  border-radius: 30px;
-  height: 22px;
-  width: 22px;
+  border-radius: 50%;
+  height: 20px;
+  width: 20px;
+  flex-shrink: 0;
 }
 
 img.node-jazz-icon-present {
-  background: rgb(3, 94, 91);
+  background: var(--accent);
 }
 
 span.select-menu-item-text {
   flex-grow: 1;
+}
+
+/* Toasts (react-toastify), aligned with the design tokens */
+.Toastify__toast {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow-overlay);
+  min-height: 52px;
+}
+.Toastify__close-button {
+  color: var(--text-3);
+  opacity: 1;
+}
+.Toastify__progress-bar--wrp {
+  height: 2px;
 }

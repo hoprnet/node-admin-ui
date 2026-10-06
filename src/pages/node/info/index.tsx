@@ -6,7 +6,6 @@ import { copyStringToClipboard } from '../../../utils/functions';
 import { formatEther } from 'viem';
 
 // Mui
-import { Paper } from '@mui/material';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import Visibility from '@mui/icons-material/Visibility';
 
@@ -28,6 +27,7 @@ import IconButton from '../../../future-hopr-lib-components/Button/IconButton';
 import CopyIcon from '@mui/icons-material/ContentCopy';
 import LaunchIcon from '@mui/icons-material/Launch';
 import DataObjectIcon from '@mui/icons-material/DataObject';
+import ApiIcon from '@mui/icons-material/Api';
 
 //Info Components
 import NodeUptime from './node-uptime';
@@ -40,6 +40,16 @@ const TdActionIcons = styled.td`
 `;
 
 const TD = styled.td``;
+
+// Two-column flow on wide screens; cards differ a lot in height, so columns
+// pack them tighter than a grid would.
+const Cards = styled.div`
+  columns: 2 460px;
+  column-gap: 16px;
+  .TableExtended {
+    margin-bottom: 16px;
+  }
+`;
 
 function InfoPage() {
   const dispatch = useAppDispatch();
@@ -215,7 +225,7 @@ function InfoPage() {
       yellow
     >
       <SubpageTitle
-        title="INFO"
+        title="Overview"
         refreshFunction={fetchInfoData}
         reloading={isFetchingAnyData}
         actions={
@@ -223,13 +233,7 @@ function InfoPage() {
             <WithdrawModal />
             <IconButton
               iconComponent={<DataObjectIcon />}
-              tooltipText={
-                <span>
-                  OPEN
-                  <br />
-                  Swagger UI
-                </span>
-              }
+              tooltipText={<span>Open Swagger UI</span>}
               onClick={() => {
                 const externalUrl = apiEndpoint + '/swagger-ui/index.html#/';
                 const w = window.open(externalUrl, '_blank');
@@ -237,19 +241,8 @@ function InfoPage() {
               }}
             />
             <IconButton
-              iconComponent={
-                <img
-                  style={{ maxWidth: '20px' }}
-                  src="/assets/scalar-removebg-preview.png"
-                />
-              }
-              tooltipText={
-                <span>
-                  OPEN
-                  <br />
-                  Scalar UI
-                </span>
-              }
+              iconComponent={<ApiIcon />}
+              tooltipText={<span>Open Scalar UI</span>}
               onClick={() => {
                 const externalUrl = apiEndpoint + '/scalar';
                 const w = window.open(externalUrl, '_blank');
@@ -259,16 +252,8 @@ function InfoPage() {
           </>
         }
       />
-      <Paper
-        style={{
-          padding: '24px',
-          width: 'calc( 100% - 48px )',
-        }}
-      >
-        <TableExtended
-          title="Network"
-          style={{ marginBottom: '42px' }}
-        >
+      <Cards>
+        <TableExtended title="Network">
           <tbody>
             <tr>
               <th>
@@ -331,13 +316,7 @@ function InfoPage() {
                       {showWholeProvider ? (
                         <IconButton
                           iconComponent={<Visibility />}
-                          tooltipText={
-                            <span>
-                              HIDE
-                              <br />
-                              full URL
-                            </span>
-                          }
+                          tooltipText={<span>Hide full URL</span>}
                           onClick={() => {
                             set_showWholeProvider(false);
                           }}
@@ -345,13 +324,7 @@ function InfoPage() {
                       ) : (
                         <IconButton
                           iconComponent={<VisibilityOff />}
-                          tooltipText={
-                            <span>
-                              SHOW
-                              <br />
-                              full URL
-                            </span>
-                          }
+                          tooltipText={<span>Show full URL</span>}
                           onClick={() => {
                             set_showWholeProvider(true);
                           }}
@@ -440,10 +413,7 @@ function InfoPage() {
           </tbody>
         </TableExtended>
 
-        <TableExtended
-          title="Balances"
-          style={{ marginBottom: '42px' }}
-        >
+        <TableExtended title="Balances">
           <tbody>
             <tr>
               <th>
@@ -531,10 +501,7 @@ function InfoPage() {
           </tbody>
         </TableExtended>
 
-        <TableExtended
-          title="Ticket properties"
-          style={{ marginBottom: '42px' }}
-        >
+        <TableExtended title="Ticket properties">
           <tbody>
             <tr>
               <th>
@@ -562,10 +529,7 @@ function InfoPage() {
           </tbody>
         </TableExtended>
 
-        <TableExtended
-          title="Addresses"
-          style={{ marginBottom: '42px' }}
-        >
+        <TableExtended title="Addresses">
           <tbody>
             <tr>
               <th>
@@ -730,10 +694,7 @@ function InfoPage() {
           </tbody>
         </TableExtended>
 
-        <TableExtended
-          title="Node"
-          style={{ marginBottom: '42px' }}
-        >
+        <TableExtended title="Node">
           <tbody>
             <tr>
               <th>
@@ -763,10 +724,7 @@ function InfoPage() {
 
         <Packets />
 
-        <TableExtended
-          title="Channels"
-          style={{ marginBottom: '42px' }}
-        >
+        <TableExtended title="Channels">
           <tbody>
             <tr>
               <th>
@@ -793,10 +751,7 @@ function InfoPage() {
           </tbody>
         </TableExtended>
 
-        <TableExtended
-          title="Nodes on the network"
-          style={{ marginBottom: '42px' }}
-        >
+        <TableExtended title="Nodes on the network">
           <tbody>
             <tr>
               <th>
@@ -822,7 +777,7 @@ function InfoPage() {
             </tr>
           </tbody>
         </TableExtended>
-      </Paper>
+      </Cards>
     </Section>
   );
 }

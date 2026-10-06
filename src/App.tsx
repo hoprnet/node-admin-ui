@@ -1,22 +1,24 @@
 import { useEffect } from 'react';
-import styled from '@emotion/styled';
-import { ThemeProvider } from '@mui/material';
 import { Provider } from 'react-redux';
 import { RouterProvider } from 'react-router-dom';
 import 'react-toastify/dist/ReactToastify.css';
 import router from './router';
 import store from './store';
 import { ToastContainer } from 'react-toastify';
-import theme from './theme';
+import { AppThemeProvider, useColorMode } from './theme';
 import * as Fathom from 'fathom-client';
-import packageJson from '../package.json';
 
-const VersionComponent = styled.div`
-  position: fixed;
-  bottom: 4px;
-  right: 4px;
-  font-size: 10px;
-`;
+const Toasts = () => {
+  const { mode } = useColorMode();
+  return (
+    <ToastContainer
+      position="bottom-right"
+      limit={10}
+      theme={mode}
+      style={{ maxHeight: 'calc(100vh - 100px)' }}
+    />
+  );
+};
 
 function App() {
   useEffect(() => {
@@ -29,15 +31,10 @@ function App() {
 
   return (
     <Provider store={store}>
-      <ThemeProvider theme={theme}>
-        <ToastContainer
-          position="bottom-right"
-          limit={10}
-          style={{ maxHeight: 'calc(100vh - 100px)' }}
-        />
+      <AppThemeProvider>
+        <Toasts />
         <RouterProvider router={router} />
-        <VersionComponent>UI version: {packageJson.version}</VersionComponent>
-      </ThemeProvider>
+      </AppThemeProvider>
     </Provider>
   );
 }

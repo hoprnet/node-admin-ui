@@ -1,33 +1,27 @@
-import React, { useEffect, useState } from 'react';
-//import { useRouter } from 'next/router';
+import React from 'react';
 import styled from '@emotion/styled';
 
-//import Sections from '../Sections';
-//import LaunchPlaygroundBtn from '../../future-hopr-lib-components/Button/LaunchPlayground';
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
 import NavBarItems from './navBarItems';
-import { Box, IconButton } from '@mui/material';
+import { IconButton, Tooltip } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
+import { layout, v } from '../../theme';
+import ColorModeToggle from './colorModeToggle';
 
 interface AppBarProps extends MuiAppBarProps {
   tallerNavBarOnMobile?: boolean;
   webapp?: boolean;
 }
 
-export const navBarHeight = 44;
+export const navBarHeight = layout.navBarHeight;
 
 const AppBar = styled(({ tallerNavBarOnMobile, webapp, ...rest }: AppBarProps) => <MuiAppBar {...rest} />)`
-  background: white;
+  background: ${v.surface};
+  color: ${v.text};
   height: ${navBarHeight}px;
-  border-bottom: 1px lightgray solid;
-  box-shadow: unset;
+  border-bottom: 1px solid ${v.border};
+  box-shadow: none;
   z-index: 1201;
-  ${(props) =>
-    !props.webapp &&
-    `
-    padding-left: 16px;
-    padding-right: 16px;
-  `}
   ${(props) =>
     props.tallerNavBarOnMobile &&
     `
@@ -37,146 +31,118 @@ const AppBar = styled(({ tallerNavBarOnMobile, webapp, ...rest }: AppBarProps) =
   `}
 `;
 
-const Container = styled.div<{ webapp?: boolean }>`
+const Container = styled.div`
   display: flex;
-  flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  ${(props) => !props.webapp && 'max-width: 1098px;'}
-  width: 100%;
-  margin-inline: 8px;
-  position: relative;
-  .menu {
-    display: flex;
-    flex-direction: row;
-  }
+  height: 100%;
+  padding: 0 12px 0 10px;
+  gap: 12px;
 `;
 
-const FlexBox = styled(Box)`
-  align-items: center;
+const Left = styled.div`
   display: flex;
-  gap: 8px;
-
-  .MuiIconButton-root {
-    height: 42px;
-    width: 42px;
-    &:hover {
-      background-color: rgba(0, 0, 180, 0.1);
-      transition: background-color 0.4s ease;
-    }
-  }
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
 `;
 
-const Logo = styled.div`
-  width: 90px;
-  height: ${navBarHeight}px;
+const Right = styled.div`
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 4px;
+  min-width: 0;
+`;
+
+const Brand = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-left: 4px;
+  user-select: none;
   img {
-    height: 40px;
+    height: 22px;
     width: auto;
+    display: block;
+    filter: brightness(0);
+    opacity: 0.92;
+  }
+  html[data-theme='dark'] & img {
+    filter: brightness(0) invert(1);
+  }
+  .divider {
+    width: 1px;
+    height: 16px;
+    background: ${v.borderStrong};
+  }
+  .product {
+    font-size: 13.5px;
+    font-weight: 500;
+    color: ${v.text2};
+    white-space: nowrap;
+  }
+  @media (max-width: 420px) {
+    .divider,
+    .product {
+      display: none;
+    }
   }
 `;
 
 const NavBar: React.FC<{
   className?: string;
-  center?: boolean;
   webapp?: boolean;
-  right?: boolean;
-  mobile?: boolean;
   mainLogo?: string;
   mainLogoAlt?: string;
   tallerNavBarOnMobile?: boolean;
-  itemsNavbarCenter?: any[];
-  itemsNavbarRight?: any[];
+  itemsNavbarRight?: any;
   openedNavigationDrawer: boolean;
-  onButtonClick?: () => void;
   set_openedNavigationDrawer: (openedNavigationDrawer: boolean) => void;
 }> = ({
-  className,
-  center,
   webapp,
-  right,
-  mobile,
   mainLogo,
   mainLogoAlt,
   tallerNavBarOnMobile,
-  itemsNavbarCenter = [],
   itemsNavbarRight = [],
   openedNavigationDrawer,
-  onButtonClick,
   set_openedNavigationDrawer,
 }) => {
-  //  const router = useRouter();
-  const [activaMenu, setActivaMenu] = useState(false);
-  const [isScroll, setIsScroll] = useState(false);
-  //const showCoinbase = router.pathname === '/' || router.pathname === '/token';
-
-  const onScrollNavBar = function () {
-    if (window.pageYOffset === 0) {
-      setIsScroll(false);
-    } else {
-      setIsScroll(true);
-      setActivaMenu(false);
-    }
-  };
-
-  useEffect(() => {
-    window.addEventListener('scroll', onScrollNavBar);
-    return () => window.removeEventListener('scroll', onScrollNavBar);
-  }, [isScroll]);
-
   return (
-    <>
-      <AppBar
-        className="Hopr-navBar navbar"
-        tallerNavBarOnMobile={tallerNavBarOnMobile}
-        webapp={webapp}
-      >
-        <Container webapp={webapp}>
-          <FlexBox>
-            <IconButton onClick={() => set_openedNavigationDrawer(!openedNavigationDrawer)}>
+    <AppBar
+      className="Hopr-navBar navbar"
+      tallerNavBarOnMobile={tallerNavBarOnMobile}
+      webapp={webapp}
+    >
+      <Container>
+        <Left>
+          <Tooltip title={openedNavigationDrawer ? 'Collapse sidebar' : 'Expand sidebar'}>
+            <IconButton
+              aria-label="Toggle navigation"
+              onClick={() => set_openedNavigationDrawer(!openedNavigationDrawer)}
+            >
               <MenuIcon />
             </IconButton>
-            <Logo className="logo-hopr">
-              {/* <a href="/"> */}
-              <img
-                className="logo-hopr-navbar"
-                alt={mainLogoAlt}
-                src={mainLogo}
-              />
-              {/* </a> */}
-            </Logo>
-          </FlexBox>
-          <div
-            onClick={() => setActivaMenu(!activaMenu)}
-            className={'icon-menu' + (activaMenu ? ' open' : '')}
-          >
-            <span></span>
-          </div>
-          <NavBarItems
-            itemsNavbar={itemsNavbarCenter}
-            center
-            webapp={webapp}
-          />
+          </Tooltip>
+          <Brand className="logo-hopr">
+            <img
+              className="logo-hopr-navbar"
+              alt={mainLogoAlt}
+              src={mainLogo}
+            />
+            <span className="divider" />
+            <span className="product">Node Admin</span>
+          </Brand>
+        </Left>
+        <Right>
+          <ColorModeToggle />
           <NavBarItems
             itemsNavbar={itemsNavbarRight}
             right
             webapp={webapp}
           />
-        </Container>
-      </AppBar>
-      <div className={`menu mobile ${activaMenu ? ' show-menu' : ''}`}>
-        <NavBarItems
-          //     itemsNavbar={[...itemsNavbarCenter, ...itemsNavbarRight]}
-          onButtonClick={() => {
-            setActivaMenu(false);
-          }}
-          mobile
-        />
-      </div>
-    </>
+        </Right>
+      </Container>
+    </AppBar>
   );
 };
 

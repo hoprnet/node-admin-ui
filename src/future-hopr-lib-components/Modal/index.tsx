@@ -10,12 +10,13 @@ import CloseIcon from '@mui/icons-material/Close';
 
 const SDialog = styled(({ maxWidthCss, ...rest }: PropsStyled) => <Dialog {...rest} />)`
   .MuiPaper-root {
-    max-width: ${(props) => (props.maxWidthCss ? props.maxWidthCss : '395px')};
+    max-width: ${(props) => (props.maxWidthCss ? props.maxWidthCss : '420px')};
     width: 100%;
-    padding: 16px;
-    font-family: 'Source Code Pro';
-    font-style: normal;
+    padding: 16px 20px 20px;
+    font-size: 13.5px;
+    line-height: 1.6;
     .modal-title {
+      font-size: 16px;
       font-weight: 600;
     }
   }
@@ -51,7 +52,6 @@ const Modal: React.FC<Props> = (props) => {
       <Row>
         <div className="modal-title">{title}</div>
         <IconButton
-          color="primary"
           aria-label="close modal"
           onClick={handleClose}
         >

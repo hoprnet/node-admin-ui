@@ -3,6 +3,7 @@ import styled from '@emotion/styled';
 // Mui
 import { Tooltip, IconButton as MuiIconButton } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
+import { v } from '../../theme';
 
 type SubpageTitleProps = {
   reloading?: boolean;
@@ -16,29 +17,19 @@ type SubpageTitleProps = {
 };
 
 const SIconButton = styled(MuiIconButton)`
+  width: 30px;
+  height: 30px;
   svg {
-    color: #000050;
-    fill: #000050;
-    width: 1em;
-    height: 1em;
+    width: 18px;
+    height: 18px;
   }
-  &.Mui-disabled {
-    svg {
-      background-color: transparent;
-      color: rgba(0, 0, 0, 0.26);
-      fill: rgba(0, 0, 0, 0.26);
-    }
+  &.Mui-disabled svg {
+    color: ${v.text3};
+    fill: ${v.text3};
+    opacity: 0.6;
   }
-  &.reloading {
-    animation: rotation 2s infinite linear;
-  }
-  @keyframes rotation {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(1turn);
-    }
+  &.reloading svg {
+    animation: rotation 1s infinite linear;
   }
 `;
 
@@ -46,9 +37,9 @@ const SCircularProgress = styled(CircularProgress)`
   position: absolute;
   &.pending,
   &.pending > svg {
-    width: 20px !important;
-    height: 20px !important;
-    color: #1976d2;
+    width: 18px !important;
+    height: 18px !important;
+    color: ${v.accent};
   }
 `;
 

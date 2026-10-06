@@ -2,6 +2,7 @@ import { forwardRef, Ref } from 'react';
 import styled from '@emotion/styled';
 import MuiButton, { ButtonProps } from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
+import { v } from '../../theme';
 
 type StyledButtonProps = ButtonProps & {
   imageOnly?: boolean;
@@ -14,87 +15,68 @@ type StyledButtonProps = ButtonProps & {
   target?: string;
 };
 
+// Legacy variant props (fade, nofade, size70, ...) are kept for compatibility
+// and mapped onto the neutral button styles of the theme.
 const StyledButton = styled(MuiButton)<StyledButtonProps>`
-  font-family: 'Source Code Pro';
   text-align: center;
-  text-transform: none;
-  font-style: normal;
-  font-weight: 500;
-  font-size: 18px;
-  border-radius: 20px;
-  letter-spacing: 0.25px;
-  line-height: 1.5;
-  height: unset;
+  white-space: nowrap;
   p {
     margin: 0;
   }
 
-  &.btn-hopr--v2:not(.Mui-disabled) {
-    background: linear-gradient(#000050, #0000b4);
-    color: #fff;
+  &.btn-hopr--v2:not(.Mui-disabled):not(.btn-hopr--outlined) {
+    background: ${v.accent};
+    color: ${v.accentContrast};
+    &:hover {
+      background: ${v.accentHover};
+    }
+  }
+  &.Mui-disabled {
+    background: ${v.surface3};
+    color: ${v.text3};
   }
   &.btn-hopr--standardWidth {
     width: 100%;
     max-width: 222px;
   }
   &.btn-hopr--size70 {
-    min-height: 70px;
-    font-size: 18px;
-    font-weight: 700;
-    letter-spacing: 0.14999999105930328px;
+    min-height: 44px;
+    font-size: 14.5px;
+    font-weight: 600;
   }
   &.btn-hopr--image-only {
     padding: 8px;
-    width: 70px;
-    height: 70px;
+    width: 56px;
+    height: 56px;
     img {
       width: 100%;
-      max-width: 54px;
+      max-width: 40px;
     }
   }
   &.btn-hopr--v2.btn-hopr--fade:not(.Mui-disabled) {
-    background: linear-gradient(rgb(0 0 80 / 60%), rgb(0 0 180 / 60%));
+    opacity: 0.7;
   }
-  &.white:not(.Mui-disabled) {
-    background: #fff;
-    color: #0000b2;
-    font-weight: 700;
-  }
-
-  &.btn-hopr--no-fade:not(.Mui-disabled) {
-    align-self: flex-start;
-    background: #000050;
-    font-size: 12px;
-    font-weight: 700;
-    height: 32px;
-    text-transform: uppercase;
-    padding-inline: 0.75rem;
-  }
-
   &.btn-hopr--no-fade {
-    &[disabled] {
-      background-color: #0000001e;
-      box-shadow: none;
-      color: #00000042;
-      font-size: 12px;
-      font-weight: 700;
-      height: 32px;
-      text-transform: uppercase;
-      padding-inline: 0.75rem;
-    }
+    align-self: flex-start;
+    font-size: 12.5px;
+    min-height: 28px;
+    padding: 3px 10px;
   }
-
   &.btn-hopr--outlined:not(.Mui-disabled) {
-    background: #fff;
-    color: #000050;
-    border: 2px solid #000050;
+    background: ${v.surface};
+    color: ${v.text};
+    border: 1px solid ${v.borderStrong};
+    &:hover {
+      background: ${v.surface2};
+    }
   }
 `;
 
 const SCircularProgress = styled(CircularProgress)`
-  width: 30px !important;
-  height: 30px !important;
+  width: 18px !important;
+  height: 18px !important;
   position: absolute;
+  color: ${v.accent};
 `;
 
 const Button = forwardRef((props: StyledButtonProps, ref: Ref<HTMLButtonElement>) => {

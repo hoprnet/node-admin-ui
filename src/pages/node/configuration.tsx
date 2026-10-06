@@ -7,7 +7,7 @@ import yaml from 'js-yaml';
 
 // HOPR Components
 import { SubpageTitle } from '../../components/SubpageTitle';
-import { TableExtended } from '../../future-hopr-lib-components/Table/columed-data';
+import { CardStack, TableExtended } from '../../future-hopr-lib-components/Table/columed-data';
 import Section from '../../future-hopr-lib-components/Section';
 import Button from '../../future-hopr-lib-components/Button';
 import CodeCopyBox from '../../components/Code/CodeCopyBox';
@@ -15,7 +15,7 @@ import IconButton from '../../future-hopr-lib-components/Button/IconButton';
 import TextField from '../../future-hopr-lib-components/TextField';
 
 // Mui
-import { Paper, Switch } from '@mui/material';
+import { Switch } from '@mui/material';
 import styled from '@emotion/styled';
 import { appActions } from '../../store/slices/app';
 import { blokliActions } from '../../store/slices/blokli';
@@ -26,7 +26,19 @@ import GetAppIcon from '@mui/icons-material/GetApp';
 const NotificationsContainer = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 12px;
+`;
+
+const SettingRow = styled.label`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  max-width: 460px;
+  cursor: pointer;
+  .MuiSwitch-root {
+    margin-right: 0;
+  }
 `;
 
 const BlokliContainer = styled.div`
@@ -38,7 +50,7 @@ const BlokliContainer = styled.div`
 
 const BlokliButtons = styled.div`
   display: flex;
-  gap: 1rem;
+  gap: 8px;
 `;
 
 const DECIMALS_MULTIPLIER = BigInt(1e18); // For HOPR token's 18 decimals
@@ -232,17 +244,9 @@ function SettingsPage() {
       fullHeightMin
       yellow
     >
-      <SubpageTitle title="CONFIGURATION" />
-      <Paper
-        style={{
-          padding: '24px',
-          width: 'calc( 100% - 48px )',
-        }}
-      >
-        <TableExtended
-          title="Node"
-          style={{ marginBottom: '32px' }}
-        >
+      <SubpageTitle title="Configuration" />
+      <CardStack>
+        <TableExtended title="Node">
           <tbody>
             <tr>
               <th>Blokli URL</th>
@@ -282,8 +286,8 @@ function SettingsPage() {
               <th>Notifications</th>
               <td>
                 <NotificationsContainer>
-                  <div>
-                    Channels: False
+                  <SettingRow>
+                    <span>Channels</span>
                     <Switch
                       checked={localNotificationSettings?.channels}
                       onChange={() => {
@@ -296,11 +300,10 @@ function SettingsPage() {
                         }
                       }}
                       color="primary"
-                    />{' '}
-                    True
-                  </div>
-                  {/* <div>
-                    Message: False
+                    />
+                  </SettingRow>
+                  {/* <SettingRow>
+                    <span>Message</span>
                     <Switch
                       checked={localNotificationSettings?.message}
                       onChange={() => {
@@ -312,11 +315,10 @@ function SettingsPage() {
                         }
                       }}
                       color="primary"
-                    />{' '}
-                    True
-                  </div> */}
-                  <div>
-                    Node Balance: False
+                    />
+                  </SettingRow> */}
+                  <SettingRow>
+                    <span>Node Balance</span>
                     <Switch
                       checked={localNotificationSettings?.nodeBalances}
                       onChange={() => {
@@ -328,11 +330,10 @@ function SettingsPage() {
                         }
                       }}
                       color="primary"
-                    />{' '}
-                    True
-                  </div>
-                  <div>
-                    Node Info: False
+                    />
+                  </SettingRow>
+                  <SettingRow>
+                    <span>Node Info</span>
                     <Switch
                       checked={localNotificationSettings?.nodeInfo}
                       onChange={() => {
@@ -344,9 +345,8 @@ function SettingsPage() {
                         }
                       }}
                       color="primary"
-                    />{' '}
-                    True
-                  </div>
+                    />
+                  </SettingRow>
                 </NotificationsContainer>
                 <Button
                   style={{
@@ -365,28 +365,26 @@ function SettingsPage() {
               <th>Aliases</th>
               <td>
                 <NotificationsContainer>
-                  <div>
-                    Merge aliases between nodes on the same network: False
+                  <SettingRow>
+                    <span>Merge aliases between nodes on the same network</span>
                     <Switch
                       checked={aliasMergeMode === 'network'}
                       onChange={() => {
                         handleAliasMergeToggle('network');
                       }}
                       color="primary"
-                    />{' '}
-                    True
-                  </div>
-                  <div>
-                    Merge aliases between all saved nodes: False
+                    />
+                  </SettingRow>
+                  <SettingRow>
+                    <span>Merge aliases between all saved nodes</span>
                     <Switch
                       checked={aliasMergeMode === 'all'}
                       onChange={() => {
                         handleAliasMergeToggle('all');
                       }}
                       color="primary"
-                    />{' '}
-                    True
-                  </div>
+                    />
+                  </SettingRow>
                 </NotificationsContainer>
               </td>
             </tr>
@@ -396,13 +394,7 @@ function SettingsPage() {
                 Strategy
                 <IconButton
                   iconComponent={<GetAppIcon />}
-                  tooltipText={
-                    <span>
-                      EXPORT
-                      <br />
-                      Strategy
-                    </span>
-                  }
+                  tooltipText={<span>Export Strategy</span>}
                   onClick={handleExport}
                 />
               </th>
@@ -428,7 +420,7 @@ function SettingsPage() {
             </tr>
           </tbody>
         </TableExtended>
-      </Paper>
+      </CardStack>
     </Section>
   );
 }

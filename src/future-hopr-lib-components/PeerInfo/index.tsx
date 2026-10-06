@@ -19,8 +19,8 @@ const Container = styled.div`
   display: flex;
   align-items: center;
   .node-jazz-icon {
-    height: 30px;
-    width: 30px;
+    height: 22px;
+    width: 22px;
   }
 `;
 
