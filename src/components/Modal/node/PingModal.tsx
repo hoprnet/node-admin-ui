@@ -14,12 +14,15 @@ import RssFeedIcon from '@mui/icons-material/RssFeed';
 import Button from '../../../future-hopr-lib-components/Button';
 
 type PingModalProps = {
+  open?: boolean;
+  onClose?: () => void;
+  hideTrigger?: boolean;
   address?: string;
   disabled?: boolean;
   tooltip?: JSX.Element | string;
 };
 
-export const PingModal = (props: PingModalProps) => {
+const PingModalInner = (props: PingModalProps) => {
   const dispatch = useAppDispatch();
   const loginData = useAppSelector((selector) => selector.auth.loginData);
   const aliases = useAppSelector((store) => store.node.aliases);
@@ -55,6 +58,7 @@ export const PingModal = (props: PingModalProps) => {
   };
 
   const handleCloseModal = () => {
+    props.onClose?.();
     set_OpenModal(false);
     set_address('');
     setPropAddress();
@@ -122,15 +126,22 @@ export const PingModal = (props: PingModalProps) => {
     }
   };
 
+  // controlled mode: opened from a menu or a detail panel
+  useEffect(() => {
+    if (props.open) handleOpenModal();
+  }, [props.open]);
+
   return (
     <>
-      <IconButton
-        iconComponent={<RssFeedIcon />}
-        tooltipText={props.tooltip ? props.tooltip : <span>Ping node</span>}
-        onClick={address ? handlePing : handleOpenModal}
-        disabled={props.disabled}
-        pending={disableButton}
-      />
+      {!props.hideTrigger && (
+        <IconButton
+          iconComponent={<RssFeedIcon />}
+          tooltipText={props.tooltip ? props.tooltip : <span>Ping node</span>}
+          onClick={address ? handlePing : handleOpenModal}
+          disabled={props.disabled}
+          pending={disableButton}
+        />
+      )}
       <SDialog
         open={openModal}
         onClose={handleCloseModal}
@@ -174,3 +185,5 @@ export const PingModal = (props: PingModalProps) => {
     </>
   );
 };
+
+export const PingModal = (props: PingModalProps) => <PingModalInner {...props} />;

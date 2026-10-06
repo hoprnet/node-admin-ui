@@ -29,3 +29,5 @@ yarn-error.log*
 gha-creds-*.json
 
 .claude/
+# direnv
+.direnv/

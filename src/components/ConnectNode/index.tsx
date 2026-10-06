@@ -14,9 +14,16 @@ import { blokliActions } from '../../store/slices/blokli';
 import { appActions } from '../../store/slices/app';
 
 //MUI
-import { Button, Menu, MenuItem, CircularProgress } from '@mui/material';
+import { Button, MenuItem, CircularProgress, Popover, Switch, ListItemIcon } from '@mui/material';
+import SwapIcon from '@mui/icons-material/SwapHoriz';
+import LogoutIcon from '@mui/icons-material/Logout';
+import Details from '../InfoBar/details';
+import { Address, StatusPill, toneOf } from '../Data';
+import { uiActions } from '../../store/slices/ui';
+import { useReadOnly } from '../../store';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { abortAllPending } from '../../store/abortRegistry';
+import { clearSession } from '../../utils/session';
 import { v } from '../../theme';
 
 const Container = styled(Button)`
@@ -46,6 +53,28 @@ const Container = styled(Button)`
   }
   .image-container {
     display: flex;
+    position: relative;
+    &::after {
+      content: '';
+      position: absolute;
+      right: -2px;
+      bottom: -2px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      border: 2px solid ${v.surface};
+      background: ${v.text3};
+    }
+    &.status-Green::after {
+      background: ${v.success};
+    }
+    &.status-Yellow::after,
+    &.status-Orange::after {
+      background: ${v.warning};
+    }
+    &.status-Red::after {
+      background: ${v.danger};
+    }
     img {
       height: 22px;
       width: 22px;
@@ -85,6 +114,21 @@ const NodeButton = styled.div`
     overflow: hidden;
     text-overflow: ellipsis;
   }
+  @media (max-width: 560px) {
+    .labels,
+    .ro-badge {
+      display: none;
+    }
+  }
+  .ro-badge {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: ${v.warningSoft};
+    color: ${v.warning};
+    white-space: nowrap;
+  }
   .dropdown-icon {
     display: flex;
     color: ${v.text3};
@@ -96,6 +140,47 @@ const NodeButton = styled.div`
   &.connect {
     font-size: 13.5px;
     font-weight: 500;
+  }
+`;
+
+const NodePanel = styled.div`
+  width: 300px;
+  .identity {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 14px 14px 12px;
+    .name {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .network {
+      font-size: 12px;
+      color: ${v.text3};
+    }
+  }
+  .readonly {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px;
+    border-top: 1px solid ${v.border};
+    font-size: 13px;
+    cursor: pointer;
+    small {
+      display: block;
+      font-size: 12px;
+      color: ${v.text3};
+    }
+  }
+  .actions {
+    padding: 4px;
+    border-top: 1px solid ${v.border};
   }
 `;
 
@@ -133,24 +218,13 @@ export default function ConnectNode() {
         )}`
       : localNameFromLocalStorage;
   const apiEndpoint = useAppSelector((store) => store.auth.loginData.apiEndpoint);
+  const network = useAppSelector((store) => store.node.info.data?.hoprNetworkName);
+  const connectivity = useAppSelector((store) => store.node.info.data?.connectivityStatus);
+  const readOnly = useReadOnly();
   const [peerAddressIcon, set_peerAddressIcon] = useState<string | null>(null);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null); // State variable to hold the anchor element for the menu
 
   const containerRef = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as HTMLElement)) {
-        handleCloseMenu();
-      }
-    };
-
-    document.addEventListener('click', handleClickOutside);
-
-    return () => {
-      document.removeEventListener('click', handleClickOutside);
-    };
-  }, []);
 
   useEffect(() => {
     if (!connected) set_peerAddressIcon(null);
@@ -172,6 +246,7 @@ export default function ConnectNode() {
   }, [openLoginModalToNode]);
 
   const handleLogout = () => {
+    clearSession();
     abortAllPending();
     dispatch(authActions.resetState());
     dispatch(nodeActions.resetState());
@@ -220,7 +295,7 @@ export default function ConnectNode() {
       >
         {connected && (
           <div
-            className="image-container"
+            className={`image-container status-${connectivity}`}
             id="jazz-icon-node"
           >
             <img
@@ -243,23 +318,75 @@ export default function ConnectNode() {
                   )}
                 </p>
               </span>
+              {readOnly && <span className="ro-badge">Read-only</span>}
               <div className="dropdown-icon">
                 <ExpandMoreIcon />
               </div>
             </NodeButton>
-            <Menu
+            <Popover
               anchorEl={anchorEl}
               open={Boolean(anchorEl)}
               onClose={handleCloseMenu}
-              MenuListProps={{
-                'aria-labelledby': 'connect-node-menu-button',
-                className: 'connect-node-menu-list',
-              }}
+              anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+              transformOrigin={{ vertical: -6, horizontal: 'right' }}
               disableScrollLock={true}
+              onClick={(event) => event.stopPropagation()}
             >
-              <MenuItem onClick={handleModalOpen}>Change node</MenuItem>
-              <MenuItem onClick={() => handleLogout()}>Disconnect</MenuItem>
-            </Menu>
+              <NodePanel>
+                <div className="identity">
+                  <div className="name">
+                    {localNameFromLocalStorage || 'Node'}
+                    {connectivity && <StatusPill tone={toneOf(connectivity)}>{connectivity}</StatusPill>}
+                  </div>
+                  <Address
+                    address={peerAddress}
+                    alias={null}
+                    icon={false}
+                  />
+                  {network && <div className="network">{network}</div>}
+                </div>
+                <Details
+                  hideHeader
+                  style={{ border: 0, borderRadius: 0, borderTop: `1px solid var(--border)` }}
+                />
+                <label className="readonly">
+                  <span>
+                    Read-only mode
+                    <small>Hide every action that changes the node</small>
+                  </span>
+                  <Switch
+                    checked={readOnly}
+                    onChange={() =>
+                      apiEndpoint && dispatch(uiActions.setReadOnly({ apiEndpoint, readOnly: !readOnly }))
+                    }
+                  />
+                </label>
+                <div className="actions">
+                  <MenuItem
+                    onClick={() => {
+                      handleCloseMenu();
+                      handleModalOpen();
+                    }}
+                  >
+                    <ListItemIcon>
+                      <SwapIcon fontSize="small" />
+                    </ListItemIcon>
+                    Switch node…
+                  </MenuItem>
+                  <MenuItem
+                    onClick={() => {
+                      handleCloseMenu();
+                      handleLogout();
+                    }}
+                  >
+                    <ListItemIcon>
+                      <LogoutIcon fontSize="small" />
+                    </ListItemIcon>
+                    Disconnect
+                  </MenuItem>
+                </div>
+              </NodePanel>
+            </Popover>
           </>
         ) : (
           <NodeButton className="connect">Connect node</NodeButton>

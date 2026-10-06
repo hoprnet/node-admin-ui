@@ -47,11 +47,26 @@ const Left = styled.div`
   min-width: 0;
 `;
 
+const Center = styled.div`
+  display: flex;
+  justify-content: center;
+  flex-grow: 1;
+  @media (max-width: 1100px) {
+    justify-content: flex-end;
+    flex-grow: 0;
+    margin-left: auto;
+  }
+`;
+
 const Right = styled.div`
   display: flex;
   align-items: center;
   gap: 4px;
   min-width: 0;
+  flex-shrink: 0;
+  @media (max-width: 420px) {
+    gap: 0;
+  }
 `;
 
 const Brand = styled.div`
@@ -96,6 +111,7 @@ const NavBar: React.FC<{
   mainLogoAlt?: string;
   tallerNavBarOnMobile?: boolean;
   itemsNavbarRight?: any;
+  itemsNavbarCenter?: any;
   openedNavigationDrawer: boolean;
   set_openedNavigationDrawer: (openedNavigationDrawer: boolean) => void;
 }> = ({
@@ -104,6 +120,7 @@ const NavBar: React.FC<{
   mainLogoAlt,
   tallerNavBarOnMobile,
   itemsNavbarRight = [],
+  itemsNavbarCenter,
   openedNavigationDrawer,
   set_openedNavigationDrawer,
 }) => {
@@ -133,6 +150,7 @@ const NavBar: React.FC<{
             <span className="product">Node Admin</span>
           </Brand>
         </Left>
+        {itemsNavbarCenter && <Center>{itemsNavbarCenter}</Center>}
         <Right>
           <ColorModeToggle />
           <NavBarItems

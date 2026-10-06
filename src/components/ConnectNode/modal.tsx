@@ -4,7 +4,7 @@ import { useAppDispatch, useAppSelector } from '../../store';
 import { abortAllPending } from '../../store/abortRegistry';
 import styled from '@emotion/styled';
 import { v } from '../../theme';
-import { trackGoal } from 'fathom-client';
+import { saveSession } from '../../utils/session';
 import { parseAndFormatUrl } from '../../utils/parseAndFormatUrl';
 
 // Stores
@@ -169,7 +169,6 @@ function ConnectNodeModal({ open = false, handleClose }: ConnectNodeModalProps) 
   const loginPending = useAppSelector((store) => store.auth.status.connecting);
   const connectedNetwork = useAppSelector((store) => store.node.info.data?.hoprNetworkName);
   const connectedNodeAddress = useAppSelector((store) => store.node.addresses.data.native);
-  const [searchParams, set_searchParams] = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
   const [localName, set_localName] = useState(loginData.localName ? loginData.localName : '');
   const [jazzIcon, set_jazzIcon] = useState(loginData.jazzIcon ? loginData.jazzIcon : null);
@@ -216,9 +215,7 @@ function ConnectNodeModal({ open = false, handleClose }: ConnectNodeModalProps) 
   useEffect(() => {
     // Update the TextFields based on loginData from the Store
     if (loginData.apiEndpoint === apiEndpoint && loginData.apiToken === apiToken) return;
-    const apiEndpointSP = searchParams.get('apiEndpoint');
-    const apiTokenSP = searchParams.get('apiToken');
-    if (!apiEndpointSP && !apiTokenSP) return;
+    if (!loginData.apiEndpoint) return;
 
     if (loginData.localName) {
       set_localName(loginData.localName);
@@ -245,8 +242,7 @@ function ConnectNodeModal({ open = false, handleClose }: ConnectNodeModalProps) 
 
   useEffect(() => {
     if (errorMessage) {
-      if (!apiToken || apiToken === '') navigate(`/?apiEndpoint=${encodeURIComponent(apiEndpoint)}`);
-      else navigate(`/?apiToken=${encodeURIComponent(apiToken)}&apiEndpoint=${encodeURIComponent(apiEndpoint)}`);
+      navigate('/');
     }
   }, [errorMessage]);
 
@@ -286,14 +282,6 @@ function ConnectNodeModal({ open = false, handleClose }: ConnectNodeModalProps) 
     } else {
       set_apiEndpointError(null);
     }
-    if (!apiToken || apiToken === '') {
-      set_searchParams({ apiEndpoint: formattedApiEndpoint });
-    } else {
-      set_searchParams({
-        apiToken,
-        apiEndpoint: formattedApiEndpoint,
-      });
-    }
     abortAllPending();
     dispatch(authActions.resetState());
     dispatch(nodeActions.resetState());
@@ -327,17 +315,12 @@ function ConnectNodeModal({ open = false, handleClose }: ConnectNodeModalProps) 
         });
         // Switching node keeps you where you are, only a fresh login lands on info
         const targetPath = isNodeSubpage(location.pathname) ? location.pathname : '/node/info';
-        if (!apiToken || apiToken === '') {
-          navigate(`${targetPath}?apiEndpoint=${formattedApiEndpoint}`);
-        } else {
-          navigate(`${targetPath}?apiToken=${encodeURIComponent(apiToken)}&apiEndpoint=${formattedApiEndpoint}`);
-        }
-        trackGoal('IZUWDE9K', 1);
+        saveSession({ apiEndpoint: formattedApiEndpoint, apiToken: apiToken ?? '' });
+        navigate(targetPath);
         props.handleClose();
       }
     } catch (e) {
       // error is handled in redux
-      trackGoal('WWH3JCEH', 1);
     } finally {
       set_forceLogin(false);
     }

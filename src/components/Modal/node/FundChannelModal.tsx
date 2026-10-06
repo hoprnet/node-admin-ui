@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { parseEther } from 'viem';
 import { SDialog, SDialogContent, SIconButton, TopBar } from '../../../future-hopr-lib-components/Modal/styled';
-import { useAppDispatch, useAppSelector } from '../../../store';
+import { useAppDispatch, useAppSelector, useReadOnly } from '../../../store';
 import { actionsAsync } from '../../../store/slices/node/actionsAsync';
 import { sendNotification } from '../../../hooks/useWatcher/notifications';
 import { HOPR_TOKEN_USED } from '../../../../config';
@@ -32,11 +32,14 @@ import CloseIcon from '@mui/icons-material/Close';
 import { add } from 'lodash';
 
 type FundChannelModalModalProps = {
+  open?: boolean;
+  onClose?: () => void;
+  hideTrigger?: boolean;
   address?: string;
   disabled?: boolean;
 };
 
-export const FundChannelModal = ({ ...props }: FundChannelModalModalProps) => {
+const FundChannelModalInner = ({ ...props }: FundChannelModalModalProps) => {
   const dispatch = useAppDispatch();
   const loginData = useAppSelector((store) => store.auth.loginData);
   const [openChannelModal, set_openChannelModal] = useState(false);
@@ -71,6 +74,7 @@ export const FundChannelModal = ({ ...props }: FundChannelModalModalProps) => {
   };
 
   const handleCloseModal = () => {
+    props.onClose?.();
     set_openChannelModal(false);
     set_amount('');
     set_address(props.address ? props.address : '');
@@ -145,14 +149,21 @@ export const FundChannelModal = ({ ...props }: FundChannelModalModalProps) => {
     }
   }
 
+  // controlled mode: opened from a menu or a detail panel
+  useEffect(() => {
+    if (props.open) handleOpenChannelDialog();
+  }, [props.open]);
+
   return (
     <>
-      <IconButton
-        iconComponent={<FundChannelIcon />}
-        disabled={props.disabled}
-        tooltipText={<span>Fund outgoing channel</span>}
-        onClick={handleOpenChannelDialog}
-      />
+      {!props.hideTrigger && (
+        <IconButton
+          iconComponent={<FundChannelIcon />}
+          disabled={props.disabled}
+          tooltipText={<span>Fund outgoing channel</span>}
+          onClick={handleOpenChannelDialog}
+        />
+      )}
       <SDialog
         open={openChannelModal}
         onClose={handleCloseModal}
@@ -215,4 +226,11 @@ export const FundChannelModal = ({ ...props }: FundChannelModalModalProps) => {
       </SDialog>
     </>
   );
+};
+
+/** Hidden in read-only mode, as it changes the node's state. */
+export const FundChannelModal = (props: FundChannelModalModalProps) => {
+  const readOnly = useReadOnly();
+  if (readOnly) return null;
+  return <FundChannelModalInner {...props} />;
 };

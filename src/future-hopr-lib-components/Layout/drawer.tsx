@@ -260,7 +260,7 @@ const Drawer = ({
                                 ? item.path
                                 : item.overwritePath
                                 ? item.overwritePath
-                                : `${group.path}/${item.path}${searchParams ?? ''}`
+                                : `/${group.path}/${item.path}`
                               : undefined
                           }
                           target={item.path.includes('http') ? '_blank' : undefined}

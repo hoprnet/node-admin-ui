@@ -13,6 +13,7 @@ import { navBarHeight } from '../Navbar/navBar';
 // Components
 import NavBar from '../Navbar/navBar';
 import Drawer from './drawer';
+import UnreachableBanner from '../../components/Shell/UnreachableBanner';
 
 // Types
 import { ApplicationMapType } from '../../applicationMap';
@@ -60,6 +61,7 @@ const Content = styled.div<ContentType>`
 const Layout: React.FC<{
   className?: string;
   itemsNavbarRight?: any;
+  itemsNavbarCenter?: any;
   tallerNavBarOnMobile?: boolean;
   children?: ReactNode;
   drawer?: boolean;
@@ -83,6 +85,7 @@ const Layout: React.FC<{
   className = '',
   children,
   itemsNavbarRight,
+  itemsNavbarCenter,
   tallerNavBarOnMobile,
   drawer,
   drawerItems,
@@ -132,6 +135,7 @@ const Layout: React.FC<{
         mainLogo="/logo.svg"
         mainLogoAlt="hopr logo"
         itemsNavbarRight={itemsNavbarRight}
+        itemsNavbarCenter={itemsNavbarCenter}
         tallerNavBarOnMobile={tallerNavBarOnMobile}
         webapp={webapp}
         set_openedNavigationDrawer={handleOpenedNavigationDrawer}
@@ -154,6 +158,7 @@ const Layout: React.FC<{
         openedNavigationDrawer={isMobile ? openedNavigationDrawerMobile : openedNavigationDrawerPC}
         drawerRight={!!drawerRight}
       >
+        <UnreachableBanner />
         <Outlet />
         {/* {children} */}
       </Content>

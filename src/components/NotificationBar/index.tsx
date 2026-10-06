@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styled from '@emotion/styled';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useWatcher } from '../../hooks';
@@ -84,9 +84,47 @@ const SMenuItem = styled(MenuItem)`
   }
 `;
 
+// notifications are kept per node, so they survive a reload
+const STORAGE_PREFIX = 'notifications/';
+const MAX_STORED = 100;
+
+const usePersistedNotifications = () => {
+  const dispatch = useAppDispatch();
+  const apiEndpoint = useAppSelector((store) => store.auth.loginData.apiEndpoint);
+  const connected = useAppSelector((store) => store.auth.status.connected);
+  const notifications = useAppSelector((store) => store.app.notifications);
+  // the node whose stored list is loaded; nothing is saved before that
+  const loadedFor = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!connected || !apiEndpoint) return;
+    try {
+      const stored = JSON.parse(localStorage.getItem(STORAGE_PREFIX + apiEndpoint) ?? '[]');
+      // keep events that arrived before the load (e.g. right after login)
+      const ids = new Set(notifications.map((n) => n.id));
+      dispatch(
+        appActions.setNotifications([...notifications, ...stored.filter((n: { id: string }) => !ids.has(n.id))]),
+      );
+    } catch (e) {
+      // corrupted entry: start fresh
+    }
+    loadedFor.current = apiEndpoint;
+  }, [connected, apiEndpoint]);
+
+  useEffect(() => {
+    if (!apiEndpoint || loadedFor.current !== apiEndpoint) return;
+    try {
+      localStorage.setItem(STORAGE_PREFIX + apiEndpoint, JSON.stringify(notifications.slice(-MAX_STORED)));
+    } catch (e) {
+      // storage full or unavailable
+    }
+  }, [notifications, apiEndpoint]);
+};
+
 export default function NotificationBar() {
   // start watching notifications
   useWatcher({});
+  usePersistedNotifications();
 
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
@@ -144,7 +182,7 @@ export default function NotificationBar() {
             //            style={{ maxWidth: 'calc(100% - 17px)'}} //TODO: Fix notification drodown styling if we have more notifications than fit can on the screen
             // https://github.com/hoprnet/hopr-admin/issues/567
           >
-            Stored locally, cleared on refresh.
+            Stored in this browser, per node.
             <IconButton
               iconComponent={<DeleteIcon />}
               tooltipText="Clear all"

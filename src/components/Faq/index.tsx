@@ -79,7 +79,7 @@ export default function FAQ({ variant, label, data }: FaqProps) {
 
   return (
     <StyledCard className={`Faq ${variant}`}>
-      <Header>Help</Header>
+      <Header>{label}</Header>
       {data.map((faqItem) => (
         <StyledAccordion
           key={faqItem.id}

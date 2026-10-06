@@ -5,6 +5,7 @@ import authSlice from './slices/auth';
 import nodeSlice from './slices/node';
 import appSlice from './slices/app';
 import blokliSlice from './slices/blokli';
+import uiSlice from './slices/ui';
 import { trackAbortable } from './abortRegistry';
 //import { websocketMiddleware } from './slices/node/websocketMiddleware';
 
@@ -27,6 +28,7 @@ const store = configureStore({
     node: nodeSlice,
     app: appSlice,
     blokli: blokliSlice,
+    ui: uiSlice,
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware().prepend(abortTrackingMiddleware),
   devTools: import.meta.env.PROD ? false : { maxAge: 5000 },
@@ -42,3 +44,10 @@ export const useAppDispatch: () => AppDispatch = useDispatch;
 export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
 
 export default store;
+
+/** True when the connected node is in read-only mode: every action that changes node state is hidden. */
+export const useReadOnly = () =>
+  useAppSelector((store) => {
+    const apiEndpoint = store.auth.loginData.apiEndpoint;
+    return !!apiEndpoint && !!store.ui.readOnly[apiEndpoint];
+  });

@@ -16,11 +16,44 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import CircularProgress from '@mui/material/CircularProgress';
 import SearchIcon from '@mui/icons-material/Search';
+import Checkbox from '@mui/material/Checkbox';
+import TableSortLabel from '@mui/material/TableSortLabel';
 import { v } from '../../theme';
 
 const STable = styled(Table)`
   tr.onRowClick {
     cursor: pointer;
+  }
+  tr.activeRow,
+  tr.activeRow:hover {
+    background: ${v.accentSoft};
+  }
+  td.select,
+  th.select {
+    width: 36px;
+    padding-top: 0;
+    padding-bottom: 0;
+    padding-left: 10px;
+    padding-right: 0;
+    .MuiCheckbox-root {
+      padding: 4px;
+    }
+  }
+  th.align-right .MuiTableSortLabel-root {
+    flex-direction: row-reverse;
+  }
+  .MuiTableSortLabel-root {
+    color: inherit;
+    &:hover {
+      color: ${v.text};
+    }
+    &.Mui-active {
+      color: ${v.text};
+    }
+    .MuiTableSortLabel-icon {
+      font-size: 14px;
+      margin-left: 2px;
+    }
   }
   thead th {
     border-bottom: 1px solid ${v.border};
@@ -78,6 +111,9 @@ const STableCell = styled(TableCell)`
     font-variant-numeric: tabular-nums;
     color: ${v.text3};
   }
+  &.align-right {
+    text-align: right;
+  }
   &.TableCellHeader.id {
     font-family: inherit;
   }
@@ -92,6 +128,14 @@ const STableCell = styled(TableCell)`
 const OverTable = styled.div`
   display: flex;
   align-items: center;
+  gap: 12px;
+  min-height: 32px;
+  .table-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+  }
   padding: 10px 12px;
   border-bottom: 1px solid ${v.border};
 `;
@@ -146,9 +190,8 @@ const EmptyState = styled.div`
 
 interface Props {
   data: {
-    [key: string]: string | number | JSX.Element;
+    [key: string]: React.ReactNode;
     id: string | number;
-    actions: JSX.Element;
   }[];
   id?: string;
   header: {
@@ -162,11 +205,25 @@ interface Props {
     copy?: boolean;
     hidden?: boolean;
     tooltipHeader?: string | JSX.Element;
+    // row field to sort this column by (when the cell itself is JSX)
+    sortKey?: string;
+    sortable?: boolean;
+    align?: 'left' | 'right';
   }[];
   search?: boolean;
   loading?: boolean;
   onRowClick?: Function;
   orderByDefault?: string;
+  orderDefault?: 'asc' | 'desc';
+  // row selection (bulk actions); rows are identified by `id`
+  selectable?: boolean;
+  selected?: (string | number)[];
+  onSelectionChange?: (ids: (string | number)[]) => void;
+  isRowSelectable?: (row: Props['data'][0]) => boolean;
+  // highlighted row (e.g. the one shown in a detail panel)
+  activeRowId?: string | number | null;
+  emptyText?: string;
+  toolbar?: React.ReactNode;
 }
 
 type RowData = Props['data'][0];
@@ -175,43 +232,37 @@ type TableContext = {
   tableId?: string;
   header: Props['header'];
   onRowClick?: Function;
+  activeRowId?: string | number | null;
 };
 
 type Order = 'asc' | 'desc';
 
 const isString = (value: any) => typeof value === 'string' || value instanceof String;
 
-function descendingComparator<T>(
-  a: { [key in string]: number | string },
-  b: { [key in string]: number | string },
-  orderBy: string,
-) {
+const asNumber = (value: unknown): number | null => {
+  if (typeof value === 'number') return value;
+  if (!isString(value)) return null;
+  const n = Number((value as string).replace(/,/g, '').split(' ')[0]);
+  return (value as string).trim() !== '' && Number.isFinite(n) ? n : null;
+};
+
+function descendingComparator(a: { [key in string]: unknown }, b: { [key in string]: unknown }, orderBy: string) {
+  const na = asNumber(a[orderBy]);
+  const nb = asNumber(b[orderBy]);
+  if (na !== null && nb !== null) return nb < na ? -1 : nb > na ? 1 : 0;
   if (isString(b[orderBy]) && isString(a[orderBy])) {
-    if ((b[orderBy] as string).toLowerCase() < (a[orderBy] as string).toLowerCase()) {
-      return -1;
-    }
-    if ((b[orderBy] as string).toLowerCase() > (a[orderBy] as string).toLowerCase()) {
-      return 1;
-    }
+    const sa = (a[orderBy] as string).toLowerCase();
+    const sb = (b[orderBy] as string).toLowerCase();
+    return sb < sa ? -1 : sb > sa ? 1 : 0;
   }
-
-  if (b[orderBy] < a[orderBy]) {
-    return -1;
-  }
-  if (b[orderBy] > a[orderBy]) {
-    return 1;
-  }
-
+  // values that cannot be compared (e.g. JSX) keep their order
   return 0;
 }
 
-function getComparator<Key extends keyof any>(
-  order: Order,
-  orderBy: string,
-): (a: { [key in Key]: number | string }, b: { [key in Key]: number | string }) => number {
+function getComparator(order: Order, orderBy: string) {
   return order === 'desc'
-    ? (a, b) => descendingComparator(a, b, orderBy)
-    : (a, b) => -descendingComparator(a, b, orderBy);
+    ? (a: { [key in string]: unknown }, b: { [key in string]: unknown }) => descendingComparator(a, b, orderBy)
+    : (a: { [key in string]: unknown }, b: { [key in string]: unknown }) => -descendingComparator(a, b, orderBy);
 }
 
 const virtuosoComponents: TableComponents<RowData, TableContext> = {
@@ -244,7 +295,11 @@ const virtuosoComponents: TableComponents<RowData, TableContext> = {
       onClick={() => {
         context?.onRowClick && context.onRowClick(item);
       }}
-      className={`${context?.onRowClick ? 'onRowClick' : ''}`}
+      className={`${context?.onRowClick ? 'onRowClick' : ''} ${
+        context?.activeRowId !== undefined && context?.activeRowId !== null && context.activeRowId === item.id
+          ? 'activeRow'
+          : ''
+      }`}
     />
   ),
   TableBody: React.forwardRef<HTMLTableSectionElement>(function VirtuosoTableBody(props, ref) {
@@ -258,7 +313,7 @@ const virtuosoComponents: TableComponents<RowData, TableContext> = {
 };
 
 export default function CustomPaginationActionsTable(props: Props) {
-  const [order, setOrder] = React.useState<Order>('asc');
+  const [order, setOrder] = React.useState<Order>(props.orderDefault ?? 'asc');
   const [orderBy, setOrderBy] = React.useState<string>(props.orderByDefault || props.header[0].key || 'id');
   const [searchPhrase, set_searchPhrase] = React.useState('');
   const [filteredData, set_filteredData] = React.useState<typeof props.data>([]);
@@ -297,17 +352,36 @@ export default function CustomPaginationActionsTable(props: Props) {
     return;
   }
 
+  const sortField = props.header.find((h) => h.key === orderBy)?.sortKey ?? orderBy;
+
+  const handleSort = (key: string) => {
+    if (orderBy === key) setOrder(order === 'asc' ? 'desc' : 'asc');
+    else {
+      setOrderBy(key);
+      setOrder('asc');
+    }
+  };
+
+  const selectableRows = props.selectable
+    ? filteredData.filter((row) => (props.isRowSelectable ? props.isRowSelectable(row) : true))
+    : [];
+  const selectedSet = new Set(props.selected ?? []);
+  const allSelected = selectableRows.length > 0 && selectableRows.every((row) => selectedSet.has(row.id));
+  const someSelected = selectableRows.some((row) => selectedSet.has(row.id));
+  const toggleAll = () => props.onSelectionChange?.(allSelected ? [] : selectableRows.map((row) => row.id));
+  const toggleRow = (id: string | number) =>
+    props.onSelectionChange?.(
+      selectedSet.has(id) ? (props.selected ?? []).filter((x) => x !== id) : [...(props.selected ?? []), id],
+    );
+
   const sortedRows = React.useMemo(
-    () =>
-      [...filteredData]
-        //@ts-expect-error as we can input JSX into the data, but we will not sort by it
-        .sort(getComparator(order, orderBy)),
-    [filteredData, order, orderBy],
+    () => [...filteredData].sort(getComparator(order, sortField)),
+    [filteredData, order, sortField],
   );
 
   return (
     <STableContainer component={Paper}>
-      {props.search && (
+      {(props.search || props.toolbar) && (
         <OverTable className={`OverTable`}>
           <SearchInput>
             <SearchIcon />
@@ -319,6 +393,7 @@ export default function CustomPaginationActionsTable(props: Props) {
               onChange={handleSearchChange}
             />
           </SearchInput>
+          {props.toolbar && <div className="table-toolbar">{props.toolbar}</div>}
         </OverTable>
       )}
       <TableVirtuoso
@@ -331,23 +406,49 @@ export default function CustomPaginationActionsTable(props: Props) {
           tableId: props.id,
           header: props.header,
           onRowClick: props.onRowClick,
+          activeRowId: props.activeRowId,
         }}
         components={virtuosoComponents}
         fixedHeaderContent={() => (
           <TableRow>
+            {props.selectable && (
+              <STableCell className="TableCell TableCellHeader select">
+                <Checkbox
+                  size="small"
+                  checked={allSelected}
+                  indeterminate={!allSelected && someSelected}
+                  disabled={selectableRows.length === 0}
+                  onChange={toggleAll}
+                  inputProps={{ 'aria-label': 'Select all rows' }}
+                />
+              </STableCell>
+            )}
             {props.header.map(
               (headElem, idx) =>
                 !headElem.hidden && (
                   <STableCell
                     key={idx}
-                    className={`TableCell TableCellHeader ${headElem.key}`}
+                    className={`TableCell TableCellHeader ${headElem.key} ${
+                      headElem.align === 'right' ? 'align-right' : ''
+                    }`}
                     width={headElem?.width ?? ''}
+                    sortDirection={orderBy === headElem.key ? order : false}
                   >
                     <Tooltip
                       title={headElem.tooltipHeader}
                       notWide
                     >
-                      <span>{headElem.name}</span>
+                      {headElem.sortable === false || headElem.key === 'actions' ? (
+                        <span>{headElem.name}</span>
+                      ) : (
+                        <TableSortLabel
+                          active={orderBy === headElem.key}
+                          direction={orderBy === headElem.key ? order : 'asc'}
+                          onClick={() => handleSort(headElem.key)}
+                        >
+                          {headElem.name}
+                        </TableSortLabel>
+                      )}
                     </Tooltip>
                   </STableCell>
                 ),
@@ -355,10 +456,26 @@ export default function CustomPaginationActionsTable(props: Props) {
           </TableRow>
         )}
         itemContent={(_index, row) => (
-          <RowCells
-            row={row}
-            header={props.header}
-          />
+          <>
+            {props.selectable && (
+              <STableCell
+                className="TableCell select"
+                onClick={(event) => event.stopPropagation()}
+              >
+                <Checkbox
+                  size="small"
+                  checked={selectedSet.has(row.id)}
+                  disabled={props.isRowSelectable ? !props.isRowSelectable(row) : false}
+                  onChange={() => toggleRow(row.id)}
+                  inputProps={{ 'aria-label': 'Select row' }}
+                />
+              </STableCell>
+            )}
+            <RowCells
+              row={row}
+              header={props.header}
+            />
+          </>
         )}
       />
       {sortedRows.length === 0 && (
@@ -371,7 +488,7 @@ export default function CustomPaginationActionsTable(props: Props) {
           ) : searchPhrase ? (
             'No matching entries'
           ) : (
-            'No entries'
+            props.emptyText ?? 'No entries'
           )}
         </EmptyState>
       )}
@@ -400,7 +517,9 @@ const RowCells = ({ row, header }: { row: RowData; header: Props['header'] }) =>
           !headElem.hidden && (
             <STableCell
               key={headElem.key}
-              className={`TableCell ${headElem.key} ${headElem.wrap ? 'wrap' : ''}`}
+              className={`TableCell ${headElem.key} ${headElem.wrap ? 'wrap' : ''} ${
+                headElem.align === 'right' ? 'align-right' : ''
+              }`}
               width={headElem.width}
               style={{ maxWidth: headElem.maxWidth }}
               onClick={(event) =>

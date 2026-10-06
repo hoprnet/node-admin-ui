@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useAppDispatch, useAppSelector } from '../../store';
+import { useAppDispatch, useAppSelector, useReadOnly } from '../../store';
 import { actionsAsync } from '../../store/slices/node/actionsAsync';
 import { fetchBlokliData } from '../../store/slices/blokli/fetchBlokliData';
 import { selectBlokliUrl } from '../../store/selectors/blokli';
@@ -8,6 +8,8 @@ import { formatEther } from 'viem';
 
 // HOPR Components
 import { CardStack, TableExtended } from '../../future-hopr-lib-components/Table/columed-data';
+import ConfirmDialog from '../../components/Modal/ConfirmDialog';
+import { Amount } from '../../components/Data';
 import { SubpageTitle } from '../../components/SubpageTitle';
 import Section from '../../future-hopr-lib-components/Section';
 import IconButton from '../../future-hopr-lib-components/Button/IconButton';
@@ -16,11 +18,12 @@ import Tooltip from '../../future-hopr-lib-components/Tooltip/tooltip-fixed-widt
 // Mui
 
 // Icons
-import RotateLeftIcon from '@mui/icons-material/RotateLeft';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 
 function TicketsPage() {
   const dispatch = useAppDispatch();
+  const readOnly = useReadOnly();
+  const [confirmRedeem, set_confirmRedeem] = useState(false);
   const statistics = useAppSelector((store) => store.node.statistics.data);
   const statisticsFetching = useAppSelector((store) => store.node.statistics.isFetching);
   const redeemAllTicketsFetching = useAppSelector((store) => store.node.redeemAllTickets.isFetching);
@@ -101,29 +104,16 @@ function TicketsPage() {
     >
       <SubpageTitle
         title="Tickets"
-        refreshFunction={handleRefresh}
-        reloading={statisticsFetching}
         actions={
           <>
-            <IconButton
-              iconComponent={<ExitToAppIcon />}
-              tooltipText={<span>Redeem all tickets</span>}
-              reloading={redeemAllTicketsFetching}
-              onClick={handleRedeemAllTickets}
-            />
-            <IconButton
-              iconComponent={<RotateLeftIcon />}
-              tooltipText={
-                <span>
-                  {'<REMOVED in V4> '}RESET
-                  <br />
-                  ticket statistics
-                </span>
-              }
-              reloading={resettingStats}
-              disabled
-              //  onClick={handleResetTicketsStatistics}
-            />
+            {!readOnly && (
+              <IconButton
+                iconComponent={<ExitToAppIcon />}
+                tooltipText="Redeem all tickets"
+                reloading={redeemAllTicketsFetching}
+                onClick={() => set_confirmRedeem(true)}
+              />
+            )}
           </>
         }
       />
@@ -216,6 +206,29 @@ function TicketsPage() {
           </tbody>
         </TableExtended>
       </CardStack>
+      <ConfirmDialog
+        open={confirmRedeem}
+        title="Redeem all tickets"
+        description="Redeems every winning ticket on-chain. Each redemption costs a little xDAI in gas."
+        summary={[
+          {
+            label: 'Unredeemed value',
+            value: (
+              <Amount
+                value={statistics?.unredeemedValue}
+                unit="wxHOPR"
+              />
+            ),
+          },
+          { label: 'Winning tickets', value: statistics?.winningCount ?? '-' },
+        ]}
+        confirmLabel="Redeem all"
+        onConfirm={() => {
+          set_confirmRedeem(false);
+          handleRedeemAllTickets();
+        }}
+        onClose={() => set_confirmRedeem(false)}
+      />
     </Section>
   );
 }

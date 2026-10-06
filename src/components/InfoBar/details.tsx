@@ -7,6 +7,8 @@ import { v } from '../../theme';
 
 interface Props {
   style?: object;
+  // embedded where the node name and status are already shown
+  hideHeader?: boolean;
 }
 
 const Container = styled.section`
@@ -151,7 +153,7 @@ export default function Details(props: Props) {
 
   return (
     <Container style={props.style}>
-      <Header>
+      <Header style={props.hideHeader ? { display: 'none' } : undefined}>
         <span className="label">Node</span>
         <ColorStatus className={`status-${info?.connectivityStatus}`}>{info?.connectivityStatus}</ColorStatus>
       </Header>

@@ -21,6 +21,8 @@ export const useWatcher = ({ intervalDuration = 60_000 }: { intervalDuration?: n
   const firstChannelsCallWasSuccesfull = useAppSelector((store) => !!store.node.channels.data);
   const connected = useAppSelector((store) => store.auth.status.connected);
   const peerAddress = useAppSelector((store) => store.node.addresses.data.native);
+  // polling paused from the sync indicator
+  const paused = useAppSelector((store) => store.ui.sync.paused);
 
   // inputs of the alias merge
   const aliasMergeMode = useAppSelector((store) => store.app.configuration.aliases.mergeMode);
@@ -59,7 +61,7 @@ export const useWatcher = ({ intervalDuration = 60_000 }: { intervalDuration?: n
   // ==================================================================================
   // node watchers
   useEffect(() => {
-    if (!connected) return;
+    if (!connected || paused) return;
 
     const watchIsNodeReadyInterval = setInterval(() => {
       if (!apiEndpoint || isNodeReady) return;
@@ -156,6 +158,7 @@ export const useWatcher = ({ intervalDuration = 60_000 }: { intervalDuration?: n
     };
   }, [
     connected,
+    paused,
     apiEndpoint,
     apiToken,
     isNodeReady,
@@ -316,9 +319,10 @@ export const useWatcher = ({ intervalDuration = 60_000 }: { intervalDuration?: n
         dispatch,
       });
     fetch();
+    if (paused) return;
     const watchBlokliInterval = setInterval(fetch, intervalDuration);
     return () => {
       clearInterval(watchBlokliInterval);
     };
-  }, [blokliUrl, peerAddress, hoprNodeSafe, intervalDuration]);
+  }, [blokliUrl, peerAddress, hoprNodeSafe, intervalDuration, paused]);
 };

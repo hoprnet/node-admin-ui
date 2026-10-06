@@ -87,6 +87,9 @@ const appSlice = createSlice({
           : notification,
       );
     },
+    setNotifications: (state, action: PayloadAction<typeof initialState.notifications>) => {
+      state.notifications = action.payload;
+    },
     clearNotifications: (state) => {
       state.notifications = [];
     },

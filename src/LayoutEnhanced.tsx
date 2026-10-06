@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useLocation, useSearchParams } from 'react-router-dom';
-import { trackGoal } from 'fathom-client';
+import { loadSession, saveSession } from './utils/session';
 
 import { environment } from '../config';
 import { parseAndFormatUrl } from './utils/parseAndFormatUrl';
@@ -13,7 +13,9 @@ import { fetchNodeData } from './store/slices/node/fetchNodeData';
 import Layout from './future-hopr-lib-components/Layout';
 import ConnectNode from './components/ConnectNode';
 import NotificationBar from './components/NotificationBar';
-import InfoBar from './components/InfoBar';
+import SyncIndicator from './components/Shell/SyncIndicator';
+import HelpPanel from './components/Shell/HelpPanel';
+import CommandPalette from './components/Shell/CommandPalette';
 
 import { applicationMap } from './applicationMap';
 
@@ -22,9 +24,9 @@ const LayoutEnhanced = () => {
   const location = useLocation();
   const nodeConnected = useAppSelector((store) => store.auth.status.connected);
   const loginData = useAppSelector((store) => store.auth.loginData);
-  const [searchParams] = useSearchParams();
-  const apiEndpoint = searchParams.get('apiEndpoint');
-  const apiToken = searchParams.get('apiToken');
+  const [searchParams, set_searchParams] = useSearchParams();
+  const urlApiEndpoint = searchParams.get('apiEndpoint');
+  const urlApiToken = searchParams.get('apiToken');
 
   const numberOfPeers = useAppSelector((store) => store.node.peersConnected.data?.length);
   const fetchingPeers = useAppSelector((store) => store.node.peersConnected.isFetching);
@@ -38,7 +40,13 @@ const LayoutEnhanced = () => {
   const numberOfSafeNodes = useAppSelector((store) => store.blokli.safeNodes.data?.length);
   const fetchingSafeNodes = useAppSelector((store) => store.blokli.safeNodes.isFetching);
 
+  const numberOfChannels =
+    numberOfChannelsIn !== undefined && numberOfChannelsOut !== undefined
+      ? numberOfChannelsIn + numberOfChannelsOut
+      : undefined;
+
   const numberForDrawer = {
+    numberOfChannels,
     numberOfPeers,
     numberOfAliases,
     numberOfMessagesReceived,
@@ -55,29 +63,31 @@ const LayoutEnhanced = () => {
     fetchingSafeNodes,
   };
 
+  // Login from the URL (?apiEndpoint=&apiToken=) or from this tab's session.
+  // The credentials are removed from the URL right away so the token does not
+  // stay in the browser history or in links shared from the address bar.
   useEffect(() => {
+    const session = loadSession();
+    const apiEndpoint = urlApiEndpoint ?? session?.apiEndpoint;
+    const apiToken = urlApiEndpoint ? urlApiToken ?? '' : session?.apiToken ?? '';
+    if (urlApiEndpoint || urlApiToken) {
+      const rest = new URLSearchParams(searchParams);
+      rest.delete('apiEndpoint');
+      rest.delete('apiToken');
+      set_searchParams(rest, { replace: true });
+    }
     if (!apiEndpoint) return;
     if (loginData.apiEndpoint === apiEndpoint && loginData.apiToken === apiToken) return;
     const formattedApiEndpoint = parseAndFormatUrl(apiEndpoint);
     if (!formattedApiEndpoint) return;
-    console.log('Node Admin login from url', formattedApiEndpoint);
-    dispatch(
-      authActions.useNodeData({
-        apiEndpoint,
-        apiToken: apiToken ? apiToken : '',
-      }),
-    );
+    console.log('Node Admin login from', urlApiEndpoint ? 'url' : 'session', formattedApiEndpoint);
+    dispatch(authActions.useNodeData({ apiEndpoint, apiToken }));
     dispatch(nodeActions.setApiEndpoint({ apiEndpoint: formattedApiEndpoint }));
     const useNode = async () => {
       try {
-        const loginInfo = await dispatch(
-          authActionsAsync.loginThunk({
-            apiEndpoint,
-            apiToken: apiToken ? apiToken : '',
-          }),
-        ).unwrap();
+        const loginInfo = await dispatch(authActionsAsync.loginThunk({ apiEndpoint, apiToken })).unwrap();
         if (loginInfo) {
-          trackGoal('Y641EPNA', 1); // LOGIN_TO_NODE_BY_URL
+          saveSession({ apiEndpoint: formattedApiEndpoint, apiToken });
           fetchNodeData({
             apiEndpoint: formattedApiEndpoint,
             apiToken,
@@ -85,7 +95,7 @@ const LayoutEnhanced = () => {
           });
         }
       } catch (e) {
-        trackGoal('ZUIBL4M8', 1); // FAILED_CONNECT_TO_NODE_BY_URL
+        // error is handled in redux
       }
     };
     useNode();
@@ -102,13 +112,15 @@ const LayoutEnhanced = () => {
       drawerLoginState={{ node: nodeConnected }}
       className={environment}
       drawerType={undefined}
+      itemsNavbarCenter={<CommandPalette />}
       itemsNavbarRight={
         <>
+          <SyncIndicator />
+          <HelpPanel />
           {(environment === 'dev' || environment === 'node') && <NotificationBar />}
           {(environment === 'dev' || environment === 'node') && <ConnectNode />}
         </>
       }
-      drawerRight={nodeConnected && <InfoBar />}
     />
   );
 };

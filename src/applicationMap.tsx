@@ -1,34 +1,29 @@
 import { environment } from '../config';
 
+import { Navigate } from 'react-router-dom';
+
 // Sections
-import AliasesPage from './pages/node/aliases';
 import InfoPage from './pages/node/info';
+import HealthPage from './pages/node/health';
 import PeersPage from './pages/node/peers';
+import ChannelsPage from './pages/node/channels';
 import TicketsPage from './pages/node/tickets';
-import ChannelsPageIncoming from './pages/node/channelsIncoming';
-import ChannelsPageOutgoing from './pages/node/channelsOutgoing';
 import ConfigurationPage from './pages/node/configuration';
 import SessionsPage from './pages/node/sessions';
-import SafeNodesPage from './pages/safe/nodes';
+import SafePage from './pages/safe/nodes';
 
 // Icons
-import InfoIcon from '@mui/icons-material/InfoOutlined';
+import InfoIcon from '@mui/icons-material/SpaceDashboardOutlined';
+import HealthIcon from '@mui/icons-material/MonitorHeartOutlined';
 import PeersIcon from '@mui/icons-material/HubOutlined';
+import ChannelsIcon from '@mui/icons-material/SwapHoriz';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumberOutlined';
 import SettingsIcon from '@mui/icons-material/SettingsOutlined';
-import AliasesIcon from '@mui/icons-material/ContactsOutlined';
-import SavingsIcon from '@mui/icons-material/SavingsOutlined';
 import NodeIcon from '@mui/icons-material/RouterOutlined';
 import NetworkingIcon from '@mui/icons-material/LanOutlined';
 import DevelopIcon from '@mui/icons-material/Code';
-import LinkIcon from '@mui/icons-material/Link';
-import DocsIcon from '@mui/icons-material/MenuBookOutlined';
-import TelegramIcon from '@mui/icons-material/Telegram';
-import IncomingChannelsIcon from '@mui/icons-material/CallReceived';
-import OutgoingChannelsIcon from '@mui/icons-material/CallMade';
 import SessionsIcon from '@mui/icons-material/CableOutlined';
 import SafeIcon from '@mui/icons-material/ShieldOutlined';
-import SafeNodesIcon from '@mui/icons-material/DnsOutlined';
 
 export type ApplicationMapType = {
   groupName: string;
@@ -64,6 +59,13 @@ export const applicationMapNode: ApplicationMapType = [
         loginNeeded: 'node',
       },
       {
+        name: 'Health',
+        path: 'health',
+        icon: <HealthIcon />,
+        element: <HealthPage />,
+        loginNeeded: 'node',
+      },
+      {
         name: 'Tickets',
         path: 'tickets',
         icon: <ConfirmationNumberIcon />,
@@ -71,7 +73,7 @@ export const applicationMapNode: ApplicationMapType = [
         loginNeeded: 'node',
       },
       {
-        name: 'Configuration',
+        name: 'Settings',
         path: 'configuration',
         icon: <SettingsIcon />,
         element: <ConfigurationPage />,
@@ -80,7 +82,7 @@ export const applicationMapNode: ApplicationMapType = [
     ],
   },
   {
-    groupName: 'Networking',
+    groupName: 'Network',
     path: 'networking',
     icon: <NetworkingIcon />,
     items: [
@@ -94,29 +96,12 @@ export const applicationMapNode: ApplicationMapType = [
         fetchingKey: 'fetchingPeers',
       },
       {
-        name: 'Aliases',
-        path: 'aliases',
-        icon: <AliasesIcon />,
-        element: <AliasesPage />,
+        name: 'Channels',
+        path: 'channels',
+        icon: <ChannelsIcon />,
+        element: <ChannelsPage />,
         loginNeeded: 'node',
-        numberKey: 'numberOfAliases',
-      },
-      {
-        name: 'Incoming channels',
-        path: 'channels-INCOMING',
-        icon: <IncomingChannelsIcon />,
-        element: <ChannelsPageIncoming />,
-        loginNeeded: 'node',
-        numberKey: 'numberOfChannelsIn',
-        fetchingKey: 'fetchingChannels',
-      },
-      {
-        name: 'Outgoing channels',
-        path: 'channels-OUTGOING',
-        icon: <OutgoingChannelsIcon />,
-        element: <ChannelsPageOutgoing />,
-        loginNeeded: 'node',
-        numberKey: 'numberOfChannelsOut',
+        numberKey: 'numberOfChannels',
         fetchingKey: 'fetchingChannels',
       },
       {
@@ -128,6 +113,37 @@ export const applicationMapNode: ApplicationMapType = [
         numberKey: 'numberOfSessions',
         fetchingKey: 'fetchingSessions',
       },
+      // pages merged into the ones above, kept as redirects for old links
+      {
+        path: 'aliases',
+        element: (
+          <Navigate
+            to="/networking/peers?view=book"
+            replace
+          />
+        ),
+        inDrawer: false,
+      },
+      {
+        path: 'channels-INCOMING',
+        element: (
+          <Navigate
+            to="/networking/channels?direction=in"
+            replace
+          />
+        ),
+        inDrawer: false,
+      },
+      {
+        path: 'channels-OUTGOING',
+        element: (
+          <Navigate
+            to="/networking/channels?direction=out"
+            replace
+          />
+        ),
+        inDrawer: false,
+      },
     ],
   },
   {
@@ -136,35 +152,11 @@ export const applicationMapNode: ApplicationMapType = [
     icon: <SafeIcon />,
     items: [
       {
-        name: 'Nodes',
+        name: 'Safe',
         path: 'nodes',
-        icon: <SafeNodesIcon />,
-        element: <SafeNodesPage />,
+        icon: <SafeIcon />,
+        element: <SafePage />,
         loginNeeded: 'node',
-        numberKey: 'numberOfSafeNodes',
-        fetchingKey: 'fetchingSafeNodes',
-      },
-    ],
-  },
-  {
-    groupName: 'Resources',
-    path: 'links',
-    icon: <LinkIcon />,
-    items: [
-      {
-        name: 'Staking Hub',
-        path: 'https://hub.hoprnet.org/',
-        icon: <SavingsIcon />,
-      },
-      {
-        name: 'Docs',
-        path: 'https://docs.hoprnet.org/',
-        icon: <DocsIcon />,
-      },
-      {
-        name: 'Telegram',
-        path: 'https://t.me/hoprnet',
-        icon: <TelegramIcon />,
       },
     ],
   },
@@ -194,7 +186,7 @@ export const applicationMap: ApplicationMapType = createApplicationMap();
  */
 export const subpagePaths: string[] = applicationMap.flatMap((group) =>
   group.items
-    .filter((item) => item.path && item.element)
+    .filter((item) => item.path && item.element && item.inDrawer !== false)
     .map((item) => `/${item.overwritePath ? item.overwritePath : `${group.path}/${item.path}`}`.replace('//', '/')),
 );
 

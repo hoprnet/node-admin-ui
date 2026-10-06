@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { SDialog, SDialogContent, SIconButton, TopBar } from '../../../future-hopr-lib-components/Modal/styled';
-import { useAppDispatch, useAppSelector } from '../../../store';
+import { useAppDispatch, useAppSelector, useReadOnly } from '../../../store';
 import { actionsAsync } from '../../../store/slices/node/actionsAsync';
 import { sendNotification } from '../../../hooks/useWatcher/notifications';
 import { HOPR_TOKEN_USED } from '../../../../config';
@@ -34,12 +34,15 @@ import CloseIcon from '@mui/icons-material/Close';
 import { nodeActionsAsync } from '../../../store/slices/node';
 
 type OpenChannelModalProps = {
+  open?: boolean;
+  onClose?: () => void;
+  hideTrigger?: boolean;
   peerAddress?: string;
   disabled?: boolean;
   tooltip?: JSX.Element | string;
 };
 
-export const OpenChannelModal = ({ ...props }: OpenChannelModalProps) => {
+const OpenChannelModalInner = ({ ...props }: OpenChannelModalProps) => {
   const dispatch = useAppDispatch();
   const loginData = useAppSelector((store) => store.auth.loginData);
   const outgoingOpening = useAppSelector((store) => store.node.channels.parsed.outgoingOpening);
@@ -75,6 +78,7 @@ export const OpenChannelModal = ({ ...props }: OpenChannelModalProps) => {
   };
 
   const handleCloseModal = () => {
+    props.onClose?.();
     set_openChannelModal(false);
     set_amount('');
     set_peerAddress(props.peerAddress ? props.peerAddress : '');
@@ -136,15 +140,22 @@ export const OpenChannelModal = ({ ...props }: OpenChannelModalProps) => {
     }
   }
 
+  // controlled mode: opened from a menu or a detail panel
+  useEffect(() => {
+    if (props.open) handleOpenChannelDialog();
+  }, [props.open]);
+
   return (
     <>
-      <IconButton
-        iconComponent={<AddChannelIcon />}
-        disabled={props.disabled}
-        pending={channelIsBeingOpened}
-        tooltipText={props.tooltip ? props.tooltip : <span>Open outgoing channel</span>}
-        onClick={handleOpenChannelDialog}
-      />
+      {!props.hideTrigger && (
+        <IconButton
+          iconComponent={<AddChannelIcon />}
+          disabled={props.disabled}
+          pending={channelIsBeingOpened}
+          tooltipText={props.tooltip ? props.tooltip : <span>Open outgoing channel</span>}
+          onClick={handleOpenChannelDialog}
+        />
+      )}
       <SDialog
         open={openChannelModal}
         onClose={handleCloseModal}
@@ -213,4 +224,11 @@ export const OpenChannelModal = ({ ...props }: OpenChannelModalProps) => {
       </SDialog>
     </>
   );
+};
+
+/** Hidden in read-only mode, as it changes the node's state. */
+export const OpenChannelModal = (props: OpenChannelModalProps) => {
+  const readOnly = useReadOnly();
+  if (readOnly) return null;
+  return <OpenChannelModalInner {...props} />;
 };

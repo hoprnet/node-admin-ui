@@ -28,6 +28,11 @@ import CopyIcon from '@mui/icons-material/ContentCopy';
 import LaunchIcon from '@mui/icons-material/Launch';
 import DataObjectIcon from '@mui/icons-material/DataObject';
 import ApiIcon from '@mui/icons-material/Api';
+import ExpandIcon from '@mui/icons-material/ExpandMore';
+import { Amount } from '../../../components/Data';
+import Kpis from '../../../components/Overview/Kpis';
+import Alerts from '../../../components/Overview/Alerts';
+import Activity from '../../../components/Overview/Activity';
 
 //Info Components
 import NodeUptime from './node-uptime';
@@ -41,6 +46,37 @@ const TdActionIcons = styled.td`
 
 const TD = styled.td``;
 
+const DetailsToggle = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  margin-top: 4px;
+  padding: 4px 6px 4px 0;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  svg {
+    width: 18px;
+    height: 18px;
+    color: var(--text-3);
+    transform: rotate(-90deg);
+    transition: transform 120ms ease;
+  }
+  svg.open {
+    transform: none;
+  }
+  span {
+    font-weight: 400;
+    color: var(--text-3);
+  }
+`;
+
+const DETAILS_KEY = 'overview/showDetails';
+
 // Two-column flow on wide screens; cards differ a lot in height, so columns
 // pack them tighter than a grid would.
 const Cards = styled.div`
@@ -52,6 +88,21 @@ const Cards = styled.div`
 `;
 
 function InfoPage() {
+  const [showDetails, set_showDetails] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem(DETAILS_KEY) === 'true';
+    } catch (e) {
+      return false;
+    }
+  });
+  const toggleDetails = () => {
+    set_showDetails(!showDetails);
+    try {
+      localStorage.setItem(DETAILS_KEY, String(!showDetails));
+    } catch (e) {
+      // not persisted
+    }
+  };
   const dispatch = useAppDispatch();
   const { apiEndpoint, apiToken } = useAppSelector((store) => store.auth.loginData);
   const balances = useAppSelector((store) => store.node.balances.data);
@@ -226,8 +277,6 @@ function InfoPage() {
     >
       <SubpageTitle
         title="Overview"
-        refreshFunction={fetchInfoData}
-        reloading={isFetchingAnyData}
         actions={
           <>
             <WithdrawModal />
@@ -252,46 +301,59 @@ function InfoPage() {
           </>
         }
       />
-      <Cards>
-        <TableExtended title="Network">
-          <tbody>
-            <tr>
-              <th>
-                <Tooltip
-                  title={
-                    <ul
-                      style={{
-                        margin: 0,
-                        padding: '0 0 0 16px',
-                      }}
-                    >
-                      <span style={{ margin: '0 0 0 -16px' }}>Possible statuses:</span>
-                      <li>Unknown: Node has just been started recently</li>
-                      <li>Red: No connection</li>
-                      <li>Orange: low-quality connection</li>
-                      <li>Yellow/Green: High-quality node</li>
-                    </ul>
-                  }
-                >
-                  <span>Connectivity status</span>
-                </Tooltip>
-              </th>
-              <td>
-                <ColorStatus className={`status-${info?.connectivityStatus}`}>{info?.connectivityStatus}</ColorStatus>
-              </td>
-            </tr>
-            <tr>
-              <th>
-                <Tooltip
-                  title="The HOPR network your node is running on"
-                  notWide
-                >
-                  <span>Network name</span>
-                </Tooltip>
-              </th>
-              <td>{info?.hoprNetworkName ? info.hoprNetworkName : '-'}</td>
-            </tr>
-            {/* <tr>
+      <Kpis />
+      <Alerts />
+      <Activity />
+      <DetailsToggle
+        type="button"
+        aria-expanded={showDetails}
+        onClick={() => toggleDetails()}
+      >
+        <ExpandIcon className={showDetails ? 'open' : ''} />
+        Details
+        <span>network, balances, addresses, node, packets</span>
+      </DetailsToggle>
+      {showDetails && (
+        <Cards>
+          <TableExtended title="Network">
+            <tbody>
+              <tr>
+                <th>
+                  <Tooltip
+                    title={
+                      <ul
+                        style={{
+                          margin: 0,
+                          padding: '0 0 0 16px',
+                        }}
+                      >
+                        <span style={{ margin: '0 0 0 -16px' }}>Possible statuses:</span>
+                        <li>Unknown: Node has just been started recently</li>
+                        <li>Red: No connection</li>
+                        <li>Orange: low-quality connection</li>
+                        <li>Yellow/Green: High-quality node</li>
+                      </ul>
+                    }
+                  >
+                    <span>Connectivity status</span>
+                  </Tooltip>
+                </th>
+                <td>
+                  <ColorStatus className={`status-${info?.connectivityStatus}`}>{info?.connectivityStatus}</ColorStatus>
+                </td>
+              </tr>
+              <tr>
+                <th>
+                  <Tooltip
+                    title="The HOPR network your node is running on"
+                    notWide
+                  >
+                    <span>Network name</span>
+                  </Tooltip>
+                </th>
+                <td>{info?.hoprNetworkName ? info.hoprNetworkName : '-'}</td>
+              </tr>
+              {/* <tr>
               <th>
                 <Tooltip
                   title="The sync process of your node with the blockchain"
@@ -302,63 +364,63 @@ function InfoPage() {
               </th>
               <td>{nodeSync && typeof nodeSync === 'number' ? <ProgressBar value={nodeSync} /> : '-'}</td>
             </tr> */}
-            <tr>
-              <th style={providerContainsSecret ? { padding: '3px 8px' } : {}}>
-                <div style={{ display: 'flex' }}>
+              <tr>
+                <th style={providerContainsSecret ? { padding: '3px 8px' } : {}}>
+                  <div style={{ display: 'flex' }}>
+                    <Tooltip
+                      title="The blokli provider address your node uses sync"
+                      notWide
+                    >
+                      <span style={{ display: 'flex', alignItems: 'center' }}>Provider address</span>
+                    </Tooltip>
+                    {providerContainsSecret && (
+                      <>
+                        {showWholeProvider ? (
+                          <IconButton
+                            iconComponent={<Visibility />}
+                            tooltipText={<span>Hide full URL</span>}
+                            onClick={() => {
+                              set_showWholeProvider(false);
+                            }}
+                          />
+                        ) : (
+                          <IconButton
+                            iconComponent={<VisibilityOff />}
+                            tooltipText={<span>Show full URL</span>}
+                            onClick={() => {
+                              set_showWholeProvider(true);
+                            }}
+                          />
+                        )}
+                      </>
+                    )}
+                  </div>
+                </th>
+                <td>{showWholeProvider ? provider : providerShort}</td>
+              </tr>
+              <tr>
+                <th>
                   <Tooltip
-                    title="The blokli provider address your node uses sync"
+                    title="The address your node announces to make itself reachable for other nodes"
                     notWide
                   >
-                    <span style={{ display: 'flex', alignItems: 'center' }}>Provider address</span>
+                    <span>Announced address</span>
                   </Tooltip>
-                  {providerContainsSecret && (
-                    <>
-                      {showWholeProvider ? (
-                        <IconButton
-                          iconComponent={<Visibility />}
-                          tooltipText={<span>Hide full URL</span>}
-                          onClick={() => {
-                            set_showWholeProvider(false);
-                          }}
-                        />
-                      ) : (
-                        <IconButton
-                          iconComponent={<VisibilityOff />}
-                          tooltipText={<span>Show full URL</span>}
-                          onClick={() => {
-                            set_showWholeProvider(true);
-                          }}
-                        />
-                      )}
-                    </>
-                  )}
-                </div>
-              </th>
-              <td>{showWholeProvider ? provider : providerShort}</td>
-            </tr>
-            <tr>
-              <th>
-                <Tooltip
-                  title="The address your node announces to make itself reachable for other nodes"
-                  notWide
-                >
-                  <span>Announced address</span>
-                </Tooltip>
-              </th>
-              <td>{info?.announcedAddress}</td>
-            </tr>
-            <tr>
-              <th>
-                <Tooltip
-                  title="The address your node uses to listen for incoming connections"
-                  notWide
-                >
-                  <span>Listening address</span>
-                </Tooltip>
-              </th>
-              <td>{info?.listeningAddress}</td>
-            </tr>
-            {/* <tr>
+                </th>
+                <td>{info?.announcedAddress}</td>
+              </tr>
+              <tr>
+                <th>
+                  <Tooltip
+                    title="The address your node uses to listen for incoming connections"
+                    notWide
+                  >
+                    <span>Listening address</span>
+                  </Tooltip>
+                </th>
+                <td>{info?.listeningAddress}</td>
+              </tr>
+              {/* <tr>
               <th>
                 <Tooltip
                   title="The blockchain network your node is using for on-chain transactions"
@@ -369,7 +431,7 @@ function InfoPage() {
               </th>
               <td>{info?.chain}</td>
             </tr> */}
-            {/* <tr>
+              {/* <tr>
               <th>
                 <Tooltip
                   title="Last block that the node got from the RPC"
@@ -380,7 +442,7 @@ function InfoPage() {
               </th>
               <td>{blockNumberFromInfo ? blockNumberFromInfo : '-'}</td>
             </tr> */}
-            {/* <tr>
+              {/* <tr>
               <th>
                 <Tooltip
                   title="Last indexed block from the chain which contains HOPR data"
@@ -410,192 +472,238 @@ function InfoPage() {
               </th>
               <td>{indexerLastLogChecksum ? indexerLastLogChecksum : '-'}</td>
             </tr> */}
-          </tbody>
-        </TableExtended>
+            </tbody>
+          </TableExtended>
 
-        <TableExtended title="Balances">
-          <tbody>
-            <tr>
-              <th>
-                <Tooltip
-                  title="The amount of xDAI stored on your Node"
-                  notWide
-                >
-                  <span>xDAI: Node</span>
-                </Tooltip>
-              </th>
-              <td>{balances.native?.formatted} xDAI</td>
-            </tr>
-            <tr>
-              <th>
-                <Tooltip
-                  title="The amount of xDAI stored on your Safe"
-                  notWide
-                >
-                  <span>xDAI: Safe</span>
-                </Tooltip>
-              </th>
-              <td>{balances.safeNative?.formatted} xDAI</td>
-            </tr>
-            <tr>
-              <th>
-                <Tooltip
-                  title="The amount of wxHOPR stored on your Safe"
-                  notWide
-                >
-                  <span>wxHOPR: Safe</span>
-                </Tooltip>
-              </th>
-              <td>{balances.safeHopr?.formatted} wxHOPR</td>
-            </tr>
-            <tr>
-              <th>
-                <Tooltip
-                  title="The amount of wxHOPR tokens staked in the open outgoing channels of every Node registered to your Safe. Read from blokli."
-                  notWide
-                >
-                  <span>wxHOPR: Node channels OUT</span>
-                </Tooltip>
-              </th>
-              <td>{balances.channels?.formatted ? `${balances.channels.formatted} wxHOPR` : '-'}</td>
-            </tr>
-            <tr>
-              <th>
-                <Tooltip
-                  title="The amount of wxHOPR tokens staked in the open outgoing channels of every Node registered to your Safe. Read from blokli."
-                  notWide
-                >
-                  <span>wxHOPR: Safe channels OUT</span>
-                </Tooltip>
-              </th>
-              <td>
-                {safeChannelsOut ? `${safeChannelsOut.formatted} wxHOPR (${safeChannelsOut.count} channels)` : '-'}
-              </td>
-            </tr>
-            <tr>
-              <th>
-                <Tooltip
-                  title="The total amount of wxHOPR staked in your Safe and in the outgoing Channels of every Node registered to it. The channels part is read from blokli."
-                  notWide
-                >
-                  <span>wxHOPR: Total Staked</span>
-                </Tooltip>
-              </th>
-              <td>
-                {safeChannelsOut?.value && balances.safeHopr?.value
-                  ? `${formatEther(BigInt(safeChannelsOut.value) + BigInt(balances.safeHopr.value))} wxHOPR`
-                  : '-'}
-              </td>
-            </tr>
-            <tr>
-              <th>
-                <Tooltip
-                  title="The amount of wxHOPR set as allowance for Node to use"
-                  notWide
-                >
-                  <span>wxHOPR: Allowance</span>
-                </Tooltip>
-              </th>
-              <td>{balances.safeHoprAllowance?.formatted} wxHOPR</td>
-            </tr>
-          </tbody>
-        </TableExtended>
+          <TableExtended title="Balances">
+            <tbody>
+              <tr>
+                <th>
+                  <Tooltip
+                    title="The amount of xDAI stored on your Node"
+                    notWide
+                  >
+                    <span>xDAI: Node</span>
+                  </Tooltip>
+                </th>
+                <td>
+                  <Amount
+                    value={balances.native?.formatted}
+                    unit="xDAI"
+                  />
+                </td>
+              </tr>
+              <tr>
+                <th>
+                  <Tooltip
+                    title="The amount of xDAI stored on your Safe"
+                    notWide
+                  >
+                    <span>xDAI: Safe</span>
+                  </Tooltip>
+                </th>
+                <td>
+                  <Amount
+                    value={balances.safeNative?.formatted}
+                    unit="xDAI"
+                  />
+                </td>
+              </tr>
+              <tr>
+                <th>
+                  <Tooltip
+                    title="The amount of wxHOPR stored on your Safe"
+                    notWide
+                  >
+                    <span>wxHOPR: Safe</span>
+                  </Tooltip>
+                </th>
+                <td>
+                  <Amount
+                    value={balances.safeHopr?.formatted}
+                    unit="wxHOPR"
+                  />
+                </td>
+              </tr>
+              <tr>
+                <th>
+                  <Tooltip
+                    title="The amount of wxHOPR tokens staked in the open outgoing channels of every Node registered to your Safe. Read from blokli."
+                    notWide
+                  >
+                    <span>wxHOPR: Node channels OUT</span>
+                  </Tooltip>
+                </th>
+                <td>
+                  <Amount
+                    value={balances.channels?.formatted}
+                    unit="wxHOPR"
+                  />
+                </td>
+              </tr>
+              <tr>
+                <th>
+                  <Tooltip
+                    title="The amount of wxHOPR tokens staked in the open outgoing channels of every Node registered to your Safe. Read from blokli."
+                    notWide
+                  >
+                    <span>wxHOPR: Safe channels OUT</span>
+                  </Tooltip>
+                </th>
+                <td>
+                  {safeChannelsOut ? (
+                    <>
+                      <Amount
+                        value={safeChannelsOut.formatted}
+                        unit="wxHOPR"
+                      />{' '}
+                      <span style={{ color: 'var(--text-3)' }}>· {safeChannelsOut.count} channels</span>
+                    </>
+                  ) : (
+                    '-'
+                  )}
+                </td>
+              </tr>
+              <tr>
+                <th>
+                  <Tooltip
+                    title="The total amount of wxHOPR staked in your Safe and in the outgoing Channels of every Node registered to it. The channels part is read from blokli."
+                    notWide
+                  >
+                    <span>wxHOPR: Total Staked</span>
+                  </Tooltip>
+                </th>
+                <td>
+                  {safeChannelsOut?.value && balances.safeHopr?.value ? (
+                    <Amount
+                      value={formatEther(BigInt(safeChannelsOut.value) + BigInt(balances.safeHopr.value))}
+                      unit="wxHOPR"
+                    />
+                  ) : (
+                    '-'
+                  )}
+                </td>
+              </tr>
+              <tr>
+                <th>
+                  <Tooltip
+                    title="The amount of wxHOPR set as allowance for Node to use"
+                    notWide
+                  >
+                    <span>wxHOPR: Allowance</span>
+                  </Tooltip>
+                </th>
+                <td>
+                  <Amount
+                    value={balances.safeHoprAllowance?.formatted}
+                    unit="wxHOPR"
+                  />
+                </td>
+              </tr>
+            </tbody>
+          </TableExtended>
 
-        <TableExtended title="Ticket properties">
-          <tbody>
-            <tr>
-              <th>
-                <Tooltip
-                  title="The current price of a single ticket"
-                  notWide
-                >
-                  <span>Current ticket price</span>
-                </Tooltip>
-              </th>
-              <td>{ticketPrice ? ticketPrice : '-'} wxHOPR</td>
-            </tr>
-            <tr>
-              <th>
-                <Tooltip
-                  //  title={`Minimum allowed winning probability of the ticket as defined in the ${info?.network} network`}
-                  title={`Minimum allowed winning probability of the ticket as defined in the network`}
-                  notWide
-                >
-                  <span>Minimum ticket winning probability</span>
-                </Tooltip>
-              </th>
-              <td>{minimumNetworkProbability ? minimumNetworkProbability.toFixed(9) : '-'}</td>
-            </tr>
-          </tbody>
-        </TableExtended>
+          <TableExtended title="Ticket properties">
+            <tbody>
+              <tr>
+                <th>
+                  <Tooltip
+                    title="The current price of a single ticket"
+                    notWide
+                  >
+                    <span>Current ticket price</span>
+                  </Tooltip>
+                </th>
+                <td>
+                  <Amount
+                    value={ticketPrice}
+                    unit="wxHOPR"
+                    decimals={8}
+                  />
+                </td>
+              </tr>
+              <tr>
+                <th>
+                  <Tooltip
+                    //  title={`Minimum allowed winning probability of the ticket as defined in the ${info?.network} network`}
+                    title={`Minimum allowed winning probability of the ticket as defined in the network`}
+                    notWide
+                  >
+                    <span>Minimum ticket winning probability</span>
+                  </Tooltip>
+                </th>
+                <td>{minimumNetworkProbability ? minimumNetworkProbability.toFixed(9) : '-'}</td>
+              </tr>
+            </tbody>
+          </TableExtended>
 
-        <TableExtended title="Addresses">
-          <tbody>
-            <tr>
-              <th>
-                <Tooltip
-                  title="Your node's Ethereum address"
-                  notWide
-                >
-                  <span>Node Address</span>
-                </Tooltip>
-              </th>
-              <TdActionIcons>
-                {addresses?.native}
-                {addresses?.native && (
-                  <>
-                    <SmallActionButton
-                      onClick={() => navigator.clipboard.writeText(addresses?.native as string)}
-                      disabled={noCopyPaste}
-                      tooltip={noCopyPaste ? 'Clipboard not supported on HTTP' : 'Copy'}
-                    >
-                      <CopyIcon />
-                    </SmallActionButton>
-                    <SmallActionButton tooltip={'Open in gnosisscan.io'}>
-                      <Link
-                        to={`https://gnosisscan.io/address/${addresses?.native}`}
-                        target="_blank"
+          <TableExtended title="Addresses">
+            <tbody>
+              <tr>
+                <th>
+                  <Tooltip
+                    title="Your node's Ethereum address"
+                    notWide
+                  >
+                    <span>Node Address</span>
+                  </Tooltip>
+                </th>
+                <TdActionIcons>
+                  {addresses?.native}
+                  {addresses?.native && (
+                    <>
+                      <SmallActionButton
+                        onClick={() => navigator.clipboard.writeText(addresses?.native as string)}
+                        disabled={noCopyPaste}
+                        tooltip={noCopyPaste ? 'Clipboard not supported on HTTP' : 'Copy'}
                       >
-                        <LaunchIcon />
-                      </Link>
-                    </SmallActionButton>
-                  </>
-                )}
-              </TdActionIcons>
-            </tr>
-            <tr>
-              <th>
-                <Tooltip
-                  title="Your safe's Ethereum address"
-                  notWide
-                >
-                  <span>Safe Address</span>
-                </Tooltip>
-              </th>
-              <TdActionIcons>
-                {info?.hoprNodeSafe}
-                {info?.hoprNodeSafe && (
-                  <>
-                    <SmallActionButton
-                      onClick={() => navigator.clipboard.writeText(info.hoprNodeSafe as string)}
-                      disabled={noCopyPaste}
-                      tooltip={noCopyPaste ? 'Clipboard not supported on HTTP' : 'Copy'}
-                    >
-                      <CopyIcon />
-                    </SmallActionButton>
-                    <SmallActionButton tooltip={'Open in gnosisscan.io'}>
-                      <Link
-                        to={`https://gnosisscan.io/address/${info.hoprNodeSafe}`}
-                        target="_blank"
+                        <CopyIcon />
+                      </SmallActionButton>
+                      <SmallActionButton tooltip={'Open in gnosisscan.io'}>
+                        <Link
+                          to={`https://gnosisscan.io/address/${addresses?.native}`}
+                          target="_blank"
+                        >
+                          <LaunchIcon />
+                        </Link>
+                      </SmallActionButton>
+                    </>
+                  )}
+                </TdActionIcons>
+              </tr>
+              <tr>
+                <th>
+                  <Tooltip
+                    title="Your safe's Ethereum address"
+                    notWide
+                  >
+                    <span>Safe Address</span>
+                  </Tooltip>
+                </th>
+                <TdActionIcons>
+                  {info?.hoprNodeSafe}
+                  {info?.hoprNodeSafe && (
+                    <>
+                      <SmallActionButton
+                        onClick={() => navigator.clipboard.writeText(info.hoprNodeSafe as string)}
+                        disabled={noCopyPaste}
+                        tooltip={noCopyPaste ? 'Clipboard not supported on HTTP' : 'Copy'}
                       >
-                        <LaunchIcon />
-                      </Link>
-                    </SmallActionButton>
-                  </>
-                )}
-              </TdActionIcons>
-            </tr>
-            {/* <tr>
+                        <CopyIcon />
+                      </SmallActionButton>
+                      <SmallActionButton tooltip={'Open in gnosisscan.io'}>
+                        <Link
+                          to={`https://gnosisscan.io/address/${info.hoprNodeSafe}`}
+                          target="_blank"
+                        >
+                          <LaunchIcon />
+                        </Link>
+                      </SmallActionButton>
+                    </>
+                  )}
+                </TdActionIcons>
+              </tr>
+              {/* <tr>
               <th>
                 <Tooltip
                   title="The contract address of the HOPR token"
@@ -627,7 +735,7 @@ function InfoPage() {
                 )}
               </TdActionIcons>
             </tr> */}
-            {/* <tr>
+              {/* <tr>
               <th>
                 <Tooltip
                   title="The contract address of the Hopr management module"
@@ -659,7 +767,7 @@ function InfoPage() {
                 )}
               </TdActionIcons>
             </tr> */}
-            {/* <tr>
+              {/* <tr>
               <th>
                 <Tooltip
                   title="The contract address of the hoprChannels smart contract"
@@ -691,93 +799,94 @@ function InfoPage() {
                 )}
               </TdActionIcons>
             </tr> */}
-          </tbody>
-        </TableExtended>
+            </tbody>
+          </TableExtended>
 
-        <TableExtended title="Node">
-          <tbody>
-            <tr>
-              <th>
-                <Tooltip
-                  title="The version of HOPR your node is running"
-                  notWide
-                >
-                  <span>Version</span>
-                </Tooltip>
-              </th>
-              <td>{version?.replaceAll('"', '')}</td>
-            </tr>
-            <tr key="node-startdate">
-              <th>
-                <Tooltip
-                  title="Date when you node was started"
-                  notWide
-                >
-                  <span>Start date</span>
-                </Tooltip>
-              </th>
-              <td>{nodeStartedTime}</td>
-            </tr>
-            <NodeUptime />
-          </tbody>
-        </TableExtended>
+          <TableExtended title="Node">
+            <tbody>
+              <tr>
+                <th>
+                  <Tooltip
+                    title="The version of HOPR your node is running"
+                    notWide
+                  >
+                    <span>Version</span>
+                  </Tooltip>
+                </th>
+                <td>{version?.replaceAll('"', '')}</td>
+              </tr>
+              <tr key="node-startdate">
+                <th>
+                  <Tooltip
+                    title="Date when you node was started"
+                    notWide
+                  >
+                    <span>Start date</span>
+                  </Tooltip>
+                </th>
+                <td>{nodeStartedTime}</td>
+              </tr>
+              <NodeUptime />
+            </tbody>
+          </TableExtended>
 
-        <Packets />
+          <Packets />
 
-        <TableExtended title="Channels">
-          <tbody>
-            <tr>
-              <th>
-                <Tooltip
-                  title="The number of incoming channels connected to your node"
-                  notWide
-                >
-                  <span>Incoming</span>
-                </Tooltip>
-              </th>
-              <td>{channels?.incoming.length}</td>
-            </tr>
-            <tr>
-              <th>
-                <Tooltip
-                  title="The number of outgoing channels connected to your node"
-                  notWide
-                >
-                  <span>Outgoing</span>
-                </Tooltip>
-              </th>
-              <td>{channels?.outgoing.length}</td>
-            </tr>
-          </tbody>
-        </TableExtended>
+          <TableExtended title="Channels">
+            <tbody>
+              <tr>
+                <th>
+                  <Tooltip
+                    title="The number of incoming channels connected to your node"
+                    notWide
+                  >
+                    <span>Incoming</span>
+                  </Tooltip>
+                </th>
+                <td>{channels?.incoming.length}</td>
+              </tr>
+              <tr>
+                <th>
+                  <Tooltip
+                    title="The number of outgoing channels connected to your node"
+                    notWide
+                  >
+                    <span>Outgoing</span>
+                  </Tooltip>
+                </th>
+                <td>{channels?.outgoing.length}</td>
+              </tr>
+            </tbody>
+          </TableExtended>
 
-        <TableExtended title="Nodes on the network">
-          <tbody>
-            <tr>
-              <th>
-                <Tooltip
-                  title="The number of announced nodes on the network visible to your node"
-                  notWide
-                >
-                  <span>Announced</span>
-                </Tooltip>
-              </th>
-              <td>{peersAnnounced?.length}</td>
-            </tr>
-            <tr>
-              <th>
-                <Tooltip
-                  title="The number of nodes on the network your node can reach"
-                  notWide
-                >
-                  <span>Connected</span>
-                </Tooltip>
-              </th>
-              <td>{peersConnected?.length}</td>
-            </tr>
-          </tbody>
-        </TableExtended>
-      </Cards>
+          <TableExtended title="Nodes on the network">
+            <tbody>
+              <tr>
+                <th>
+                  <Tooltip
+                    title="The number of announced nodes on the network visible to your node"
+                    notWide
+                  >
+                    <span>Announced</span>
+                  </Tooltip>
+                </th>
+                <td>{peersAnnounced?.length}</td>
+              </tr>
+              <tr>
+                <th>
+                  <Tooltip
+                    title="The number of nodes on the network your node can reach"
+                    notWide
+                  >
+                    <span>Connected</span>
+                  </Tooltip>
+                </th>
+                <td>{peersConnected?.length}</td>
+              </tr>
+            </tbody>
+          </TableExtended>
+        </Cards>
+      )}
     </Section>
   );
 }

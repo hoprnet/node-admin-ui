@@ -40,7 +40,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import AddIcCallIcon from '@mui/icons-material/AddIcCall';
 
 // Store
-import { useAppDispatch, useAppSelector } from '../../../store';
+import { useAppDispatch, useAppSelector, useReadOnly } from '../../../store';
 import { actionsAsync } from '../../../store/slices/node/actionsAsync';
 import type { AddressesType } from '../../../store/slices/node/initialState';
 
@@ -79,6 +79,9 @@ const StatusContainer = styled.div`
 `;
 
 type OpenSessionModalProps = {
+  open?: boolean;
+  onClose?: () => void;
+  hideTrigger?: boolean;
   destination?: string;
   disabled?: boolean;
   tooltip?: JSX.Element | string;
@@ -107,7 +110,7 @@ const Splitscreen = styled.div`
   justify-content: space-between;
 `;
 
-export const OpenSessionModal = (props: OpenSessionModalProps) => {
+const OpenSessionModalInner = (props: OpenSessionModalProps) => {
   const dispatch = useAppDispatch();
 
   const [loader, set_loader] = useState<boolean>(false);
@@ -350,6 +353,7 @@ export const OpenSessionModal = (props: OpenSessionModalProps) => {
   };
 
   const handleCloseModal = () => {
+    props.onClose?.();
     // set_sendForwardMode('numberOfHops');
     // set_numberOfForwardHops(0);
     // set_destination(props.destination ? props.destination : null);
@@ -378,14 +382,21 @@ export const OpenSessionModal = (props: OpenSessionModalProps) => {
     }
   }
 
+  // controlled mode: opened from a menu or a detail panel
+  useEffect(() => {
+    if (props.open) handleOpenModal();
+  }, [props.open]);
+
   return (
     <>
-      <IconButton
-        iconComponent={<AddIcCallIcon />}
-        tooltipText={props.tooltip ? props.tooltip : <span>Open session listener</span>}
-        onClick={handleOpenModal}
-        disabled={props.disabled}
-      />
+      {!props.hideTrigger && (
+        <IconButton
+          iconComponent={<AddIcCallIcon />}
+          tooltipText={props.tooltip ? props.tooltip : <span>Open session listener</span>}
+          onClick={handleOpenModal}
+          disabled={props.disabled}
+        />
+      )}
 
       <SDialog
         open={openModal}
@@ -826,4 +837,11 @@ export const OpenSessionModal = (props: OpenSessionModalProps) => {
       </SDialog>
     </>
   );
+};
+
+/** Hidden in read-only mode, as it changes the node's state. */
+export const OpenSessionModal = (props: OpenSessionModalProps) => {
+  const readOnly = useReadOnly();
+  if (readOnly) return null;
+  return <OpenSessionModalInner {...props} />;
 };

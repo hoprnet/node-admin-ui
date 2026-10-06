@@ -13,12 +13,15 @@ import AddAliasIcon from '../../../future-hopr-lib-components/Icons/AddAlias';
 import Button from '../../../future-hopr-lib-components/Button';
 
 type CreateAliasModalProps = {
+  open?: boolean;
+  onClose?: () => void;
+  hideTrigger?: boolean;
   address?: string;
   disabled?: boolean;
   tooltip?: JSX.Element | string;
 };
 
-export const CreateAliasModal = (props: CreateAliasModalProps) => {
+const CreateAliasModalInner = (props: CreateAliasModalProps) => {
   const dispatch = useAppDispatch();
   const loginData = useAppSelector((store) => store.auth.loginData);
   const aliases = useAppSelector((store) => store.node.aliases);
@@ -82,6 +85,7 @@ export const CreateAliasModal = (props: CreateAliasModalProps) => {
   };
 
   const handleCloseModal = () => {
+    props.onClose?.();
     set_duplicateAlias(false);
     set_duplicateAddress(false);
     setOpenModal(false);
@@ -101,24 +105,31 @@ export const CreateAliasModal = (props: CreateAliasModalProps) => {
     }
   }
 
+  // controlled mode: opened from a menu or a detail panel
+  useEffect(() => {
+    if (props.open) handleOpenModal();
+  }, [props.open]);
+
   return (
     <>
-      <IconButton
-        iconComponent={<AddAliasIcon />}
-        tooltipText={
-          props.tooltip ? (
-            props.tooltip
-          ) : (
-            <span>
-              {hasAlias ? 'EDIT' : 'ADD'}
-              <br />
-              {hasAlias ? '' : 'new '} alias
-            </span>
-          )
-        }
-        onClick={handleOpenModal}
-        disabled={props.disabled}
-      />
+      {!props.hideTrigger && (
+        <IconButton
+          iconComponent={<AddAliasIcon />}
+          tooltipText={
+            props.tooltip ? (
+              props.tooltip
+            ) : (
+              <span>
+                {hasAlias ? 'EDIT' : 'ADD'}
+                <br />
+                {hasAlias ? '' : 'new '} alias
+              </span>
+            )
+          }
+          onClick={handleOpenModal}
+          disabled={props.disabled}
+        />
+      )}
       <SDialog
         open={openModal}
         onClose={handleCloseModal}
@@ -182,3 +193,6 @@ export const CreateAliasModal = (props: CreateAliasModalProps) => {
     </>
   );
 };
+
+// Aliases live in this browser only (per node), so they stay editable in read-only mode.
+export const CreateAliasModal = (props: CreateAliasModalProps) => <CreateAliasModalInner {...props} />;

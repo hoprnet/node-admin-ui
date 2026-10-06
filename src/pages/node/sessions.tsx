@@ -1,6 +1,9 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import styled from '@emotion/styled';
-import { useAppDispatch, useAppSelector } from '../../store';
+import { useAppDispatch, useAppSelector, useReadOnly } from '../../store';
+import type { GetSessionsResponseType } from '@hoprnet/hopr-sdk';
+import ConfirmDialog from '../../components/Modal/ConfirmDialog';
+import { Address, StatusPill } from '../../components/Data';
 import { actionsAsync } from '../../store/slices/node/actionsAsync';
 import { exportToCsv } from '../../utils/helpers';
 import { sendNotification } from '../../hooks/useWatcher/notifications';
@@ -33,6 +36,9 @@ function SessionsPage() {
   const sessions = useAppSelector((store) => store.node.sessions.data) || [];
   const sessionsFetching = useAppSelector((store) => store.node.sessions.isFetching);
   const loginData = useAppSelector((store) => store.auth.loginData);
+  const aliases = useAppSelector((store) => store.node.aliases);
+  const readOnly = useReadOnly();
+  const [toClose, set_toClose] = useState<GetSessionsResponseType[number] | null>(null);
   const apiEndpoint = loginData.apiEndpoint;
   const apiToken = loginData.apiToken;
 
@@ -57,60 +63,21 @@ function SessionsPage() {
   };
 
   const header = [
-    {
-      key: 'id',
-      name: '#',
-    },
-    {
-      key: 'destination',
-      name: 'Destination',
-      search: true,
-      copy: true,
-    },
-    {
-      key: 'ip',
-      name: 'IP',
-      search: true,
-      copy: true,
-    },
-    {
-      key: 'port',
-      name: 'Port',
-      search: true,
-      copy: true,
-    },
-    {
-      key: 'protocol',
-      name: 'Protocol',
-      search: true,
-      copy: true,
-    },
-    {
-      key: 'target',
-      name: 'Target',
-      search: true,
-      copy: true,
-    },
-    {
-      key: 'path',
-      name: 'Path',
-      search: true,
-      copy: true,
-    },
-    {
-      key: 'mtu',
-      name: 'MTU',
-      search: true,
-      copy: true,
-    },
-    {
-      key: 'actions',
-      name: 'Actions',
-      search: false,
-      width: '68px',
-      maxWidth: '68px',
-    },
+    { key: 'destinationCell', name: 'Destination', sortKey: 'destination' },
+    { key: 'destination', name: 'Destination', search: true, hidden: true },
+    { key: 'listener', name: 'Listening on', sortKey: 'listenerText', width: '220px' },
+    { key: 'listenerText', name: 'Listening on', search: true, hidden: true },
+    { key: 'target', name: 'Target', search: true, copy: true },
+    { key: 'path', name: 'Path', width: '180px' },
+    { key: 'mtu', name: 'MTU', align: 'right' as const, width: '80px' },
+    { key: 'actions', name: '', width: '56px' },
   ];
+
+  const describePath = (path: unknown) =>
+    JSON.stringify(path)
+      .replace(/{|}|\[|\]|"/g, '')
+      .replace(/:/g, ' ')
+      .replace(/,/g, ', ');
 
   const handleCloseSession = (protocol: 'udp' | 'tcp', listeningIp: string, port: number) => {
     console.log('handleCloseSession', protocol, listeningIp, port);
@@ -152,81 +119,34 @@ function SessionsPage() {
   };
 
   const parsedTableData = sessions.map((session, index) => {
+    const listenerText = `${session.ip}:${session.port} ${session.protocol}`;
     return {
-      id: (index + 1).toString(),
+      id: index + 1,
       key: session.target + index,
-      destination: session.destination,
-      ip: session.ip,
-      port: session.port,
-      protocol: session.protocol,
-      target: session.target,
+      destination: `${aliases?.[session.destination] ?? ''} ${session.destination}`,
+      destinationCell: <Address address={session.destination} />,
+      listenerText,
+      listener: (
+        <span className="mono">
+          {session.ip}:{session.port} <StatusPill tone="neutral">{session.protocol.toUpperCase()}</StatusPill>
+        </span>
+      ),
+      target: <span className="mono">{session.target}</span>,
       mtu: session.hoprMtu,
       path: (
-        <>
-          <strong>Forward path:</strong>
-          <br />
-          <span style={{ whiteSpace: 'break-spaces' }}>
-            {
-              // Sessions with path got temporary removed
-              // JSON.stringify(session.forwardPath).includes('Hops') ?
-              // (
-              JSON.stringify(session.forwardPath)
-                .replace(/{|}|\[|\]|"/g, '')
-                .replace('IntermediatePath:', 'IntermediatePath:\n')
-                .replace(/,/g, ' ')
-              // ) : (
-              //   <>
-              //     {session?.forwardPath?.IntermediatePath?.map((hop: string, i: number) => (
-              //       <Hop
-              //         className="hop"
-              //         key={`hop-f-${i}`}
-              //       >
-              //         {hop}
-              //         {i === 0 && <PingModal address={hop} />}
-              //       </Hop>
-              //     ))}
-              //   </>
-              // )
-            }
-          </span>
-          <br />
-          <strong>Return path:</strong>
-          <br />
-          <span style={{ whiteSpace: 'break-spaces' }}>
-            {
-              // Sessions with path got temporary removed
-              // JSON.stringify(session.returnPath).includes('Hops') ?
-              // (
-              JSON.stringify(session.returnPath)
-                .replace(/{|}|\[|\]|"/g, '')
-                .replace('IntermediatePath:', 'IntermediatePath:\n')
-                .replace(/,/g, ' ')
-              // ) : (
-              //   <>
-              //     {session?.returnPath?.IntermediatePath?.map((hop: string, i: number) => (
-              //       <Hop
-              //         className="hop"
-              //         key={`hop-r-${i}`}
-              //       >
-              //         {hop}
-              //         {i === (session?.returnPath?.IntermediatePath?.length ?? 0) - 1 && <PingModal address={hop} />}
-              //       </Hop>
-              //     ))}
-              //   </>
-              // )
-            }
-          </span>
-        </>
+        <span style={{ fontSize: 12, color: 'var(--text-2)', whiteSpace: 'normal' }}>
+          → {describePath(session.forwardPath)}
+          <br />← {describePath(session.returnPath)}
+        </span>
       ),
-      actions: (
-        <>
-          <IconButton
-            iconComponent={<PhoneDisabledIcon />}
-            //  pending={channelsOutgoingObject[id]?.isClosing} //to be added when sessions will get targets
-            tooltipText={<span>Close session</span>}
-            onClick={() => handleCloseSession(session.protocol, session.ip, session.port)}
-          />
-        </>
+      actions: readOnly ? (
+        <span />
+      ) : (
+        <IconButton
+          iconComponent={<PhoneDisabledIcon />}
+          tooltipText="Close session"
+          onClick={() => set_toClose(session)}
+        />
       ),
     };
   });
@@ -236,13 +156,10 @@ function SessionsPage() {
       className="Channels--aliases"
       id="Channels--aliases"
       fullHeightMin
-      yellow
     >
       <SubpageTitle
         title="Sessions"
         count={sessions ? sessions.length : null}
-        refreshFunction={handleRefresh}
-        reloading={sessionsFetching}
         actions={
           <>
             <IconButton
@@ -261,7 +178,37 @@ function SessionsPage() {
         header={header}
         search
         loading={parsedTableData.length === 0 && sessionsFetching}
-        orderByDefault="number"
+        emptyText="No open sessions"
+        orderByDefault="destinationCell"
+      />
+      <ConfirmDialog
+        open={!!toClose}
+        title="Close session"
+        description="Clients connected through this session lose their connection."
+        summary={
+          toClose
+            ? [
+                {
+                  label: 'Destination',
+                  value: (
+                    <Address
+                      address={toClose.destination}
+                      tools={false}
+                    />
+                  ),
+                },
+                { label: 'Listening on', value: `${toClose.ip}:${toClose.port} (${toClose.protocol.toUpperCase()})` },
+                { label: 'Target', value: toClose.target },
+              ]
+            : []
+        }
+        confirmLabel="Close session"
+        danger
+        onConfirm={() => {
+          if (toClose) handleCloseSession(toClose.protocol, toClose.ip, toClose.port);
+          set_toClose(null);
+        }}
+        onClose={() => set_toClose(null)}
       />
     </Section>
   );

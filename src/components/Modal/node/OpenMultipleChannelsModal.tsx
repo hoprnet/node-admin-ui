@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { DialogTitle, DialogActions, InputAdornment } from '@mui/material';
 import { SDialog, SDialogContent, SIconButton, TopBar } from '../../../future-hopr-lib-components/Modal/styled';
 import STextField from '../../../future-hopr-lib-components/TextField';
-import { useAppDispatch, useAppSelector } from '../../../store';
+import { useAppDispatch, useAppSelector, useReadOnly } from '../../../store';
 import { actionsAsync } from '../../../store/slices/node/actionsAsync';
 import { parseEther } from 'viem';
 import { sendNotification } from '../../../hooks/useWatcher/notifications';
@@ -18,7 +18,7 @@ import Button from '../../../future-hopr-lib-components/Button';
 import IconButton from '../../../future-hopr-lib-components/Button/IconButton';
 import AddChannelsIcon from '../../../future-hopr-lib-components/Icons/AddChannels';
 
-export const OpenMultipleChannelsModal = () => {
+const OpenMultipleChannelsModalInner = () => {
   const dispatch = useAppDispatch();
   const loginData = useAppSelector((selector) => selector.auth.loginData);
   const [openChannelModal, set_openMultipleChannelsModal] = useState(false);
@@ -252,4 +252,11 @@ export const OpenMultipleChannelsModal = () => {
       </SDialog>
     </>
   );
+};
+
+/** Hidden in read-only mode, as it changes the node's state. */
+export const OpenMultipleChannelsModal = () => {
+  const readOnly = useReadOnly();
+  if (readOnly) return null;
+  return <OpenMultipleChannelsModalInner />;
 };

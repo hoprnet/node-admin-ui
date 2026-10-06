@@ -1,8 +1,10 @@
 import React, { useEffect, useState, useRef, KeyboardEvent, Key } from 'react';
 import styled from '@emotion/styled';
 import { v } from '../../../theme';
+import ConfirmDialog from '../ConfirmDialog';
+import { Amount } from '../../Data';
 import { HOPR_TOKEN_USED } from '../../../../config';
-import { useAppDispatch, useAppSelector } from '../../../store';
+import { useAppDispatch, useAppSelector, useReadOnly } from '../../../store';
 import { DialogTitle, InputAdornment, MenuItem, Button as MuiButton, TextField } from '@mui/material';
 import Button from '../../../future-hopr-lib-components/Button';
 import { SDialog, SDialogContent, SIconButton, TopBar } from '../../../future-hopr-lib-components/Modal/styled';
@@ -72,10 +74,14 @@ const GnosisLink = styled.a`
 `;
 
 type WithdrawModalProps = {
+  open?: boolean;
+  onClose?: () => void;
+  hideTrigger?: boolean;
   initialCurrency?: 'HOPR' | 'NATIVE';
 };
 
-const WithdrawModal = ({ initialCurrency }: WithdrawModalProps) => {
+const WithdrawModalInner = (props: WithdrawModalProps) => {
+  const { initialCurrency } = props;
   // hooks
   const dispatch = useAppDispatch();
   const hoprBalance = useAppSelector((state) => state.node.balances.data.hopr);
@@ -85,6 +91,7 @@ const WithdrawModal = ({ initialCurrency }: WithdrawModalProps) => {
   const { apiEndpoint, apiToken } = useAppSelector((state) => state.auth.loginData);
   // local states
   const [openModal, set_openModal] = useState(false);
+  const [confirming, set_confirming] = useState(false);
   const [currency, set_currency] = useState<'HOPR' | 'NATIVE'>(initialCurrency ?? 'NATIVE');
   const [amount, set_amount] = useState<string>('');
   const [maxAmount, set_maxAmount] = useState<string>(nativeBalance.value ?? '');
@@ -120,6 +127,7 @@ const WithdrawModal = ({ initialCurrency }: WithdrawModalProps) => {
   };
 
   const handleCloseModal = () => {
+    props.onClose?.();
     set_openModal(false);
   };
 
@@ -189,18 +197,24 @@ const WithdrawModal = ({ initialCurrency }: WithdrawModalProps) => {
 
   function handleEnter(event: KeyboardEvent) {
     if (canWithdraw && event.key === 'Enter') {
-      console.log('WithdrawModal event');
-      handleWithdraw();
+      set_confirming(true);
     }
   }
 
+  // controlled mode: opened from a menu or a detail panel
+  useEffect(() => {
+    if (props.open) handleOpenModal();
+  }, [props.open]);
+
   return (
     <>
-      <IconButton
-        iconComponent={<WithdrawIcon />}
-        tooltipText={<span>Withdraw tokens</span>}
-        onClick={handleOpenModal}
-      />
+      {!props.hideTrigger && (
+        <IconButton
+          iconComponent={<WithdrawIcon />}
+          tooltipText={<span>Withdraw tokens</span>}
+          onClick={handleOpenModal}
+        />
+      )}
       <SDialog
         open={openModal}
         onClose={handleCloseModal}
@@ -270,12 +284,43 @@ const WithdrawModal = ({ initialCurrency }: WithdrawModalProps) => {
               }}
             />
             <Button
-              onClick={handleWithdraw}
+              onClick={() => set_confirming(true)}
               pending={isLoading}
               disabled={!canWithdraw}
             >
-              Withdraw
+              Review withdrawal
             </Button>
+            <ConfirmDialog
+              open={confirming}
+              title="Confirm withdrawal"
+              description="Tokens are sent from the node to the recipient. This cannot be undone."
+              summary={[
+                {
+                  label: 'Amount',
+                  value: (
+                    <Amount
+                      value={amount}
+                      unit={currency === 'NATIVE' ? 'xDAI' : 'wxHOPR'}
+                      decimals={8}
+                    />
+                  ),
+                },
+                {
+                  label: 'Recipient',
+                  value: <span className="mono">{recipient}</span>,
+                },
+                ...(safeAddress && recipient.toLowerCase() === safeAddress.toLowerCase()
+                  ? [{ label: 'Note', value: 'Recipient is your safe' }]
+                  : []),
+              ]}
+              confirmLabel="Withdraw"
+              danger
+              onConfirm={() => {
+                set_confirming(false);
+                handleWithdraw();
+              }}
+              onClose={() => set_confirming(false)}
+            />
             {transactionHash && (
               <p>
                 Check your transaction{' '}
@@ -294,6 +339,13 @@ const WithdrawModal = ({ initialCurrency }: WithdrawModalProps) => {
       </SDialog>
     </>
   );
+};
+
+/** Hidden in read-only mode, as it changes the node's state. */
+const WithdrawModal = (props: WithdrawModalProps) => {
+  const readOnly = useReadOnly();
+  if (readOnly) return null;
+  return <WithdrawModalInner {...props} />;
 };
 
 export default WithdrawModal;
