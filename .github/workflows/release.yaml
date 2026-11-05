@@ -15,6 +15,7 @@ on:
 concurrency:
   group: release
   cancel-in-progress: false
+permissions: {}
 jobs:
   build-docker:
     name: Docker
