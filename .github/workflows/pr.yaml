@@ -11,8 +11,9 @@ on:
   merge_group:
     types: [checks_requested]
 
+permissions: {}
 concurrency:
-  group: ${{ github.event.pull_request.head.ref || github.ref_name }}-pr
+  group: ${{ github.event.pull_request.number || github.ref }}-pr
   cancel-in-progress: true
 jobs:
   validate-pr-title:
@@ -36,6 +37,8 @@ jobs:
             refactor
             perf
             test
+            ci
+            revert
           requireScope: false
           ignoreLabels: |
             bot
@@ -88,7 +91,7 @@ jobs:
           persist-credentials: false
 
       - name: Setup Node.js
-        uses: hoprnet/hopr-workflows/actions/setup-node-js@setup-node-js-v1
+        uses: hoprnet/hopr-workflows/actions/setup-node-js@15db9fb5571957317b77567abef997b1554f2fbb # setup-node-js-v1
         with:
           node_version: ${{ matrix.node-version }}
 
@@ -127,3 +130,24 @@ jobs:
       fail_on_scan_vulnerabilities: ${{ vars.FAIL_ON_SCAN_VULNERABILITIES }}
     secrets:
       cachix_auth_token: ${{ secrets.CACHIX_AUTH_TOKEN }}
+
+  # Single required check for the branch ruleset: adding, renaming, or
+  # removing a job above never needs a ruleset change. `if: always()` runs it
+  # even when a dependency fails; alls-green reds on any non-success.
+  merge-gate:
+    name: Merge gate
+    if: always()
+    needs:
+      - validate-pr-title
+      - label
+      - build
+      - build-docker
+    runs-on: depot-ubuntu-24.04
+    permissions: {}
+    steps:
+      - name: Require all jobs pass
+        uses: re-actors/alls-green@b5b5b37504aa4183270bd3d855c52a67f212be35 # v1.3.0
+        with:
+          jobs: ${{ toJSON(needs) }}
+          # validate-pr-title and label run on pull_request only.
+          allowed-skips: validate-pr-title, label
